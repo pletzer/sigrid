@@ -1,0 +1,26 @@
+
+from ctypes import CDLL, c_int, c_void_p, byref, POINTER
+import numpy
+
+sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
+
+this = c_void_p()
+begInds = numpy.array([1, 2, 3], numpy.int32)
+endInds = numpy.array([2, 4, 7], numpy.int32)
+
+ier = sg.SgBoxIterator_new(byref(this),
+                           begInds.ctypes.data_as(POINTER(c_int)),
+                           endInds.ctypes.data_as(POINTER(c_int)))
+assert(ier == 0)
+
+numElems = c_int()
+ier = sg.SgBoxIterator_getNumberOfElements(byref(this), byref(numElems))
+inds = numpy.array([0, 0, 0], numpy.int32)
+print 'numElems = ', numElems.value
+print 'begInds = ', begInds, ' endInds = ', endInds
+for i in range(numElems.value):
+	ier = sg.SgBoxIterator_getElement(byref(this), i, inds.ctypes.data_as(POINTER(c_int)))
+	print inds
+                           
+ier = sg.SgBoxIterator_del(byref(this))
+assert(ier == 0)

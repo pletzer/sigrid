@@ -1,0 +1,28 @@
+
+from ctypes import CDLL, c_double, c_void_p, byref, POINTER
+import numpy
+
+sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
+
+this = c_void_p()
+nrow = 2
+ncol = 2
+mat = numpy.array([[1., 2.], [3., 4.]])
+b = numpy.array([1., 2.])
+x = numpy.array([0., 0.])
+ier = sg.SgLinearSolve_new(byref(this), nrow, ncol)
+assert(ier == 0)
+ier = sg.SgLinearSolve_setMatrix(byref(this), mat.ctypes.data_as(POINTER(c_double)))
+assert(ier == 0)
+ier = sg.SgLinearSolve_setRightHandSide(byref(this), b.ctypes.data_as(POINTER(c_double)))
+assert(ier == 0)
+ier = sg.SgLinearSolve_solve(byref(this))
+assert(ier == 0)
+ier = sg.SgLinearSolve_getSolution(byref(this), x.ctypes.data_as(POINTER(c_double)))
+assert(ier == 0)
+residual = c_double()
+ier = sg.SgLinearSolve_getResidual(byref(this), byref(residual))
+assert(ier == 0)
+print 'residual = ', residual.value
+ier = sg.SgLinearSolve_del(byref(this))
+assert(ier == 0)
