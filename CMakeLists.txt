@@ -5,7 +5,7 @@
 ###################################################
 
 # Project information
-project(sigrid))
+project(sigrid)
 set(VERSION_MAJOR “0”)
 set(VERSION_MINOR “1”)
 set(VERSION_PATCH "alpha")

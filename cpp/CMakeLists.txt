@@ -13,7 +13,7 @@ set(HEADER_FILES
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
-target_link_libraries(simplexgrid ${LAPACK_LIBRARIES})
+target_link_libraries(sigrid ${LAPACK_LIBRARIES})
 
 # Install headers
 install(FILES ${HEADER_FILES} DESTINATION include)
