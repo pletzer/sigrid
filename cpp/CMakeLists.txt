@@ -4,12 +4,16 @@ set(LIB_FILES
   SgLinearSolve.cpp
   SgBoxIterator.cpp
   SgTetrahedron.cpp
+  SgTriangle.cpp
+  SgLine.cpp
 )
 
 set(HEADER_FILES
   SgLinearSolve.h
   SgBoxIterator.h
   SgTetrahedron.h
+  SgTriangle.h
+  SgLine.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
