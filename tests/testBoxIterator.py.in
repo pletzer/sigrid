@@ -16,11 +16,11 @@ assert(ier == 0)
 numElems = c_int()
 ier = sg.SgBoxIterator_getNumberOfElements(byref(this), byref(numElems))
 inds = numpy.array([0, 0, 0], numpy.int32)
-print 'numElems = ', numElems.value
-print 'begInds = ', begInds, ' endInds = ', endInds
+print('numElems = {}'.format(numElems.value))
+print('begInds = {0} endInds = {1}'.format(begInds, endInds))
 for i in range(numElems.value):
 	ier = sg.SgBoxIterator_getElement(byref(this), i, inds.ctypes.data_as(POINTER(c_int)))
-	print inds
+	print(inds)
                            
 ier = sg.SgBoxIterator_del(byref(this))
 assert(ier == 0)

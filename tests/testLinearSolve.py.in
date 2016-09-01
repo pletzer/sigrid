@@ -23,6 +23,6 @@ assert(ier == 0)
 residual = c_double()
 ier = sg.SgLinearSolve_getResidual(byref(this), byref(residual))
 assert(ier == 0)
-print 'residual = ', residual.value
+print('residual = '.format(residual.value))
 ier = sg.SgLinearSolve_del(byref(this))
 assert(ier == 0)
