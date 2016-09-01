@@ -14,6 +14,7 @@ set(HEADER_FILES
   SgTetrahedron.h
   SgTriangle.h
   SgLine.h
+  SgNdims.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})

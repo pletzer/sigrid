@@ -2,7 +2,8 @@
  * Line class
  */
 
-#include <cstring> // for size_t 
+#include <cstring> // for size_t
+#include "SgNdims.h"
 #include "SgLine.h"
 
 extern "C"
@@ -12,8 +13,8 @@ int SgLine_new(SgLine_type** self,
                        
     *self = new SgLine_type();
     
-    (*self)->points.push_back(std::vector<double>(p0, p0 + 3));
-    (*self)->points.push_back(std::vector<double>(p1, p1 + 3));
+    (*self)->points.push_back(std::vector<double>(p0, p0 + NDIMS_PHYS));
+    (*self)->points.push_back(std::vector<double>(p1, p1 + NDIMS_PHYS));
     
     return 0;
 }

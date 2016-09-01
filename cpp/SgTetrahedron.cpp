@@ -2,7 +2,8 @@
  * Tetrahedron class
  */
 
-#include <cstring> // for size_t 
+#include <cstring> // for size_t
+#include "SgNdims.h"
 #include "SgTetrahedron.h"
 
 extern "C"
@@ -14,10 +15,10 @@ int SgTetrahedron_new(SgTetrahedron_type** self,
                        
     *self = new SgTetrahedron_type();
     
-    (*self)->points.push_back(std::vector<double>(p0, p0 + 3));
-    (*self)->points.push_back(std::vector<double>(p1, p1 + 3));
-    (*self)->points.push_back(std::vector<double>(p2, p2 + 3));
-    (*self)->points.push_back(std::vector<double>(p3, p3 + 3));
+    (*self)->points.push_back(std::vector<double>(p0, p0 + NDIMS_PHYS));
+    (*self)->points.push_back(std::vector<double>(p1, p1 + NDIMS_PHYS));
+    (*self)->points.push_back(std::vector<double>(p2, p2 + NDIMS_PHYS));
+    (*self)->points.push_back(std::vector<double>(p3, p3 + NDIMS_PHYS));
     
     std::vector<int> e(2);
     e[0] = 0; e[1] = 1;
