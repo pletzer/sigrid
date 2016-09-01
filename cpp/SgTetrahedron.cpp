@@ -90,7 +90,7 @@ int SgTetrahedron_getEdge(SgTetrahedron_type** self,
  
 int SgTetrahedron_getFace(SgTetrahedron_type** self,
                            int i, int** pids) {
-    *pids = &(*self)->edges[(size_t) i].front();
+    *pids = &(*self)->faces[(size_t) i].front();
     return 0;
 }
 

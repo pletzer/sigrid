@@ -26,6 +26,25 @@ ier = sg.SgTetrahedron_getNumberOfEdges(byref(this), byref(numEdges))
 assert(numEdges.value == 6)
 ier = sg.SgTetrahedron_getNumberOfFaces(byref(this), byref(numFaces))
 assert(numFaces.value == 4)
-                           
+
+# test getPoint
+point = POINTER(c_double)()
+for i in range(numPoints.value):
+	sg.SgTetrahedron_getPoint(byref(this), i, byref(point))
+	print('{0} point: {1}, {2}, {3}'.format(i, point[0], point[1], point[2]))
+
+# test getEdge
+edge = POINTER(c_int)()
+for i in range(numEdges.value):
+	sg.SgTetrahedron_getEdge(byref(this), i, byref(edge))
+	print('{0} edge: {1}, {2}'.format(i, edge[0], edge[1]))
+
+# test getFace
+face = POINTER(c_int)()
+for i in range(numFaces.value):
+	sg.SgTetrahedron_getFace(byref(this), i, byref(face))
+	print('{0} face: {1}, {2}, {3}'.format(i, face[0], face[1], face[2]))
+
+                       
 ier = sg.SgTetrahedron_del(byref(this))
 assert(ier == 0)
