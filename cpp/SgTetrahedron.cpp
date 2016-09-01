@@ -1,7 +1,8 @@
 /**
  * Tetrahedron class
  */
- 
+
+#include <cstring> // for size_t 
 #include "SgTetrahedron.h"
 
 extern "C"
