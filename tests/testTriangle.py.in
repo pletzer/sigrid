@@ -1,0 +1,38 @@
+
+from ctypes import CDLL, c_double, c_int, c_void_p, byref, POINTER
+import numpy
+
+sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
+
+this = c_void_p()
+p0 = numpy.array([0., 0., 0.])
+p1 = numpy.array([1., 0., 0.])
+p2 = numpy.array([0., 1., 0.])
+
+ier = sg.SgTriangle_new(byref(this),
+                        p0.ctypes.data_as(POINTER(c_double)),
+                        p1.ctypes.data_as(POINTER(c_double)),
+                        p2.ctypes.data_as(POINTER(c_double)))
+assert(ier == 0)
+
+numPoints = c_int()
+numEdges = c_int()
+ier = sg.SgTriangle_getNumberOfPoints(byref(this), byref(numPoints))
+assert(numPoints.value == 3)
+ier = sg.SgTriangle_getNumberOfEdges(byref(this), byref(numEdges))
+assert(numEdges.value == 3)
+
+# test getPoint
+point = POINTER(c_double)()
+for i in range(numPoints.value):
+	sg.SgTriangle_getPoint(byref(this), i, byref(point))
+	print('{0} point: {1}, {2}, {3}'.format(i, point[0], point[1], point[2]))
+
+# test getEdge
+edge = POINTER(c_int)()
+for i in range(numEdges.value):
+	sg.SgTriangle_getEdge(byref(this), i, byref(edge))
+	print('{0} edge: {1}, {2}'.format(i, edge[0], edge[1]))
+                       
+ier = sg.SgTriangle_del(byref(this))
+assert(ier == 0)
