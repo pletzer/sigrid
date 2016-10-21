@@ -1,4 +1,7 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  )
 
 set(LIB_FILES
   SgLinearSolve.cpp
@@ -6,6 +9,7 @@ set(LIB_FILES
   SgTetrahedron.cpp
   SgTriangle.cpp
   SgLine.cpp
+  SgFindPointInCell.cpp
 )
 
 set(HEADER_FILES
@@ -15,6 +19,7 @@ set(HEADER_FILES
   SgTriangle.h
   SgLine.h
   SgNdims.h
+  SgFindPointInCell.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
