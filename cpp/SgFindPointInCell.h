@@ -7,8 +7,10 @@
  
  #include <vector>
  #include <cstdio> // size_t
+ #include "SgLinearSolve.h"
  
  struct SgFindPointInCell_type {
+ 	SgLinearSolve_type* slvr;
  	double tolpos;
  	std::vector<double> dIndices;
  	std::vector<double> targetPoint;
@@ -17,6 +19,7 @@
  	std::vector<size_t> prodDims;
  	std::vector<size_t> dims;
  	int nitermax;
+ 	int iter;
  };
  
 #ifdef __cplusplus

@@ -22,15 +22,23 @@
 
  }
 
+ void SgComputeJacobianAndRHS(SgFindPointInCell_type** self, 
+ 	                          std::vector<double>& jacMatrix,
+ 	                          std::vector<double>& rhs) {
+ 	
+ }
+
  int SgFindPointInCell_new(SgFindPointInCell_type** self,
                            int nitermax, double tolpos) {
  	*self = new SgFindPointInCell_type();
  	(*self)->tolpos = tolpos;
  	(*self)->nitermax = nitermax;
+ 	(*self)->slvr = NULL;
  	return 0;
  }
                        
  int SgFindPointInCell_del(SgFindPointInCell_type** self) {
+ 	if ((*self)->slvr) SgLinearSolve_del(&(*self)->slvr);
  	delete *self;
  }
 
@@ -59,10 +67,12 @@
  			(*self)->coords[i][j] = coords[i][j];
  		}
  	}
+
+ 	SgLinearSolve_new(&(*self)->slvr, ndims, ndims);
  }
 
 int SgFindPointInCell_getPosition(SgFindPointInCell_type** self,
- 	                               double pos[]) {
+ 	                              double pos[]) {
 
 	size_t ndims = (*self)->coords.size();
 	size_t nnodes = pow(2, ndims);
@@ -79,10 +89,35 @@ int SgFindPointInCell_getPosition(SgFindPointInCell_type** self,
 	return 0;
 }
 
-int SgFindPointInCell_next(SgFindPointInCell_type** self);
+int SgFindPointInCell_next(SgFindPointInCell_type** self) {
+	std::vector<double> jacMatrix((*self)->ndims * (*self)->ndims);
+	std::vector<double> rhs((*self)->ndims);
+	std::vector<double> sol((*self)->ndims);
+	std::vector<double> pos((*self)->ndims);
+	SgComputeJacobianAndRHS(self, jacMatrix, rhs);
+	SgLinearSolve_setMatrix(&(*self)->slvr, &jacMatrix[0]);
+	SgLinearSolve_setRightHandSide(&(*self)->slvr, &rhs[0]);
+	SgLinearSolve_solve(&(*self)->slvr);
+	SgLinearSolve_getSolution(&(*self)->slvr, &sol[0]);
+	for (size_t i = 0; i < (*self)->ndims; ++i) {
+		(*self)->dIndices[i] += sol[i];
+	}
+	(*self)->iter++;
+	SgFindPointInCell_getPosition(self, &pos[0]);
+	double posError = 0;
+	for (size_t i = 0; i < (*self)->ndims; ++i) {
+		double dp = pos[i] - (*self)->targetPoint[i];
+		posError += dp * dp;
+	}
+	posError = sqrt(posError);
+	if ((*self)->iter >= (*self)->nitermax || posError >= (*self)->tolpos) {
+		return 1;
+	}
+	return 0;
+}
 
 int SgFindPointInCell_setIndices(SgFindPointInCell_type** self,
- 	                              double dIndices[]) {
+ 	                             double dIndices[]) {
  	size_t ndims = (*self)->coords.size();
  	for (size_t i = 0; i < ndims; ++i) {
  		(*self)->dIndices[i] = dIndices[i];
