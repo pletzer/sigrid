@@ -2,65 +2,57 @@
  * A class that finds the location of a point in index space
  */
  
- #include "SgFindPointInCell.h"
- #include <cmath>
+#include "SgFindPointInCell.h"
+#include <cmath>
 
- void SgGetWeightsAndFlatIndices(SgFindPointInCell_type** self,
-		                         std::vector<double>& weights, 
-		                         std::vector<size_t>& flatInds) {
- 	size_t ndims = (*self)->dims.size();
- 	size_t nnodes = weights.size();
- 	size_t bif;
- 	for (size_t j = 0; j < nnodes; ++j) {
- 		for (size_t i = 0; i < ndims; ++i) {
- 			int loCornerIndx = (int) floor((*self)->dIndices[i]);
- 			size_t indx = loCornerIndx + (j / (*self)->prodDims[i] % 2);
- 			bif += (*self)->prodDims[i] * indx;
- 		}
- 		flatInds[j] = bif;
- 	}
-
- }
-
- void SgComputeJacobianAndRHS(SgFindPointInCell_type** self, 
- 	                          std::vector<double>& jacMatrix,
- 	                          std::vector<double>& rhs) {
- 	
- }
-
- int SgFindPointInCell_new(SgFindPointInCell_type** self,
+extern "C"
+int SgFindPointInCell_new(SgFindPointInCell_type** self,
                            int nitermax, double tolpos) {
  	*self = new SgFindPointInCell_type();
  	(*self)->tolpos = tolpos;
  	(*self)->nitermax = nitermax;
  	(*self)->slvr = NULL;
+ 	(*self)->iter = 0;
+
  	return 0;
- }
-                       
- int SgFindPointInCell_del(SgFindPointInCell_type** self) {
+}
+      
+extern "C"                   
+int SgFindPointInCell_del(SgFindPointInCell_type** self) {
+
  	if ((*self)->slvr) SgLinearSolve_del(&(*self)->slvr);
  	delete *self;
- }
 
- int SgFindPointInCell_setGrid(SgFindPointInCell_type** self, 
+ 	return 0;
+}
+
+extern "C"
+int SgFindPointInCell_setGrid(SgFindPointInCell_type** self, 
  	                           int ndims, const int dims[],
  	                           const double** coords) {
+
+ 	if (ndims <= 0) return 0;
+
  	(*self)->coords.resize(ndims);
  	(*self)->prodDims.resize(ndims);
  	(*self)->dims.resize(ndims);
+ 	(*self)->jacMatrix.resize(ndims * ndims);
+ 	(*self)->rhs.resize(ndims);
 
  	// must have at least one dimension
  	(*self)->prodDims[ndims - 1] = 1;
  	for (int i = ndims - 2; i >= 0; --i) {
- 		(*self)->prodDims[i] = (*self)->prodDims[i + 1] * 2;
+ 		(*self)->prodDims[i] = (*self)->prodDims[i + 1] * dims[i + 1];
  	}
 
+ 	// total number of nodes
  	int ntot = 1;
  	for (int i = 0; i < ndims; ++i) {
  		ntot *= dims[i];
  		(*self)->dims[i] = dims[i];
  	}
 
+ 	// set the coordinates
  	for (int i = 0; i < ndims; ++i) {
  		(*self)->coords[i].resize(ntot);
  		for (int j = 0; j < ntot; ++j) {
@@ -68,68 +60,84 @@
  		}
  	}
 
+ 	// create a solver
  	SgLinearSolve_new(&(*self)->slvr, ndims, ndims);
- }
 
+ 	return 0;
+}
+
+extern "C"
 int SgFindPointInCell_getPosition(SgFindPointInCell_type** self,
  	                              double pos[]) {
 
-	size_t ndims = (*self)->coords.size();
-	size_t nnodes = pow(2, ndims);
-	std::vector<double> weights(nnodes);
-	std::vector<size_t> flatInds(nnodes);
-	SgGetWeightsAndFlatIndices(self,
-		                       weights, flatInds);
+	size_t ndims = (*self)->dims.size();
 	for (size_t i = 0; i < ndims; ++i) {
-		pos[i] = 0;
-		for (size_t j = 0; j < nnodes; ++j) {
-			pos[i] += weights[j] * (*self)->coords[i][flatInds[j]];
-		}
+		pos[i] = (*self)->interp((*self)->dIndices, (*self)->coords[i]);
 	}
+
 	return 0;
 }
 
+
+extern "C"
+int SgFindPointInCell_reset(SgFindPointInCell_type** self, 
+	                        const double dIndices[]) {
+
+	size_t ndims = (*self)->dims.size();
+	for (size_t i = 0; i < ndims; ++i) {
+		(*self)->dIndices[i] = dIndices[0];
+	}
+	(*self)->iter = 0;
+
+	return 0;
+}
+
+extern "C"
 int SgFindPointInCell_next(SgFindPointInCell_type** self) {
-	std::vector<double> jacMatrix((*self)->ndims * (*self)->ndims);
-	std::vector<double> rhs((*self)->ndims);
-	std::vector<double> sol((*self)->ndims);
-	std::vector<double> pos((*self)->ndims);
-	SgComputeJacobianAndRHS(self, jacMatrix, rhs);
-	SgLinearSolve_setMatrix(&(*self)->slvr, &jacMatrix[0]);
-	SgLinearSolve_setRightHandSide(&(*self)->slvr, &rhs[0]);
+
+	(*self)->computeJacobianAndRHS();
+	SgLinearSolve_setMatrix(&(*self)->slvr, &(*self)->jacMatrix[0]);
+	SgLinearSolve_setRightHandSide(&(*self)->slvr, &(*self)->rhs[0]);
 	SgLinearSolve_solve(&(*self)->slvr);
-	SgLinearSolve_getSolution(&(*self)->slvr, &sol[0]);
-	for (size_t i = 0; i < (*self)->ndims; ++i) {
+
+	double* sol;
+	SgLinearSolve_getSolution(&(*self)->slvr, &sol);
+
+	size_t ndims = (*self)->dims.size();
+	// update the indices
+	for (size_t i = 0; i < ndims; ++i) {
 		(*self)->dIndices[i] += sol[i];
 	}
+
+	// check if the next iterator is still valid
 	(*self)->iter++;
+	std::vector<double> pos(ndims);
 	SgFindPointInCell_getPosition(self, &pos[0]);
+
+	// use Eulerian distance
 	double posError = 0;
-	for (size_t i = 0; i < (*self)->ndims; ++i) {
+	for (size_t i = 0; i < ndims; ++i) {
 		double dp = pos[i] - (*self)->targetPoint[i];
 		posError += dp * dp;
 	}
 	posError = sqrt(posError);
+
 	if ((*self)->iter >= (*self)->nitermax || posError >= (*self)->tolpos) {
+		// reached ma number of iterations
 		return 1;
 	}
+
+	// has not yet converged
 	return 0;
 }
 
-int SgFindPointInCell_setIndices(SgFindPointInCell_type** self,
- 	                             double dIndices[]) {
- 	size_t ndims = (*self)->coords.size();
- 	for (size_t i = 0; i < ndims; ++i) {
- 		(*self)->dIndices[i] = dIndices[i];
- 	}
- 	return 0;
-}
-
+extern "C"
 int SgFindPointInCell_getIndices(SgFindPointInCell_type** self,
- 	                              double dIndices[]) {
+ 	                             double dIndices[]) {
  	size_t ndims = (*self)->coords.size();
  	for (size_t i = 0; i < ndims; ++i) {
  		dIndices[i] = (*self)->dIndices[i];
  	}
+
  	return 0;
 }

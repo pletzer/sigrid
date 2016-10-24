@@ -45,7 +45,7 @@ int SgLinearSolve_setMatrix(SgLinearSolve_type** self,
                             const double mat[]);
                             
 int SgLinearSolve_setRightHandSide(SgLinearSolve_type** self,
-                            	   const double b[]);
+                            	     const double b[]);
                             	   
 int SgLinearSolve_solve(SgLinearSolve_type** self);
                                      
