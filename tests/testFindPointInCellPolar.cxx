@@ -19,23 +19,27 @@ int main(int argc, char** argv) {
 	const int ndims = 2;
 
 	// initial guess
-	double dIndices[] = {3.8, 4.9};
+	double dIndices[] = {6.8, 3.4};
 
 	// target position
 	const double targetPoint[] = {0.7, M_PI/3.};
+	std::cout << "target point is ";
+	for (size_t i = 0; i < ndims; ++i) std::cout << targetPoint[i] << ' ';
+	std::cout << '\n';
 
 	// grid
 	size_t nr = 11;
 	size_t nt = 21;
 	std::vector<double> rho(nr * nt);
 	std::vector<double> the(nr * nt);
+	size_t k = 0;
 	for (size_t i = 0; i < nr; ++i) {
 		double r = 0. + (1. - 0.) * i / double(nr - 1);
 		for (size_t j = 0; j < nt; ++j) {
 			double t = 0. + (2*M_PI - 0.)* j / double(nt - 1);
-			size_t k = j * nt*i;
 			rho[k] = r;
 			the[k] = t;
+			k++;
 		}
 	}
 
