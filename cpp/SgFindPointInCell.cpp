@@ -4,6 +4,7 @@
  
 #include "SgFindPointInCell.h"
 #include <cmath>
+#include <iostream>
 
 extern "C"
 int SgFindPointInCell_new(SgFindPointInCell_type** self,
@@ -38,6 +39,8 @@ int SgFindPointInCell_setGrid(SgFindPointInCell_type** self,
  	(*self)->dims.resize(ndims);
  	(*self)->jacMatrix.resize(ndims * ndims);
  	(*self)->rhs.resize(ndims);
+ 	(*self)->dIndices.resize(ndims);
+ 	(*self)->targetPoint.resize(ndims);
 
  	// must have at least one dimension
  	(*self)->prodDims[ndims - 1] = 1;
@@ -124,8 +127,11 @@ int SgFindPointInCell_next(SgFindPointInCell_type** self) {
 	}
 	posError = sqrt(posError);
 
-	if ((*self)->iter >= (*self)->nitermax || posError >= (*self)->tolpos) {
-		// reached ma number of iterations
+	if ((*self)->iter >= (*self)->nitermax || posError <= (*self)->tolpos) {
+		// reached max number of iterations
+		std::cerr << "exiting with...\n";
+		std::cerr << "iter = " << (*self)->iter << " (nitermax = " << (*self)->nitermax << ")\n";
+		std::cerr << "posError = " << posError << " (tolpos = " << (*self)->tolpos << ")\n";
 		return 1;
 	}
 
