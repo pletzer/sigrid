@@ -65,6 +65,14 @@ int main(int argc, char** argv) {
 	    for (int j = 0; j < ndims; ++j) std::cout << pos[j] << " ";
 	    std::cout << '\n';
 
+		double error = 0;
+		for (int j = 0; j < ndims; ++j) {
+			double dp = targetPoint[j] - pos[j];
+			error = dp * dp;
+		}
+		error = sqrt(error);
+		std::cout << " error = " << error << "\n";
+
 		icount++;
 	}
 

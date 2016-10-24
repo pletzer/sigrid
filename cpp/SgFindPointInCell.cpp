@@ -129,9 +129,9 @@ int SgFindPointInCell_next(SgFindPointInCell_type** self) {
 
 	if ((*self)->iter >= (*self)->nitermax || posError <= (*self)->tolpos) {
 		// reached max number of iterations
-		std::cerr << "exiting with...\n";
-		std::cerr << "iter = " << (*self)->iter << " (nitermax = " << (*self)->nitermax << ")\n";
-		std::cerr << "posError = " << posError << " (tolpos = " << (*self)->tolpos << ")\n";
+		//std::cerr << "exiting with...\n";
+		//std::cerr << "iter = " << (*self)->iter << " (nitermax = " << (*self)->nitermax << ")\n";
+		//std::cerr << "posError = " << posError << " (tolpos = " << (*self)->tolpos << ")\n";
 		return 1;
 	}
 
