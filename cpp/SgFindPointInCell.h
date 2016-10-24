@@ -58,7 +58,9 @@ void getWeightsAndFlatIndices(const std::vector<double>& dInds,
  			int loCornerIndx = (int) floor(dInds[i]);
  			int indx = loCornerIndx + (j / this->prodDims[i] % 2);
  			flatInds[j] += (size_t) this->prodDims[i] * indx;
- 			weights[j] *= (double) indx - dInds[i];
+ 			double dindx = (double) indx;
+ 			double w = (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
+ 			weights[j] *= w;
  		}
  	}
 }
@@ -87,7 +89,8 @@ void computeJacobianAndRHS() {
  	// iterate over the physical space dimensions
  	for (size_t i = 0; i < ndims; ++i) {
 
- 		this->rhs[i] = this->targetPoint[i] - this->interp(this->dIndices, this->coords[i]);
+ 		double pos = this->interp(this->dIndices, this->coords[i]);
+ 		this->rhs[i] = this->targetPoint[i] - pos;
 
  		for (size_t j = 0; j < ndims; ++j) {
  			// mid cell

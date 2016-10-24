@@ -40,7 +40,7 @@ iterFlag = True
 icount = 0
 while iterFlag:
 
-	ier = ier = sg.SgFindPointInCell_getPosition(byref(this), oldPos)
+	ier = sg.SgFindPointInCell_getPosition(byref(this), oldPos)
 	assert(ier == 0)
 
 	ier = sg.SgFindPointInCell_next(byref(this))
