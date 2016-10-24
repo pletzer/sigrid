@@ -97,7 +97,7 @@ void computeJacobianAndRHS() {
  			dInds[j] = (int) floor(this->dIndices[j]) + 0.5;
  		}
 
- 		// iterate ove the index space dimensions
+ 		// iterate over the index space dimensions
  		for (size_t j = 0; j < ndims; ++j) {
 
  			// high end of the cell
