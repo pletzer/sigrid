@@ -119,7 +119,7 @@ int SgFindPointInCell_next(SgFindPointInCell_type** self) {
 	std::vector<double> pos(ndims);
 	SgFindPointInCell_getPosition(self, &pos[0]);
 
-	// use Eulerian distance
+	// use Eulerian distance as error measure
 	double posError = 0;
 	for (size_t i = 0; i < ndims; ++i) {
 		double dp = pos[i] - (*self)->targetPoint[i];
@@ -127,11 +127,12 @@ int SgFindPointInCell_next(SgFindPointInCell_type** self) {
 	}
 	posError = sqrt(posError);
 
-	if ((*self)->iter >= (*self)->nitermax || posError <= (*self)->tolpos) {
+	if ((*self)->iter >= (*self)->nitermax) {
 		// reached max number of iterations
-		//std::cerr << "exiting with...\n";
-		//std::cerr << "iter = " << (*self)->iter << " (nitermax = " << (*self)->nitermax << ")\n";
-		//std::cerr << "posError = " << posError << " (tolpos = " << (*self)->tolpos << ")\n";
+		return -1; 
+	}
+	if (posError < (*self)->tolpos) {
+		// done!
 		return 1;
 	}
 

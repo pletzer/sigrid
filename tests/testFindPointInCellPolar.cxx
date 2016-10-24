@@ -69,7 +69,12 @@ int main(int argc, char** argv) {
 		assert(ier == 0);
 
 		ier = SgFindPointInCell_next(&picf);
-		if (ier != 0) iterFlag = false;
+		if (ier != 0) {
+			iterFlag = false;
+			if (ier < 0) {
+				std::cout << "*** reached max number of iterations!\n";
+			}
+		}
 
 		ier = SgFindPointInCell_getPosition(&picf, pos);
 		assert(ier == 0);
@@ -78,7 +83,6 @@ int main(int argc, char** argv) {
 		for (int j = 0; j < ndims; ++j) std::cout << oldPos[j] << " ";
 		std::cout << " -> new = ";
 	    for (int j = 0; j < ndims; ++j) std::cout << pos[j] << " ";
-	    std::cout << '\n';
 
 		double error = 0;
 		for (int j = 0; j < ndims; ++j) {
@@ -86,7 +90,7 @@ int main(int argc, char** argv) {
 			error = dp * dp;
 		}
 		error = sqrt(error);
-		std::cout << " error = " << error << "\n";
+		std::cout << " (error = " << error << ")\n";
 
 		icount++;
 	}
