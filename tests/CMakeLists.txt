@@ -11,6 +11,9 @@ configure_file(testFindPointInCell1D.py.in testFindPointInCell1D.py)
 add_executable(testFindPointInCell1D_CXX testFindPointInCell1D.cxx)
 target_link_libraries(testFindPointInCell1D_CXX sigrid)
 
+add_executable(testFindPointInCellPolar_CXX testFindPointInCellPolar.cxx)
+target_link_libraries(testFindPointInCellPolar_CXX sigrid)
+
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
 add_test(testLinearSolveOverDetermined
@@ -26,4 +29,5 @@ add_test(testLine
 add_test(testFindPointInCell1D
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D.py)
 add_test(testFindPointInCell1D_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D_CXX)
+add_test(testFindPointInCellPolar_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolar_CXX)
          
