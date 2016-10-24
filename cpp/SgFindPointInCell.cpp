@@ -36,6 +36,7 @@ int SgFindPointInCell_setGrid(SgFindPointInCell_type** self,
 
  	(*self)->coords.resize(ndims);
  	(*self)->prodDims.resize(ndims);
+ 	(*self)->nodeProdDims.resize(ndims);
  	(*self)->dims.resize(ndims);
  	(*self)->jacMatrix.resize(ndims * ndims);
  	(*self)->rhs.resize(ndims);
@@ -44,8 +45,10 @@ int SgFindPointInCell_setGrid(SgFindPointInCell_type** self,
 
  	// must have at least one dimension
  	(*self)->prodDims[ndims - 1] = 1;
+ 	(*self)->nodeProdDims[ndims - 1] = 1;
  	for (int i = ndims - 2; i >= 0; --i) {
  		(*self)->prodDims[i] = (*self)->prodDims[i + 1] * dims[i + 1];
+ 		(*self)->nodeProdDims[i] = (*self)->nodeProdDims[i + 1] * 2;
  	}
 
  	// total number of nodes

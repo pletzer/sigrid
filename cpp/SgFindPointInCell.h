@@ -21,6 +21,9 @@ struct SgFindPointInCell_type {
  	// used to get the flat index
  	std::vector<size_t> prodDims;
 
+ 	// used when iterating over cell nodes
+ 	std::vector<size_t> nodeProdDims;
+
  	// the number of grid points for each dimension
  	std::vector<size_t> dims;
 
@@ -56,7 +59,7 @@ void getWeightsAndFlatIndices(const std::vector<double>& dInds,
  		weights[j] = 1;
  		for (size_t i = 0; i < ndims; ++i) {
  			int loCornerIndx = (int) floor(dInds[i]);
- 			int indx = loCornerIndx + (j / this->prodDims[i] % 2);
+ 			int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);
  			flatInds[j] += (size_t) this->prodDims[i] * indx;
  			double dindx = (double) indx;
  			double w = (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
