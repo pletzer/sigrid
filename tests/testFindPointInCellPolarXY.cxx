@@ -1,5 +1,5 @@
 /**
- * Testing cell search in 2D rectilinear grid
+ * Testing cell search in 2D curvilinear grid
  */
 
  #include <vector>
@@ -19,10 +19,10 @@ int main(int argc, char** argv) {
 	const int ndims = 2;
 
 	// initial guess
-	double dIndices[] = {6.8, 3.4};
+	double dIndices[] = {7.6, 1.2};
 
-	// target position
-	const double targetPoint[] = {0.7, M_PI/3.};
+	// target position in x-y space
+	const double targetPoint[] = {0.7, 0.3};
 	std::cout << "target point is ";
 	for (size_t i = 0; i < ndims; ++i) std::cout << targetPoint[i] << ' ';
 	std::cout << '\n';
@@ -30,23 +30,23 @@ int main(int argc, char** argv) {
 	// grid
 	size_t nr = 11;
 	size_t nt = 21;
-	std::vector<double> rho(nr * nt);
-	std::vector<double> the(nr * nt);
+	std::vector<double> x(nr * nt);
+	std::vector<double> y(nr * nt);
 	size_t k = 0;
 	for (size_t i = 0; i < nr; ++i) {
 		double r = 0. + (1. - 0.) * i / double(nr - 1);
 		for (size_t j = 0; j < nt; ++j) {
 			double t = 0. + (2*M_PI - 0.)* j / double(nt - 1);
-			rho[k] = r;
-			the[k] = t;
+			x[k] = r * cos(t);
+			y[k] = r * sin(t);
 			k++;
 		}
 	}
 
 	const int dims[] = {nr, nt};
 	std::vector< double* > coords(ndims);
-	coords[0] = &rho[0];
-	coords[1] = &the[0];
+	coords[0] = &x[0];
+	coords[1] = &y[0];
 
 	double pos[ndims];
 	double oldPos[ndims];

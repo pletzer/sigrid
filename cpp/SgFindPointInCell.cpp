@@ -92,7 +92,7 @@ int SgFindPointInCell_reset(SgFindPointInCell_type** self,
 
 	size_t ndims = (*self)->dims.size();
 	for (size_t i = 0; i < ndims; ++i) {
-		(*self)->dIndices[i] = dIndices[0];
+		(*self)->dIndices[i] = dIndices[i];
 		(*self)->targetPoint[i] = targetPoint[i];
 	}
 	(*self)->iter = 0;

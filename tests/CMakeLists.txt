@@ -14,6 +14,9 @@ target_link_libraries(testFindPointInCell1D_CXX sigrid)
 add_executable(testFindPointInCellPolar_CXX testFindPointInCellPolar.cxx)
 target_link_libraries(testFindPointInCellPolar_CXX sigrid)
 
+add_executable(testFindPointInCellPolarXY_CXX testFindPointInCellPolarXY.cxx)
+target_link_libraries(testFindPointInCellPolarXY_CXX sigrid)
+
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
 add_test(testLinearSolveOverDetermined
@@ -30,4 +33,4 @@ add_test(testFindPointInCell1D
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D.py)
 add_test(testFindPointInCell1D_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D_CXX)
 add_test(testFindPointInCellPolar_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolar_CXX)
-         
+add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolarXY_CXX)
