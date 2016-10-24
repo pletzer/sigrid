@@ -5,6 +5,7 @@ configure_file(testTetrahedron.py.in testTetrahedron.py)
 configure_file(testTriangle.py.in testTriangle.py)
 configure_file(testLine.py.in testLine.py)
 configure_file(testBoxIterator.py.in testBoxIterator.py)
+configure_file(testFindPointInCell1D.py.in testFindPointInCell1D.py)
 
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
@@ -18,4 +19,5 @@ add_test(testTriangle
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testTriangle.py)
 add_test(testLine
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLine.py)
-
+add_test(testFindPointInCell1D
+         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D.py)

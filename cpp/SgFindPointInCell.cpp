@@ -81,11 +81,13 @@ int SgFindPointInCell_getPosition(SgFindPointInCell_type** self,
 
 extern "C"
 int SgFindPointInCell_reset(SgFindPointInCell_type** self, 
-	                        const double dIndices[]) {
+	                        const double dIndices[],
+	                        const double targetPoint[]) {
 
 	size_t ndims = (*self)->dims.size();
 	for (size_t i = 0; i < ndims; ++i) {
 		(*self)->dIndices[i] = dIndices[0];
+		(*self)->targetPoint[i] = targetPoint[i];
 	}
 	(*self)->iter = 0;
 

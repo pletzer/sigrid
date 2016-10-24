@@ -135,7 +135,8 @@ extern "C" {
  	                               double pos[]);
 
  int SgFindPointInCell_reset(SgFindPointInCell_type** self, 
-	                         const double dIndices[]);
+	                         const double dIndices[], 
+	                         const double targetPoint[]);
 
  int SgFindPointInCell_next(SgFindPointInCell_type** self);
 

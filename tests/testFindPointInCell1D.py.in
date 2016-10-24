@@ -1,0 +1,43 @@
+
+from ctypes import CDLL, c_double, c_int, c_void_p, byref, POINTER
+import numpy
+
+sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
+
+this = c_void_p()
+
+nitermax = 10
+tolpos = c_double(1.e-10)
+
+# number of dimensions
+ndims = 1
+
+# initial guess
+dIndices = (c_double * ndims)(0,)
+
+# target 
+targetPoint = (c_double * ndims)(0.3456,)
+
+# grid
+xs = numpy.linspace(0., 1., 11)
+
+dims = (c_int*ndims)(len(xs))
+coords = (POINTER(c_double)*ndims)(xs.ctypes.data_as(POINTER(c_double)))
+pos = (c_double * ndims)()
+
+ier = sg.SgFindPointInCell_new(byref(this), nitermax, tolpos)
+assert(ier == 0)
+
+ier = sg.SgFindPointInCell_setGrid(byref(this), ndims, dims, coords)
+assert(ier == 0)
+
+ier = sg.SgFindPointInCell_reset(byref(this), dIndices, targetPoint)
+assert(ier == 0)
+while sg.SgFindPointInCell_next(byref(this)):
+    ier = sg.SgFindPointInCell_getPosition(byref(this), pos)
+    assert(ier == 0)
+
+    print('position: {}'.format(pos[:]))
+
+ier = sg.SgFindPointInCell_del(byref(this))
+assert(ier == 0)
