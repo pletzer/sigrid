@@ -87,17 +87,15 @@ double interp(const std::vector<double>& dInds,
 void computeJacobianAndRHS() {
 
  	size_t ndims = this->dims.size();
- 	std::vector<double> dInds(ndims);
+
+ 	// start at the current location
+ 	std::vector<double> dInds(dIndices);
 
  	// iterate over the physical space dimensions
  	for (size_t i = 0; i < ndims; ++i) {
 
  		double pos = this->interp(this->dIndices, this->coords[i]);
  		this->rhs[i] = this->targetPoint[i] - pos;
-
- 		for (size_t j = 0; j < ndims; ++j) {
- 			dInds[j] = dIndices[j];
- 		}
 
  		// iterate over the index space dimensions
  		for (size_t j = 0; j < ndims; ++j) {
