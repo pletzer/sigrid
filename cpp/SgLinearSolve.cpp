@@ -39,6 +39,7 @@ int SgLinearSolve_setMatrix(SgLinearSolve_type** self,
 // row major storage
 	for (size_t i = 0; i < (*self)->nrow; ++i) {
 		for (size_t j = 0; j < (*self)->ncol; ++j) {
+      // Fortran storage
 			size_t k = i*(*self)->ncol + j;
 			(*self)->mat[k] = mat[k];
 			(*self)->matOri[k] = mat[k];
@@ -50,7 +51,7 @@ int SgLinearSolve_setMatrix(SgLinearSolve_type** self,
 extern "C"                          
 int SgLinearSolve_setRightHandSide(SgLinearSolve_type** self,
                             	   const double b[]) {
-    size_t n = (*self)->b.size();
+  size_t n = (*self)->b.size();
 	for (size_t i = 0; i < (*self)->nrow; ++i) {
 		(*self)->x[i] = b[i];
 		(*self)->b[i] = b[i];
@@ -70,11 +71,11 @@ int SgLinearSolve_solve(SgLinearSolve_type** self) {
   	       &(*self)->nrow, 
   	       &(*self)->ncol, 
   	       &nrhs,
-     	   &(*self)->mat.front(), 
-     	   &(*self)->nrow,
-     	   &(*self)->x.front(), &ldb,
-     	   &(*self)->work.front(), &(*self)->lwork, 
-     	   &errCode);
+     	     &(*self)->mat.front(), 
+     	     &(*self)->nrow,
+     	     &(*self)->x.front(), &ldb,
+     	     &(*self)->work.front(), &(*self)->lwork, 
+     	     &errCode);
 
 // if errCode == -i, the i-th argument had an illegal value
 // if errCode == i, the i-th diagonal element of the
@@ -96,9 +97,9 @@ int SgLinearSolve_getResidual(SgLinearSolve_type** self,
                               double* res) {
     *res = 0;
     for (size_t i = 0; i < (*self)->nrow; ++i) {
-        double val = 0;
+      double val = 0;
     	for (size_t j = 0; j < (*self)->ncol; ++j) {
-    	    size_t k = i*(*self)->ncol + j;
+    	  size_t k = i*(*self)->ncol + j;
     		val += (*self)->matOri[k]*(*self)->x[j];
     	}
     	val -= (*self)->b[i];

@@ -22,10 +22,20 @@ void _GELS_(char*,
 
 
 struct SgLinearSolve_type {
+
+  // the modified matrix
 	std::vector<double> mat;
+
+  // a copy of the matrix
 	std::vector<double> matOri;
+
+  // the right-hand side
 	std::vector<double> b;
+
+  // the solution vector
 	std::vector<double> x;
+
+  // additional work space
 	std::vector<double> work;
 	int lwork;
 	int nrow;
