@@ -96,23 +96,22 @@ void computeJacobianAndRHS() {
  		this->rhs[i] = this->targetPoint[i] - pos;
 
  		for (size_t j = 0; j < ndims; ++j) {
- 			// mid cell
- 			dInds[j] = (int) floor(this->dIndices[j]) + 0.5;
+ 			dInds[j] = dIndices[j];
  		}
 
  		// iterate over the index space dimensions
  		for (size_t j = 0; j < ndims; ++j) {
 
  			// high end of the cell
- 			dInds[j] += 0.5;
+ 			dInds[j] = floor(dIndices[j]) + 1.0;
  			double xHi = this->interp(dInds, this->coords[i]);
 
  			// low end of the cell
- 			dInds[j] -= 1.0;
+ 			dInds[j] = floor(dIndices[j]);
  			double xLo = this->interp(dInds, this->coords[i]);
 
  			// reset to mid cell
- 			dInds[j] += 0.5;
+ 			dInds[j] = dIndices[j];
 
 			size_t k = i + ndims * j; // Fortran ordering
 

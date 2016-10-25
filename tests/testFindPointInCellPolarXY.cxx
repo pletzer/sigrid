@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 	const int ndims = 2;
 
 	// initial guess
-	double dIndices[] = {5.0, 10.}; //{7.6, 1.2};
+	double dIndices[] = {7.6, 1.2}; // {5.0, 10.}; //{7.6, 1.2};
 
 	// target position in x-y space
 	const double targetPoint[] = {0.7, 0.3};
