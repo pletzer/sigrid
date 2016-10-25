@@ -111,7 +111,7 @@ void computeJacobianAndRHS() {
  			// reset to mid cell
  			dInds[j] = dIndices[j];
 
-			size_t k = i + ndims * j; // Fortran ordering
+			size_t k = i*ndims * j;
 
 			// average difference of the i-th coordinate anlong the j-th topo direction
  			this->jacMatrix[k] = xHi - xLo; 			

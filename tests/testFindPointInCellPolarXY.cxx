@@ -12,7 +12,7 @@
 int main(int argc, char** argv) {
 
 	int ier;
-	const int nitermax = 100;
+	const int nitermax = 10;
 	const double tolpos = 1.e-10;
 
 	// number of dimensions

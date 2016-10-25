@@ -39,7 +39,7 @@ int SgLinearSolve_setMatrix(SgLinearSolve_type** self,
 // row major storage
 	for (size_t i = 0; i < (*self)->nrow; ++i) {
 		for (size_t j = 0; j < (*self)->ncol; ++j) {
-      // Fortran storage
+      // C storage
 			size_t k = i*(*self)->ncol + j;
 			(*self)->mat[k] = mat[k];
 			(*self)->matOri[k] = mat[k];
@@ -63,7 +63,7 @@ extern "C"
 int SgLinearSolve_solve(SgLinearSolve_type** self) {
 
     int errCode = 0;
-  	char t = 'T';
+  	char t = 'T'; // C storage
   	int nrhs = 1;
   	int mn = (int) (*self)->b.size();
   	int ldb = (int) (*self)->b.size();
