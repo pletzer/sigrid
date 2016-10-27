@@ -92,6 +92,7 @@ void computeJacobianAndRHS() {
  	std::vector<double> dInds(dIndices);
 
  	// iterate over the physical space dimensions
+ 	size_t k = 0;
  	for (size_t i = 0; i < ndims; ++i) {
 
  		double pos = this->interp(this->dIndices, this->coords[i]);
@@ -111,10 +112,10 @@ void computeJacobianAndRHS() {
  			// reset to mid cell
  			dInds[j] = dIndices[j];
 
-			size_t k = i*ndims * j;
-
 			// average difference of the i-th coordinate anlong the j-th topo direction
- 			this->jacMatrix[k] = xHi - xLo; 			
+ 			this->jacMatrix[k] = xHi - xLo;
+
+ 			k++;			
  		}
  	}
 }
