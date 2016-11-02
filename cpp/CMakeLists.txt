@@ -10,6 +10,7 @@ set(LIB_FILES
   SgTriangle.cpp
   SgLine.cpp
   SgFindPointInCell.cpp
+  SgQuadIntersect.cpp
 )
 
 set(HEADER_FILES
@@ -20,6 +21,7 @@ set(HEADER_FILES
   SgLine.h
   SgNdims.h
   SgFindPointInCell.h
+  SgQuadIntersect.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
