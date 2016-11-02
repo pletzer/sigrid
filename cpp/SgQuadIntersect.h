@@ -76,7 +76,11 @@ struct SgQuadIntersect_type {
  		}
  		SgLinearSolve_setMatrix(&this->slvr, &mat[0]);
  		SgLinearSolve_setRightHandSide(&this->slvr, &rhs[0]);
- 		SgLinearSolve_solve(&this->slvr);
+ 		int ier = SgLinearSolve_solve(&this->slvr);
+ 		if (ier > 0) {
+ 			// singular system, likely degenerate triangle
+ 			return false;
+ 		}
  		double* xis;
  		SgLinearSolve_getSolution(&this->slvr, &xis);
  		// make sure the parametric coordinates are within triangle
@@ -119,7 +123,12 @@ struct SgQuadIntersect_type {
  		}
  		SgLinearSolve_setMatrix(&this->slvr, &mat[0]);
  		SgLinearSolve_setRightHandSide(&this->slvr, &rhs[0]);
- 		SgLinearSolve_solve(&this->slvr);
+ 		int ier = SgLinearSolve_solve(&this->slvr);
+ 		if (ier > 0) {
+ 			// singular system, likely because the two edges are parallel 
+ 			// not adding any point, even if the edges are degenerate
+ 			return;
+ 		}
  		double* xis;
  		SgLinearSolve_getSolution(&this->slvr, &xis);
  		// make sure the parametric coordinates are within the (0, 1) range
