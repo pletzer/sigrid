@@ -52,12 +52,11 @@ struct SgQuadIntersect_type {
  			}
 		}
 
-		// overlap is when the high corner point of one quad is higher than the 
-		// low coner point of the other box
+		// overlap is when the min of the high corner points is higher than the max
+		// of the low corner points
  		bool overlap = true;
  		for (size_t i = 0; i < 2; ++i) {
- 			// the max of the mins >= min of the maxs
- 			overlap &= std::max(quad1Min[i], quad2Min[i]) >= std::min(quad1Max[i], quad2Max[i]);
+ 			overlap &= std::min(quad1Max[i], quad2Max[i]) >= std::max(quad1Min[i], quad2Min[i]);
  		}
  		return overlap;
  	}
