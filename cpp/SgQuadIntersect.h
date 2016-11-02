@@ -71,8 +71,8 @@ struct SgQuadIntersect_type {
  		// x0 + xi*(x1 - x0) + eta*(x2 - x0) = pt
  		for (size_t i = 0; i < 2; ++i) {
  			rhs[i] = pt[i] - node0[i];
- 			mat[2*0 + i] = node1[i] - node0[i];
- 			mat[2*1 + i] = node2[i] - node0[i];
+ 			mat[2*i + 0] = node1[i] - node0[i];
+ 			mat[2*i + 1] = node2[i] - node0[i];
  		}
  		SgLinearSolve_setMatrix(&this->slvr, &mat[0]);
  		SgLinearSolve_setRightHandSide(&this->slvr, &rhs[0]);
@@ -118,8 +118,8 @@ struct SgQuadIntersect_type {
  		// edge1Point0 + xi*(edge1Point1 - edge1Point0) = edge2Point0 + eta*(edge2Point1 - edge2Point0)
  		for (size_t i = 0; i < 2; ++i) {
  			rhs[i] = edge2Point0[i] - edge1Point0[i];
- 			mat[2*0 + i] = edge1Point1[i] - edge1Point0[i];
- 			mat[2*1 + i] = edge2Point0[i] - edge2Point1[i];
+ 			mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
+ 			mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
  		}
  		SgLinearSolve_setMatrix(&this->slvr, &mat[0]);
  		SgLinearSolve_setRightHandSide(&this->slvr, &rhs[0]);
