@@ -11,31 +11,45 @@
 #include <cmath>
 #include <limits>
 
+/**
+ * Functor used to order points 
+ */
 struct SgSortByDistanceSquareFunctor {
+
     std::vector<double> gravityCenter;
+
     const double** points;
+
     int numPoints;
+
+    /**
+     * Constructor
+     * @param numPoints number of points 
+     * @param points points as numPoints sized array of 2 coordinates
+     */
     SgSortByDistanceSquareFunctor(int numPoints, const double** points) {
         this->numPoints = numPoints;
         this->points = points;
-        this->gravityCenter.resize(2, 0);
+        const size_t ndims = 2;
+        this->gravityCenter.resize(ndims, 0);
         for (int i = 0; i < numPoints; ++i) {
-            this->gravityCenter[0] += points[i][0];
-            this->gravityCenter[1] += points[i][1];
+            for (size_t j = 0; j < ndims; ++j)
+                this->gravityCenter[j] += points[i][j] / (double)(numPoints);
         }
-        this->gravityCenter[0] /= (double)(numPoints);
-        this->gravityCenter[0] /= (double)(numPoints);
+    }
+
+    double inline distanceSquareFromCenter(size_t i) {
+        double res = 0;
+        for (size_t j = 0; j < this->gravityCenter.size(); ++j) {
+            double sq = this->points[i][j] - this->gravityCenter[j];
+            res += sq * sq;
+        }
+        return res;
     }
 
     bool operator()(size_t i, size_t j) {
-        double cg0 = this->gravityCenter[0];
-        double cg1 = this->gravityCenter[1];
-        double pi0 = this->points[i][0];
-        double pi1 = this->points[i][0];
-        double pj0 = this->points[j][0];
-        double pj1 = this->points[j][1];
-        double diSq = (pi0 - cg0)*(pi0 - cg0) + (pi1 - cg1)*(pi1 - cg1);
-        double djSq = (pj0 - cg0)*(pj0 - cg0) + (pj1 - cg1)*(pj1 - cg1);
+        double diSq = this->distanceSquareFromCenter(i);
+        double djSq = this->distanceSquareFromCenter(j);
         // sort by increasing distance
         return diSq < djSq;
     }
