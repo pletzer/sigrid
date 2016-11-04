@@ -30,6 +30,34 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
  	std::sort((*self)->sortedInds.begin(), (*self)->sortedInds.end(),
  		      sortFunc);
 
+    if (numPoints < 3) return 0;
+
+    // create the first triangle
+    size_t i0 = (*self)->sortedInds[0];
+    size_t i1 = (*self)->sortedInds[1];
+    size_t i2 = (*self)->sortedInds[2];
+    double area = (*self)->getParallelipipedArea(i0, i1, i2);
+    if (std::abs(area) < (*self)->eps) {
+        // degenerate triangle NEED TO FIX
+        std::cerr << "*** degenerate first triangle\n";
+    }
+    else if (area < 0) {
+        // change the ordering of the indices
+        (*self)->makeCounterClockwise(&(*self)->sortedInds[0]);
+    }
+    i0 = (*self)->sortedInds[0];
+    i1 = (*self)->sortedInds[1];
+    i2 = (*self)->sortedInds[2];
+    size_t edge[] = {i0, i1};
+    (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
+    edge[0] = i1; edge[1] = i2;
+    (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
+    edge[0] = i2; edge[1] = i0;
+
+    // add remaining points
+    for (int i = 3; i < numPoints; ++i) {
+        (*self)->addPoint(i);
+    }
 
  	return 0;
 }
@@ -48,12 +76,9 @@ int SgTriangulate_getConvexHullArea(SgTriangulate_type** self,
  	                                double* area) {
 
 	*area = 0;
-	size_t numTri = (*self)->triIndices.size() / 3;
-	for (size_t i = 0; i < numTri; ++i) {
-		size_t ia = (*self)->triIndices[3*i + 0];
-		size_t ib = (*self)->triIndices[3*i + 1];
-		size_t ic = (*self)->triIndices[3*i + 2];
-		*area += 0.5 * (*self)->getParallelipipedArea(ia, ib, ic);
+	for (std::set< std::vector<size_t> >::const_iterator it = (*self)->triIndices.begin();
+         it != (*self)->triIndices.end(); ++it) {
+		*area += 0.5 * (*self)->getParallelipipedArea((*it)[0], (*it)[1], (*it)[2]);
 	}
 
  	return 0;
