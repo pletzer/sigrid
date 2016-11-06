@@ -54,6 +54,10 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
     edge[0] = i2; edge[1] = i0;
     (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
 
+    std::vector<size_t> tri(3);
+    tri[0] = i0; tri[1] = i1; tri[2] = i2;
+    (*self)->triIndices.insert(tri);
+
     // add remaining points
     for (int i = 3; i < numPoints; ++i) {
         (*self)->addPoint(i);
@@ -78,8 +82,9 @@ int SgTriangulate_getConvexHullArea(SgTriangulate_type** self,
 	*area = 0;
 	for (std::set< std::vector<size_t> >::const_iterator it = (*self)->triIndices.begin();
          it != (*self)->triIndices.end(); ++it) {
-		*area += 0.5 * (*self)->getParallelipipedArea((*it)[0], (*it)[1], (*it)[2]);
+		*area += (*self)->getParallelipipedArea((*it)[0], (*it)[1], (*it)[2]);
 	}
+    *area *= 0.5;
 
  	return 0;
 }
