@@ -11,6 +11,8 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
 
  	*self = new SgTriangulate_type();
 
+    (*self)->NDIMS = 2;
+
  	// tolerance for floating point comparisons
  	(*self)->eps = 1.e-12;
 
@@ -25,6 +27,8 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
  	(*self)->sortedInds.resize(numPoints);
  	for (int i = 0; i < numPoints; ++i) {
  		(*self)->sortedInds[i] = i;
+        (*self)->points[2*i + 0] = points[i][0];
+        (*self)->points[2*i + 1] = points[i][1];
  	}
  	// sort the point indices by increasing distance from the centre of gravity
  	std::sort((*self)->sortedInds.begin(), (*self)->sortedInds.end(),

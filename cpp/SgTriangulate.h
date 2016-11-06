@@ -30,10 +30,10 @@ struct SgSortByDistanceSquareFunctor {
     SgSortByDistanceSquareFunctor(int numPoints, const double** points) {
         this->numPoints = numPoints;
         this->points = points;
-        const size_t ndims = 2;
-        this->gravityCenter.resize(ndims, 0);
+        const size_t NDIMS = 2;
+        this->gravityCenter.resize(NDIMS, 0);
         for (int i = 0; i < numPoints; ++i) {
-            for (size_t j = 0; j < ndims; ++j)
+            for (size_t j = 0; j < NDIMS; ++j)
                 this->gravityCenter[j] += points[i][j] / (double)(numPoints);
         }
     }
@@ -73,11 +73,15 @@ struct SgTriangulate_type {
     // or negative
  	double eps;
 
+    size_t NDIMS;
+
 double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {
-    double d1[] = {this->points[ip1*2 + 0] - this->points[ip0*2 + 0],
-                   this->points[ip1*2 + 1] - this->points[ip1*2 + 1]};
-    double d2[] = {this->points[ip2*2 + 0] - this->points[ip0*2 + 0],
-                   this->points[ip2*2 + 1] - this->points[ip0*2 + 1]};
+    double d1[] = {0, 0};
+    double d2[] = {0, 0};
+    for (size_t j = 0; j < this->NDIMS; ++j) {
+        d1[j] = this->points[ip1*2 + j] - this->points[ip0*2 + j];
+        d2[j] = this->points[ip2*2 + j] - this->points[ip0*2 + j];
+    }
     return (d1[0]*d2[1] - d1[1]*d2[0]);
 }
 
