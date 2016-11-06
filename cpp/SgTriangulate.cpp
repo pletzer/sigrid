@@ -27,8 +27,9 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
  	(*self)->sortedInds.resize(numPoints);
  	for (int i = 0; i < numPoints; ++i) {
  		(*self)->sortedInds[i] = i;
-        (*self)->points[2*i + 0] = points[i][0];
-        (*self)->points[2*i + 1] = points[i][1];
+        for (size_t j = 0; j < (*self)->NDIMS; ++j) {
+            (*self)->points[2*i + j] = points[i][j];
+        }
  	}
  	// sort the point indices by increasing distance from the centre of gravity
  	std::sort((*self)->sortedInds.begin(), (*self)->sortedInds.end(),
@@ -37,6 +38,7 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
     if (numPoints < 3) return 0;
 
     // create the first triangle
+    (*self)->makeCounterClockwise(&(*self)->sortedInds[0]);
     size_t i0 = (*self)->sortedInds[0];
     size_t i1 = (*self)->sortedInds[1];
     size_t i2 = (*self)->sortedInds[2];
@@ -45,18 +47,12 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
         // degenerate triangle NEED TO FIX
         std::cerr << "*** degenerate first triangle\n";
     }
-    else if (area < 0) {
-        // change the ordering of the indices
-        (*self)->makeCounterClockwise(&(*self)->sortedInds[0]);
-    }
-    i0 = (*self)->sortedInds[0];
-    i1 = (*self)->sortedInds[1];
-    i2 = (*self)->sortedInds[2];
     size_t edge[] = {i0, i1};
     (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
     edge[0] = i1; edge[1] = i2;
     (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
     edge[0] = i2; edge[1] = i0;
+    (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
 
     // add remaining points
     for (int i = 3; i < numPoints; ++i) {
