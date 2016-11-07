@@ -98,7 +98,7 @@ void inline makeCounterClockwise(size_t ips[]) {
 
 bool inline isEdgeVisible(size_t ip, size_t ie0, size_t ie1) {
     double area = this->getParallelipipedArea(ip, ie0, ie1);
-    if (area < this->eps) {
+    if (area < -this->eps) {
         return true;
     }
     return false;
@@ -117,8 +117,7 @@ void addPoint(size_t ip) {
         if (this->isEdgeVisible(ip, iea, ieb)) {
 
             // create new triangle
-            size_t tri[] = {iea, ieb, ip};
-            this->makeCounterClockwise(tri);
+            size_t tri[] = {iea, ip, ieb};
             this->triIndices.insert(std::vector<size_t>(tri, tri + 3));
 
             // keep track of edges to remove

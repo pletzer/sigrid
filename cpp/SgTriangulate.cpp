@@ -60,7 +60,8 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
 
     // add remaining points
     for (int i = 3; i < numPoints; ++i) {
-        (*self)->addPoint(i);
+        size_t ip = (*self)->sortedInds[i];
+        (*self)->addPoint(ip);
     }
 
  	return 0;
