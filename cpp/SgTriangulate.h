@@ -75,6 +75,39 @@ struct SgTriangulate_type {
 
     size_t NDIMS;
 
+double getDistanceSquare(const double p1[], const double p2[]) {
+    double res = 0;
+    for (size_t i = 0; i < this->NDIMS; ++i) {
+        double d = p2[i] - p1[i];
+        res += d * d;
+    }
+    return res;
+}
+
+void removeDegeneratePoints() {
+
+    // start with the first point
+    std::vector<size_t> sortedInds;
+    std::vector<double> points;
+    sortedInds.push_back(this->sortedInds[0]);
+    points.push_back(this->points[0]);
+
+    // iterate over the remaining points, making sure the distance between this 
+    // and the previous, non-degenerate point is > 0
+    size_t indx = 0;
+    for (size_t i = 1; i < sortedInds.size(); ++i) {
+        if (this->getDistanceSquare(&this->points[i], &this->points[indx]) > this->eps) {
+            // not degenerate
+            sortedInds.push_back(this->sortedInds[i]);
+            points.push_back(this->points[i]);
+            indx = i;
+        }
+    }
+    // copy
+    this->sortedInds = sortedInds;
+    this->points = points;
+}
+
 double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {
     double d1[] = {0, 0};
     double d2[] = {0, 0};

@@ -32,8 +32,8 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
         }
  	}
  	// sort the point indices by increasing distance from the centre of gravity
- 	std::sort((*self)->sortedInds.begin(), (*self)->sortedInds.end(),
- 		      sortFunc);
+ 	std::sort((*self)->sortedInds.begin(), (*self)->sortedInds.end(), sortFunc);
+    (*self)->removeDegeneratePoints();
 
     if (numPoints < 3) return 0;
 
