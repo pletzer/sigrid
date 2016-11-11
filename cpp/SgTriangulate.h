@@ -115,7 +115,7 @@ std::vector<size_t> getExtremaPointIndices(size_t i0, size_t i1, size_t i2) {
     double db[] = {0, 0};
     std::vector<size_t> inds(3);
     inds[0] = i0; inds[1] = i1; inds[2] = i2;
-    double dotProduct = 0;
+    double dotProduct = 1;
     size_t ia, ib;
     size_t j = 0;
     while (dotProduct > 0) {
