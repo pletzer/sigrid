@@ -9,24 +9,24 @@
 extern "C"
 int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** points) {
 
- 	*self = new SgTriangulate_type();
+    *self = new SgTriangulate_type();
 
     (*self)->NDIMS = 2;
 
- 	// tolerance for floating point comparisons
- 	(*self)->eps = 1.e-12;
+    // tolerance for floating point comparisons
+    (*self)->eps = 1.e-12;
 
- 	(*self)->points.resize(2 * numPoints);
+    (*self)->points.resize(2 * numPoints);
 
- 	SgSortByDistanceSquareFunctor sortFunc(numPoints, points);
+    SgSortByDistanceSquareFunctor sortFunc(numPoints, points);
  
- 	// set the indices before the sort
- 	std::vector<size_t> sortedInds(numPoints);
- 	for (int i = 0; i < numPoints; ++i) {
- 		sortedInds[i] = i;
- 	}
- 	// sort the point indices by increasing distance from the centre of gravity
- 	std::sort(sortedInds.begin(), sortedInds.end(), sortFunc);
+    // set the indices before the sort
+    std::vector<size_t> sortedInds(numPoints);
+    for (int i = 0; i < numPoints; ++i) {
+        sortedInds[i] = i;
+    }
+    // sort the point indices by increasing distance from the centre of gravity
+    std::sort(sortedInds.begin(), sortedInds.end(), sortFunc);
 
     // set the points in increasing distance from the centre of gravity
     (*self)->points.resize(2 * numPoints);
@@ -70,28 +70,28 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
         (*self)->addPoint(ip);
     }
 
- 	return 0;
+     return 0;
 }
       
 extern "C"                   
 int SgTriangulate_del(SgTriangulate_type** self) {
 
- 	delete *self;
+     delete *self;
 
- 	return 0;
+     return 0;
 }
 
 
 extern "C"
 int SgTriangulate_getConvexHullArea(SgTriangulate_type** self,
- 	                                double* area) {
+                                     double* area) {
 
-	*area = 0;
-	for (std::set< std::vector<size_t> >::const_iterator it = (*self)->triIndices.begin();
+    *area = 0;
+    for (std::set< std::vector<size_t> >::const_iterator it = (*self)->triIndices.begin();
          it != (*self)->triIndices.end(); ++it) {
-		*area += (*self)->getParallelipipedArea((*it)[0], (*it)[1], (*it)[2]);
-	}
+        *area += (*self)->getParallelipipedArea((*it)[0], (*it)[1], (*it)[2]);
+    }
     *area *= 0.5;
 
- 	return 0;
+     return 0;
 }

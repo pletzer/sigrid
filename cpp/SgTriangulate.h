@@ -58,7 +58,7 @@ struct SgSortByDistanceSquareFunctor {
 struct SgTriangulate_type {
 
     // the vertices, as a flat array of 2D coordinates
- 	std::vector<double> points;
+    std::vector<double> points;
 
     // set of 2-tuples nodes indices
     std::set< std::vector<size_t> > boundaryEdges;
@@ -66,9 +66,9 @@ struct SgTriangulate_type {
     // set of 3-tuples
     std::set< std::vector<size_t> > triIndices;
 
- 	// a tolerance used to determine whether a triangle area is positive
+    // a tolerance used to determine whether a triangle area is positive
     // or negative
- 	double eps;
+    double eps;
 
     size_t NDIMS;
 
@@ -153,11 +153,11 @@ double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {
 void inline makeCounterClockwise(size_t ips[]) {
     double area = this->getParallelipipedArea(ips[0], ips[1], ips[2]);
     if (area < -this->eps) {
-      size_t ip1 = ips[1];
-      size_t ip2 = ips[2];
-      // swap
-      ips[1] = ip2;
-      ips[2] = ip1;
+        size_t ip1 = ips[1];
+        size_t ip2 = ips[2];
+        // swap
+        ips[1] = ip2;
+        ips[2] = ip1;
     }
 }
 
@@ -211,7 +211,6 @@ void addPoint(size_t ip) {
          it != boundaryEdgesToAdd.end(); ++it) {
         this->boundaryEdges.insert(*it);
     }
-
 
 }
 
