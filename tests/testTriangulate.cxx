@@ -7,16 +7,16 @@
 #include <cassert>
 
 void test1Point() {
-	const double p0[] = {0., 0.};
-	const double* points[] = {p0};
-	const int numPoints = 1;
-	SgTriangulate_type* tri;
-	SgTriangulate_new(&tri, numPoints, points);
+    const double p0[] = {0., 0.};
+    const double* points[] = {p0};
+    const int numPoints = 1;
+    SgTriangulate_type* tri;
+    SgTriangulate_new(&tri, numPoints, points);
     double area;
     SgTriangulate_getConvexHullArea(&tri, &area);
     std::cout << "test1Point: area = " << area << '\n';
     assert(std::abs(area - 0.0) < 1.e-10);
-	SgTriangulate_del(&tri);	
+    SgTriangulate_del(&tri);    
 }
 
 void test2Points() {
@@ -82,13 +82,34 @@ void test6Points() {
     SgTriangulate_del(&tri);    
 }
 
+void test7PointsDegenerate() {
+    const double p0[] = {0., 0.};
+    const double p1[] = {1., 0.};
+    const double p2[] = {1., 1.};
+    const double p3[] = {0., 1.};
+    const double p4[] = {0., 0.};
+    const double p5[] = {0.1, 0.};
+    const double p6[] = {0.2, 0.};
+    const double* points[] = {p0, p1, p2, p3, p4, p5, p6};
+    const int numPoints = 7;
+    SgTriangulate_type* tri;
+    SgTriangulate_new(&tri, numPoints, points);
+    double area;
+    SgTriangulate_getConvexHullArea(&tri, &area);
+    std::cout << "test7PointsDegenerate: area = " << area << '\n';
+    assert(std::abs(area - 1.0) < 1.e-10);
+    SgTriangulate_del(&tri);    
+}
+
+
 int main(int argc, char** argv) {
 
-	test1Point();
+    test1Point();
     test2Points();
     test3Points();
     test4Points();
     test6Points();
+    test7PointsDegenerate();
 
-	return 0;
+    return 0;
 }

@@ -108,36 +108,83 @@ void removeDegenerateSegments() {
     this->points = pts;
 }
 
-void removeDegenerateTriangles() {
+std::vector<size_t> getExtremaPointIndices(size_t i0, size_t i1, size_t i2) {
+    // choose each point as the base point, compute the dot product of the 
+    // other vectors minus this point. If the dot product is negative then 
+    // the point is a middle point. Return the other two points
+    double da[] = {0, 0};
+    double db[] = {0, 0};
+    std::vector<size_t> inds(3);
+    inds[0] = i0; inds[1] = i1; inds[2] = i2;
+    double dotProduct = 1;
+    size_t ia, ib;
+    size_t j = 0;
+    while (dotProduct > 0) {
+        ia = inds[(j + 1) % 3];
+        ib = inds[(j + 2) % 3];
+        da[0] = this->points[ia*this->NDIMS + 0];
+        db[0] = this->points[ib*this->NDIMS + 0];
+        da[1] = this->points[ia*this->NDIMS + 1];
+        db[1] = this->points[ib*this->NDIMS + 1];
+        dotProduct = da[0]*db[0] + da[1]*db[1];
+        j++;
+    }
+    std::vector<size_t> res(2);
+    res[0] = ia;
+    res[1] = ib;
+    return res;
+}
+
+size_t makeFirstTriangle() {
 
     size_t numPoints = this->points.size() / this->NDIMS;
 
-    // start with the first 2 points
-    std::vector<double> pts;
-    for(size_t j = 0; j < this->NDIMS; ++j) {
-        pts.push_back(this->points[0*this->NDIMS + j]);
-    }
-    for (size_t j = 0; j < this->NDIMS; ++j) {
-        pts.push_back(this->points[1*this->NDIMS + j]);
+    if (numPoints < 3) {
+        return numPoints - 1;
     }
 
-    // iterate over the remaining points, making sure the area of the triangle
-    // between this and the previous two points is != 0
+    // the first triangle cannot be degenerate
     size_t i0 = 0;
     size_t i1 = 1;
-    for (size_t i2 = 2; i2 < numPoints; ++i2) {
-        double area = this->getParallelipipedArea(i0, i1, i2);
-        if (std::fabs(area) > this->eps) {
-            // not degenerate
-            for (size_t j = 0; j < this->NDIMS; ++j) {
-                pts.push_back(this->points[i2*this->NDIMS + j]);
-            }
-            i0 = i1;
-            i1 = i2;
-        }
+    size_t i2 = 2;
+    double area = std::abs(this->getParallelipipedArea(i0, i1, i2));
+    while (i2 < numPoints && area < this->eps) {
+        // the points appear to be a line, get the two extremum point indices
+        std::vector<size_t> extrema = this->getExtremaPointIndices(i0, i1, i2);
+        i0 = extrema[0];
+        i1 = extrema[1];
+        // try creating a triangle using the next available point
+        i2++;
+        area = std::abs(this->getParallelipipedArea(i0, i1, i2));
     }
-    // copy
-    this->points = pts;
+    size_t lastPointIndexOfFirstTriangle = i2;
+
+    if (area < this->eps) {
+        // all the points are on a line, cannot create triangle
+        return lastPointIndexOfFirstTriangle;
+    }
+
+    // got a non-degenerate triangle
+    // re-order the indices so the area is positive
+    std::vector<size_t> inds(3);
+    inds[0] = i0; inds[1] = i1; inds[2] = i2;
+    this->makeCounterClockwise(&inds[0]);
+    i0 = inds[0]; i1 = inds[1]; i2 = inds[2];
+
+    // create the triangle
+    this->triIndices.insert(inds);
+
+    // create the boundary edges
+    size_t edge[] = {i0, i1};
+    this->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
+    edge[0] = i1; edge[1] = i2;
+    this->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
+    edge[0] = i2; edge[1] = i0;
+    this->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
+
+    // return the first index that yields a non-degenerate triangle
+    // so we can add the remaining points starting from this index
+    return lastPointIndexOfFirstTriangle;
 }
 
 double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {

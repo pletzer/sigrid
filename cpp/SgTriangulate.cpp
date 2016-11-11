@@ -37,40 +37,18 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
         }        
     }
 
+    // remove degenerate points
     (*self)->removeDegenerateSegments();
-    (*self)->removeDegenerateTriangles();
 
-    if (numPoints < 3) return 0;
+    // create the first, non-degenerate triangle
+    size_t lastIndexOfFirstTriangle = (*self)->makeFirstTriangle();
 
-    // create the first triangle
-    std::vector<size_t> inds(3);
-    inds[0] = 0; inds[1] = 1; inds[2] = 2;
-    (*self)->makeCounterClockwise(&inds[0]);
-    size_t i0 = inds[0];
-    size_t i1 = inds[1];
-    size_t i2 = inds[2];
-    double area = (*self)->getParallelipipedArea(i0, i1, i2);
-    if (std::abs(area) < (*self)->eps) {
-        // degenerate triangle NEED TO FIX
-        std::cerr << "*** degenerate first triangle\n";
-    }
-    size_t edge[] = {i0, i1};
-    (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
-    edge[0] = i1; edge[1] = i2;
-    (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
-    edge[0] = i2; edge[1] = i0;
-    (*self)->boundaryEdges.insert(std::vector<size_t>(edge, edge + 2));
-
-    std::vector<size_t> tri(3);
-    tri[0] = i0; tri[1] = i1; tri[2] = i2;
-    (*self)->triIndices.insert(tri);
-
-    // add remaining points
-    for (int ip = 3; ip < numPoints; ++ip) {
+    // add the remaining points
+    for (int ip = lastIndexOfFirstTriangle + 1; ip < numPoints; ++ip) {
         (*self)->addPoint(ip);
     }
 
-     return 0;
+    return 0;
 }
       
 extern "C"                   
