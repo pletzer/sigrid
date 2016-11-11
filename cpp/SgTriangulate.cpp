@@ -43,10 +43,12 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
     if (numPoints < 3) return 0;
 
     // create the first triangle
-    (*self)->makeCounterClockwise(&sortedInds[0]);
-    size_t i0 = sortedInds[0];
-    size_t i1 = sortedInds[1];
-    size_t i2 = sortedInds[2];
+    std::vector<size_t> inds(3);
+    inds[0] = 0; inds[1] = 1; inds[2] = 2;
+    (*self)->makeCounterClockwise(&inds[0]);
+    size_t i0 = inds[0];
+    size_t i1 = inds[1];
+    size_t i2 = inds[2];
     double area = (*self)->getParallelipipedArea(i0, i1, i2);
     if (std::abs(area) < (*self)->eps) {
         // degenerate triangle NEED TO FIX
