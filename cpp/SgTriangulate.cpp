@@ -20,28 +20,33 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
 
  	SgSortByDistanceSquareFunctor sortFunc(numPoints, points);
  
- 	// store the points
- 	(*self)->points.resize(2 * numPoints);
-
  	// set the indices before the sort
- 	(*self)->sortedInds.resize(numPoints);
+ 	std::vector<size_t> sortedInds(numPoints);
  	for (int i = 0; i < numPoints; ++i) {
- 		(*self)->sortedInds[i] = i;
-        for (size_t j = 0; j < (*self)->NDIMS; ++j) {
-            (*self)->points[2*i + j] = points[i][j];
-        }
+ 		sortedInds[i] = i;
  	}
  	// sort the point indices by increasing distance from the centre of gravity
- 	std::sort((*self)->sortedInds.begin(), (*self)->sortedInds.end(), sortFunc);
-    (*self)->removeDegeneratePoints();
+ 	std::sort(sortedInds.begin(), sortedInds.end(), sortFunc);
+
+    // set the points in increasing distance from the centre of gravity
+    (*self)->points.resize(2 * numPoints);
+    for (size_t i = 0; i < sortedInds.size(); ++i) {
+        size_t indx = sortedInds[i];
+        for (size_t j = 0; j < (*self)->NDIMS; ++j) {
+            (*self)->points[2*i + j] = points[indx][j];
+        }        
+    }
+
+    (*self)->removeDegenerateSegments();
+    (*self)->removeDegenerateTriangles();
 
     if (numPoints < 3) return 0;
 
     // create the first triangle
-    (*self)->makeCounterClockwise(&(*self)->sortedInds[0]);
-    size_t i0 = (*self)->sortedInds[0];
-    size_t i1 = (*self)->sortedInds[1];
-    size_t i2 = (*self)->sortedInds[2];
+    (*self)->makeCounterClockwise(&sortedInds[0]);
+    size_t i0 = sortedInds[0];
+    size_t i1 = sortedInds[1];
+    size_t i2 = sortedInds[2];
     double area = (*self)->getParallelipipedArea(i0, i1, i2);
     if (std::abs(area) < (*self)->eps) {
         // degenerate triangle NEED TO FIX
@@ -59,8 +64,7 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
     (*self)->triIndices.insert(tri);
 
     // add remaining points
-    for (int i = 3; i < numPoints; ++i) {
-        size_t ip = (*self)->sortedInds[i];
+    for (int ip = 3; ip < numPoints; ++ip) {
         (*self)->addPoint(ip);
     }
 

@@ -60,9 +60,6 @@ struct SgTriangulate_type {
     // the vertices, as a flat array of 2D coordinates
  	std::vector<double> points;
 
-    // sorted indices
-    std::vector<size_t> sortedInds;
-
     // set of 2-tuples nodes indices
     std::set< std::vector<size_t> > boundaryEdges;
 
@@ -75,45 +72,80 @@ struct SgTriangulate_type {
 
     size_t NDIMS;
 
-double getDistanceSquare(const double p1[], const double p2[]) {
+double getDistanceSquare(size_t i0, size_t i1) {
     double res = 0;
-    for (size_t i = 0; i < this->NDIMS; ++i) {
-        double d = p2[i] - p1[i];
+    for (size_t j = 0; j < this->NDIMS; ++j) {
+        double d = this->points[i1*this->NDIMS + j] - this->points[i0*this->NDIMS + j];
         res += d * d;
     }
     return res;
 }
 
-void removeDegeneratePoints() {
+void removeDegenerateSegments() {
+
+    size_t numPoints = this->points.size() / this->NDIMS;
 
     // start with the first point
-    std::vector<size_t> sortedInds;
-    std::vector<double> points;
-    sortedInds.push_back(this->sortedInds[0]);
-    points.push_back(this->points[0]);
+    std::vector<double> pts;
+    for (size_t j = 0; j < this->NDIMS; ++j) {
+        pts.push_back(this->points[0*this->NDIMS + j]);
+    }
 
-    // iterate over the remaining points, making sure the distance between this 
-    // and the previous, non-degenerate point is > 0
-    size_t indx = 0;
-    for (size_t i = 1; i < sortedInds.size(); ++i) {
-        if (this->getDistanceSquare(&this->points[i], &this->points[indx]) > this->eps) {
+    // iterate over the remaining points, making sure the distance square between this 
+    // and the previous point is > 0
+    size_t i0 = 0;
+    for (size_t i1 = 1; i1 < numPoints; ++i1) {
+        if (this->getDistanceSquare(i0, i1) > this->eps) {
             // not degenerate
-            sortedInds.push_back(this->sortedInds[i]);
-            points.push_back(this->points[i]);
-            indx = i;
+            for (size_t j = 0; j < this->NDIMS; ++j) {
+                pts.push_back(this->points[i1*this->NDIMS + j]);
+            }
+            // new baseline
+            i0 = i1;
         }
     }
     // copy
-    this->sortedInds = sortedInds;
-    this->points = points;
+    this->points = pts;
+}
+
+void removeDegenerateTriangles() {
+
+    size_t numPoints = this->points.size() / this->NDIMS;
+
+    // start with the first 2 points
+    std::vector<double> pts;
+    for(size_t j = 0; j < this->NDIMS; ++j) {
+        pts.push_back(this->points[0*this->NDIMS + j]);
+    }
+    for (size_t j = 0; j < this->NDIMS; ++j) {
+        pts.push_back(this->points[1*this->NDIMS + j]);
+    }
+
+    // iterate over the remaining points, making sure the area of the triangle
+    // between this and the previous two points is != 0
+    size_t i0 = 0;
+    size_t i1 = 1;
+    for (size_t i2 = 2; i2 < numPoints; ++i2) {
+        double area = this->getParallelipipedArea(i0, i1, i2);
+        if (std::fabs(area) > this->eps) {
+            // not degenerate
+            for (size_t j = 0; j < this->NDIMS; ++j) {
+                pts.push_back(this->points[i2*this->NDIMS + j]);
+            }
+            i0 = i1;
+            i1 = i2;
+        }
+    }
+    // copy
+    this->points = pts;
 }
 
 double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {
     double d1[] = {0, 0};
     double d2[] = {0, 0};
     for (size_t j = 0; j < this->NDIMS; ++j) {
-        d1[j] = this->points[ip1*2 + j] - this->points[ip0*2 + j];
-        d2[j] = this->points[ip2*2 + j] - this->points[ip0*2 + j];
+        d1[j] = this->points[ip1*this->NDIMS + j] - this->points[ip0*this->NDIMS + j];
+        d2[j] = this->points[ip2*this->NDIMS + j] - this->points[ip0*this->NDIMS + j];
     }
     return (d1[0]*d2[1] - d1[1]*d2[0]);
 }
