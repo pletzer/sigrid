@@ -11,8 +11,6 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
 
     *self = new SgTriangulate_type();
 
-    (*self)->NDIMS = 2;
-
     // tolerance for floating point comparisons
     (*self)->eps = 1.e-12;
 
@@ -32,7 +30,7 @@ int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** p
     (*self)->points.resize(2 * numPoints);
     for (size_t i = 0; i < sortedInds.size(); ++i) {
         size_t indx = sortedInds[i];
-        for (size_t j = 0; j < (*self)->NDIMS; ++j) {
+        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
             (*self)->points[2*i + j] = points[indx][j];
         }        
     }

@@ -4,6 +4,8 @@
  
 #ifndef SG_TRIANGULATE_H
 #define SG_TRIANGULATE_H
+
+#include "SgNdims.h"
  
 #include <vector>
 #include <set>
@@ -30,10 +32,9 @@ struct SgSortByDistanceSquareFunctor {
     SgSortByDistanceSquareFunctor(int numPoints, const double** points) {
         this->numPoints = numPoints;
         this->points = points;
-        const size_t NDIMS = 2;
-        this->gravityCenter.resize(NDIMS, 0);
+        this->gravityCenter.resize(NDIMS_2D_PHYS, 0);
         for (int i = 0; i < numPoints; ++i) {
-            for (size_t j = 0; j < NDIMS; ++j)
+            for (size_t j = 0; j < NDIMS_2D_PHYS; ++j)
                 this->gravityCenter[j] += points[i][j] / (double)(numPoints);
         }
     }
@@ -70,12 +71,10 @@ struct SgTriangulate_type {
     // or negative
     double eps;
 
-    size_t NDIMS;
-
 double getDistanceSquare(size_t i0, size_t i1) {
     double res = 0;
-    for (size_t j = 0; j < this->NDIMS; ++j) {
-        double d = this->points[i1*this->NDIMS + j] - this->points[i0*this->NDIMS + j];
+    for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        double d = this->points[i1*NDIMS_2D_PHYS + j] - this->points[i0*NDIMS_2D_PHYS + j];
         res += d * d;
     }
     return res;
@@ -83,12 +82,12 @@ double getDistanceSquare(size_t i0, size_t i1) {
 
 void removeDegenerateSegments() {
 
-    size_t numPoints = this->points.size() / this->NDIMS;
+    size_t numPoints = this->points.size() / NDIMS_2D_PHYS;
 
     // start with the first point
     std::vector<double> pts;
-    for (size_t j = 0; j < this->NDIMS; ++j) {
-        pts.push_back(this->points[0*this->NDIMS + j]);
+    for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        pts.push_back(this->points[0*NDIMS_2D_PHYS + j]);
     }
 
     // iterate over the remaining points, making sure the distance square between this 
@@ -97,8 +96,8 @@ void removeDegenerateSegments() {
     for (size_t i1 = 1; i1 < numPoints; ++i1) {
         if (this->getDistanceSquare(i0, i1) > this->eps) {
             // not degenerate
-            for (size_t j = 0; j < this->NDIMS; ++j) {
-                pts.push_back(this->points[i1*this->NDIMS + j]);
+            for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+                pts.push_back(this->points[i1*NDIMS_2D_PHYS + j]);
             }
             // new baseline
             i0 = i1;
@@ -116,17 +115,18 @@ std::vector<size_t> getExtremaPointIndices(size_t i0, size_t i1, size_t i2) {
     double db[] = {0, 0};
     std::vector<size_t> inds(3);
     inds[0] = i0; inds[1] = i1; inds[2] = i2;
-    double dotProduct = 1;
+    double dotProduct = 0;
     size_t ia, ib;
     size_t j = 0;
     while (dotProduct > 0) {
         ia = inds[(j + 1) % 3];
         ib = inds[(j + 2) % 3];
-        da[0] = this->points[ia*this->NDIMS + 0];
-        db[0] = this->points[ib*this->NDIMS + 0];
-        da[1] = this->points[ia*this->NDIMS + 1];
-        db[1] = this->points[ib*this->NDIMS + 1];
-        dotProduct = da[0]*db[0] + da[1]*db[1];
+        dotProduct = 0;
+        for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
+            double& da = this->points[ia*NDIMS_2D_PHYS + k];
+            double& db = this->points[ib*NDIMS_2D_PHYS + k];
+            dotProduct += da*db;
+        }
         j++;
     }
     std::vector<size_t> res(2);
@@ -137,7 +137,7 @@ std::vector<size_t> getExtremaPointIndices(size_t i0, size_t i1, size_t i2) {
 
 size_t makeFirstTriangle() {
 
-    size_t numPoints = this->points.size() / this->NDIMS;
+    size_t numPoints = this->points.size() / NDIMS_2D_PHYS;
 
     if (numPoints < 3) {
         return numPoints - 1;
@@ -190,9 +190,10 @@ size_t makeFirstTriangle() {
 double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {
     double d1[] = {0, 0};
     double d2[] = {0, 0};
-    for (size_t j = 0; j < this->NDIMS; ++j) {
-        d1[j] = this->points[ip1*this->NDIMS + j] - this->points[ip0*this->NDIMS + j];
-        d2[j] = this->points[ip2*this->NDIMS + j] - this->points[ip0*this->NDIMS + j];
+    for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        double& p0 = this->points[ip0*NDIMS_2D_PHYS + j];
+        d1[j] = this->points[ip1*NDIMS_2D_PHYS + j] - p0;
+        d2[j] = this->points[ip2*NDIMS_2D_PHYS + j] - p0;
     }
     return (d1[0]*d2[1] - d1[1]*d2[0]);
 }

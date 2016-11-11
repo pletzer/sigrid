@@ -40,6 +40,7 @@ int SgQuadIntersect_setQuadPoints(SgQuadIntersect_type** self,
  	(*self)->quad1Coords = (double**) quad1Coords;
  	(*self)->quad2Coords = (double**) quad2Coords;
 
+ 	return 0;
 }
 
 
