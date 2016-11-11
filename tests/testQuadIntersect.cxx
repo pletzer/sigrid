@@ -24,10 +24,11 @@
  	const double* quad2Coords[] = {quad2Node0, quad2Node1, quad2Node2, quad2Node3};
 
  	SgQuadIntersect_type* qis = NULL;
- 	SgQuadIntersect_new(&qis, quad1Coords, quad2Coords);
+ 	SgQuadIntersect_new(&qis);
+    SgQuadIntersect_setQuadPoints(&qis, quad1Coords, quad2Coords);
  	int numPoints;
  	double* points = NULL;
- 	SgQuadIntersect_getPoints(&qis, &numPoints, &points);
+ 	SgQuadIntersect_getIntersectPoints(&qis, &numPoints, &points);
  	SgQuadIntersect_del(&qis);
 
  	std::cout << "testNoOverlap: num intersection points = " << numPoints << '\n';
@@ -56,10 +57,11 @@
  	const double* quad2Coords[] = {quad2Node0, quad2Node1, quad2Node2, quad2Node3};
 
  	SgQuadIntersect_type* qis = NULL;
- 	SgQuadIntersect_new(&qis, quad1Coords, quad2Coords);
+ 	SgQuadIntersect_new(&qis);
+    SgQuadIntersect_setQuadPoints(&qis, quad1Coords, quad2Coords);
  	int numPoints;
  	double* points = NULL;
- 	SgQuadIntersect_getPoints(&qis, &numPoints, &points);
+ 	SgQuadIntersect_getIntersectPoints(&qis, &numPoints, &points);
  	SgQuadIntersect_del(&qis);
 
  	std::cout << "testQuad2IsInsideQuad1: num intersection points = " << numPoints << '\n';
@@ -88,10 +90,11 @@
  	const double* quad2Coords[] = {quad2Node0, quad2Node1, quad2Node2, quad2Node3};
 
  	SgQuadIntersect_type* qis = NULL;
- 	SgQuadIntersect_new(&qis, quad1Coords, quad2Coords);
+ 	SgQuadIntersect_new(&qis);
+    SgQuadIntersect_setQuadPoints(&qis, quad1Coords, quad2Coords);
  	int numPoints;
  	double* points = NULL;
- 	SgQuadIntersect_getPoints(&qis, &numPoints, &points);
+ 	SgQuadIntersect_getIntersectPoints(&qis, &numPoints, &points);
  	SgQuadIntersect_del(&qis);
 
  	std::cout << "testQuad1IsInsideQuad2: num intersection points = " << numPoints << '\n';
@@ -120,10 +123,11 @@
     const double* quad2Coords[] = {quad2Node0, quad2Node1, quad2Node2, quad2Node3};
 
     SgQuadIntersect_type* qis = NULL;
-    SgQuadIntersect_new(&qis, quad1Coords, quad2Coords);
+    SgQuadIntersect_new(&qis);
+    SgQuadIntersect_setQuadPoints(&qis, quad1Coords, quad2Coords);
     int numPoints;
     double* points = NULL;
-    SgQuadIntersect_getPoints(&qis, &numPoints, &points);
+    SgQuadIntersect_getIntersectPoints(&qis, &numPoints, &points);
     SgQuadIntersect_del(&qis);
 
     std::cout << "testPartial3Points: num intersection points = " << numPoints << '\n';

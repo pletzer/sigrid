@@ -150,14 +150,15 @@ struct SgQuadIntersect_type {
 extern "C" {
 #endif
 
- int SgQuadIntersect_new(SgQuadIntersect_type** self,
-                           const double** quadCoords1,
-                           const double** quadCoords2);
+int SgQuadIntersect_new(SgQuadIntersect_type** self);
                        
- int SgQuadIntersect_del(SgQuadIntersect_type** self);
+int SgQuadIntersect_del(SgQuadIntersect_type** self);
 
- int SgQuadIntersect_getPoints(SgQuadIntersect_type** self, 
- 	                           int *numPoints, double** points);
+int SgQuadIntersect_setQuadPoints(SgQuadIntersect_type** self, 
+                                  const double** quad1Points, const double** quad2Points);
+
+int SgQuadIntersect_getIntersectPoints(SgQuadIntersect_type** self, 
+ 	                                    int *numPoints, double** points);
 
 #ifdef __cplusplus
 }
