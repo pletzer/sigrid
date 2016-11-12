@@ -1,5 +1,5 @@
 /**
- * Testing computation of intersection points between two quads
+ * Testing computation of intersection area between two quads
  */
 
  #include <vector>
@@ -28,7 +28,7 @@
  	SgQuadIntersect_new(&qis);
     SgQuadIntersect_setQuadPoints(&qis, quad1Coords, quad2Coords);
  	int numPoints;
- 	double** points;
+ 	double** points = NULL;
  	SgQuadIntersect_getIntersectPoints(&qis, &numPoints, points);
 
     SgTriangulate_type* tri = NULL;
