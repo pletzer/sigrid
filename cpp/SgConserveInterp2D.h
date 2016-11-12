@@ -18,6 +18,7 @@ struct SgConserveInterp2D_type {
 	// the source grid
 	int srcNodeDims[NDIMS_2D_TOPO];
 	int srcCellDims[NDIMS_2D_TOPO];
+	int srcNodeDimProd[NDIMS_2D_TOPO];
 	int srcCellDimProd[NDIMS_2D_TOPO];
 	std::vector<double> srcGrdCoords; // flat array (node, components)
 	size_t srcNumPoints;
@@ -27,6 +28,7 @@ struct SgConserveInterp2D_type {
 	int dstNodeDims[NDIMS_2D_TOPO];
 	int dstCellDims[NDIMS_2D_TOPO];
 	int dstCellDimProd[NDIMS_2D_TOPO];
+	int dstNodeDimProd[NDIMS_2D_TOPO];
 	std::vector<double> dstGrdCoords; // flat array (node, components)
 	size_t dstNumPoints;
 	size_t dstNumCells;
@@ -48,7 +50,8 @@ void setDstGrid(const int dims[], const double** coords) {
 	this->dstCellDimProd[0] = 1;
 	for (int j = NDIMS_2D_TOPO - 2; j >= 0; --j) {
     	// last index varies fastest
-    	this->dstCellDimProd[j] =  this->dstCellDimProd[j + 1] * this->dstCellDims[j + 1];
+    	this->dstCellDimProd[j] = this->dstCellDimProd[j + 1] * this->dstCellDims[j + 1];
+    	this->dstNodeDimProd[j] = this->dstNodeDimProd[j + 1] * this->dstNodeDims[j + 1];
   	}
 
   	this->dstGrdCoords.resize(NDIMS_2D_PHYS * this->dstNumPoints);
@@ -74,7 +77,8 @@ void setSrcGrid(const int dims[], const double** coords) {
 	this->srcCellDimProd[0] = 1;
 	for (int j = NDIMS_2D_TOPO - 2; j >= 0; --j) {
     	// last index varies fastest
-    	this->srcCellDimProd[j] =  this->srcCellDimProd[j + 1] * this->srcCellDims[j + 1];
+    	this->srcCellDimProd[j] = this->srcCellDimProd[j + 1] * this->srcCellDims[j + 1];
+    	this->srcNodeDimProd[j] = this->srcNodeDimProd[j + 1] * this->srcNodeDims[j + 1];
   	}
  
   	this->srcGrdCoords.resize(NDIMS_2D_PHYS * this->srcNumPoints);
@@ -102,14 +106,14 @@ void apply(double* dstData, const double* srcData) {
 	}
 }
 
-double* getDstQuadCoord(size_t indx, int offset[]) const {
+const double* getDstQuadCoord(size_t indx, int offset[]) const {
 	for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 		indx += this->dstNodeDimProd[j] * offset[j];
 	}
 	return &this->dstGrdCoords[indx];
 }
 
-double* getSrcQuadCoord(size_t indx, int offset[]) const {
+const double* getSrcQuadCoord(size_t indx, int offset[]) const {
 	for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 		indx += this->srcNodeDimProd[j] * offset[j];
 	}
@@ -118,10 +122,10 @@ double* getSrcQuadCoord(size_t indx, int offset[]) const {
 
 void computeWeights() {
 	int numIntersectPoints;
-	double* intersectPoints;
-	SgQuadIntersect_type Sgintersector;
-	double* dstQuadCoords[] = {NULL, NULL, NULL, NULL};
-	double* srcQuadCoords[] = {NULL, NULL, NULL, NULL};
+	double** intersectPoints;
+	SgQuadIntersect_type intersector;
+	const double* dstQuadCoords[] = {NULL, NULL, NULL, NULL};
+	const double* srcQuadCoords[] = {NULL, NULL, NULL, NULL};
 	int offset[] = {0, 0};
 	// iterate over the dst cells
 	for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
@@ -149,18 +153,21 @@ void computeWeights() {
 			srcQuadCoords[3] = this->getSrcQuadCoord(dstIndx, offset);
 
 			intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
-			intersector.collectIntersectPoints(&numIntersectPoints, &intersectPoints);
+			intersector.collectIntersectPoints(&numIntersectPoints, intersectPoints);
 			if (numIntersectPoints >= 3) {
 				// must be able to build at least one triangle
-				SgTriangulate_type triangulator(numIntersectPoints, intersectPoints);
+				SgTriangulate_type triangulator(numIntersectPoints, (const double**) intersectPoints);
 				double area = triangulator.getConvexHullArea();
 				indWght.push_back(std::pair<size_t, double>(srcIndx, area));
 			}
 		}
 		if (indWght.size() > 0) {
-			this->weight.insert(std::pair(dstIndx, indWght));
+			std::pair<size_t, std::vector< std::pair<size_t, double> > > p(dstIndx, indWght);
+			this->weights.insert(p);
 		}
 	}
+}
+
 };
  
 #ifdef __cplusplus
@@ -174,5 +181,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif // SG_CONSERVE_INTERP_2D_H
