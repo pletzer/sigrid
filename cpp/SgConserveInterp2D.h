@@ -37,6 +37,10 @@ struct SgConserveInterp2D_type {
 	// dst flat index -> {src flat index: weight}
 	std::map<size_t, std::vector< std::pair<size_t, double> > > weights;
 
+	// iterators
+    std::map<size_t, std::vector<std::pair<size_t, double> > >::const_iterator weightIt;
+    std::vector<std::pair<size_t, double> >::const_iterator weightIt2;
+
 	/**
 	 * Set the destination grid 
 	 * @param dims number of nodes in each direction
@@ -106,7 +110,7 @@ struct SgConserveInterp2D_type {
 	 * @param srcData source cell data (input)
 	 * @param dstData destination cell data (output)
 	 */
-	void apply(const double* srcData, double* dstData) {
+	void apply(const double srcData[], double dstData[]) {
 
 		for (std::map<size_t, std::vector<std::pair<size_t, double> > >::const_iterator 
 			it = this->weights.begin();
@@ -211,6 +215,24 @@ extern "C" {
  int SgConserveInterp2D_new(SgConserveInterp2D_type** self);
                        
  int SgConserveInterp2D_del(SgConserveInterp2D_type** self);
+
+ int SgConserveInterp2D_setDstGrid(SgConserveInterp2D_type** self, 
+ 	                               const int dims[], const double** coords);
+
+ int SgConserveInterp2D_setSrcGrid(SgConserveInterp2D_type** self, 
+ 	                               const int dims[], const double** coords);
+
+ int SgConserveInterp2D_computeWeights(SgConserveInterp2D_type** self);
+
+ int SgConserveInterp2D_apply(SgConserveInterp2D_type** self,
+ 	                          const double srcData[], double dstData[]);
+
+ int SgConserveInterp2D_reset(SgConserveInterp2D_type** self);
+
+ int SgConserveInterp2D_next(SgConserveInterp2D_type** self);
+
+ int SgConserveInterp2D_get(SgConserveInterp2D_type** self,
+ 	                        int* srcIndx, int* dstIndx, double* weight);
 
 #ifdef __cplusplus
 }
