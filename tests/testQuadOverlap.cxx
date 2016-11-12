@@ -7,6 +7,7 @@
  #include <cstdio>
  #include <iostream>
  #include "SgQuadIntersect.h"
+ #include "SgTriangulate.h"
 
  bool testNoOverlap() {
 
@@ -27,17 +28,20 @@
  	SgQuadIntersect_new(&qis);
     SgQuadIntersect_setQuadPoints(&qis, quad1Coords, quad2Coords);
  	int numPoints;
- 	double* points = NULL;
- 	SgQuadIntersect_getIntersectPoints(&qis, &numPoints, &points);
+ 	double** points;
+ 	SgQuadIntersect_getIntersectPoints(&qis, &numPoints, points);
+
+    SgTriangulate_type* tri = NULL;
+    SgTriangulate_new(&tri, numPoints, (const double**) points);
+    double area;
+    SgTriangulate_getConvexHullArea(&tri, &area);
+
+    SgTriangulate_del(&tri);
  	SgQuadIntersect_del(&qis);
 
- 	std::cout << "testNoOverlap: num intersection points = " << numPoints << '\n';
+ 	std::cout << "testNoOverlap: area intersection = " << area << '\n';
+    assert(fabs(area) < 1.e-10);
 
- 	if (numPoints != 0) {
- 		/// error
- 		return false;
- 	}
- 	// OK
  	return true;
  }
 

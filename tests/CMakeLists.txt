@@ -26,6 +26,9 @@ target_link_libraries(testLinearSolve_CXX sigrid)
 add_executable(testTriangulate_CXX testTriangulate.cxx)
 target_link_libraries(testTriangulate_CXX sigrid)
 
+add_executable(testQuadOverlap_CXX testQuadOverlap.cxx)
+target_link_libraries(testQuadOverlap_CXX sigrid)
+
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
 add_test(testLinearSolveOverDetermined
@@ -46,3 +49,4 @@ add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointI
 add_test(testLinearSolve_CXX ${CMAKE_BINARY_DIR}/tests/testLinearSolve_CXX)
 add_test(testQuadIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadIntersect_CXX)
 add_test(testTriangulate_CXX ${CMAKE_BINARY_DIR}/tests/testTriangulate_CXX)
+add_test(testQuadOverlap_CXX ${CMAKE_BINARY_DIR}/tests/testQuadOverlap_CXX)
