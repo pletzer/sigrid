@@ -122,20 +122,31 @@ void computeWeights() {
 	SgQuadIntersect_type Sgintersector;
 	double* dstQuadCoords[] = {NULL, NULL, NULL, NULL};
 	double* srcQuadCoords[] = {NULL, NULL, NULL, NULL};
+	int offset[] = {0, 0};
 	// iterate over the dst cells
 	for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
-		dstQuadCoords[0] = this->getDstQuadCoord(dstIndx, {0, 0});
-		dstQuadCoords[1] = this->getDstQuadCoord(dstIndx, {1, 0});
-		dstQuadCoords[2] = this->getDstQuadCoord(dstIndx, {1, 1});
-		dstQuadCoords[3] = this->getDstQuadCoord(dstIndx, {0, 1});
+
+		offset[0] = 0; offset[1] = 0;
+		dstQuadCoords[0] = this->getDstQuadCoord(dstIndx, offset);
+		offset[0] = 1; offset[1] = 0;
+		dstQuadCoords[1] = this->getDstQuadCoord(dstIndx, offset);
+		offset[0] = 1; offset[1] = 1;
+		dstQuadCoords[2] = this->getDstQuadCoord(dstIndx, offset);
+		offset[0] = 0; offset[1] = 1;
+		dstQuadCoords[3] = this->getDstQuadCoord(dstIndx, offset);
 
 		// iterate over the src cells
 		std::vector< std::pair<size_t, double> > indWght;
 		for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
-			srcQuadCoords[0] = this->getSrcQuadCoord(dstIndx, {0, 0});
-			srcQuadCoords[1] = this->getSrcQuadCoord(dstIndx, {1, 0});
-			srcQuadCoords[2] = this->getSrcQuadCoord(dstIndx, {1, 1});
-			srcQuadCoords[3] = this->getSrcQuadCoord(dstIndx, {0, 1});
+
+			offset[0] = 0; offset[1] = 0;
+			srcQuadCoords[0] = this->getSrcQuadCoord(dstIndx, offset);
+			offset[0] = 1; offset[1] = 0;
+			srcQuadCoords[1] = this->getSrcQuadCoord(dstIndx, offset);
+			offset[0] = 1; offset[1] = 1;
+			srcQuadCoords[2] = this->getSrcQuadCoord(dstIndx, offset);
+			offset[0] = 0; offset[1] = 1;
+			srcQuadCoords[3] = this->getSrcQuadCoord(dstIndx, offset);
 
 			intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
 			intersector.collectIntersectPoints(&numIntersectPoints, &intersectPoints);

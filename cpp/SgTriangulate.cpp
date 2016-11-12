@@ -4,7 +4,6 @@
  
 #include "SgTriangulate.h"
 #include <iostream>
-#include <algorithm>
 
 extern "C"
 int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** points) {

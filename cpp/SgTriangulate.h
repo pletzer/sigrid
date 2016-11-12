@@ -8,6 +8,7 @@
 #include "SgNdims.h"
  
 #include <vector>
+#include <algorithm>
 #include <set>
 #include <cstdio> // size_t
 #include <cmath>
