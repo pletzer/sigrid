@@ -6,6 +6,8 @@
 #define SG_CONSERVE_INTERP_2D_H
  
 #include "SgNdims.h"
+#include "SgQuadIntersect.h"
+#include "SgTriangulate.h"
 #include <vector>
 #include <map>
 #include <cstdio> // size_t
@@ -83,7 +85,6 @@ void setSrcGrid(const int dims[], const double** coords) {
   			k++;
   		}
   	}
-
 }
 
 void apply(double* dstData, const double* srcData) {
@@ -101,20 +102,54 @@ void apply(double* dstData, const double* srcData) {
 	}
 }
 
-void computeWeights() {
-	// iterate over the dst cells
-	for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
-		// iterate over the src cells
-		for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
-			if (this->doBoxesOverlap(dstIndx, srcIndx)) {
-
-			}
-		}
+double* getDstQuadCoord(size_t indx, int offset[]) const {
+	for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+		indx += this->dstNodeDimProd[j] * offset[j];
 	}
+	return &this->dstGrdCoords[indx];
 }
 
-bool doBoxesOverlap(size_t dstIndx, size_t srcIndx);
+double* getSrcQuadCoord(size_t indx, int offset[]) const {
+	for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+		indx += this->srcNodeDimProd[j] * offset[j];
+	}
+	return &this->srcGrdCoords[indx];
+}
 
+void computeWeights() {
+	int numIntersectPoints;
+	double* intersectPoints;
+	SgQuadIntersect_type Sgintersector;
+	double* dstQuadCoords[] = {NULL, NULL, NULL, NULL};
+	double* srcQuadCoords[] = {NULL, NULL, NULL, NULL};
+	// iterate over the dst cells
+	for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
+		dstQuadCoords[0] = this->getDstQuadCoord(dstIndx, {0, 0});
+		dstQuadCoords[1] = this->getDstQuadCoord(dstIndx, {1, 0});
+		dstQuadCoords[2] = this->getDstQuadCoord(dstIndx, {1, 1});
+		dstQuadCoords[3] = this->getDstQuadCoord(dstIndx, {0, 1});
+
+		// iterate over the src cells
+		std::vector< std::pair<size_t, double> > indWght;
+		for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
+			srcQuadCoords[0] = this->getSrcQuadCoord(dstIndx, {0, 0});
+			srcQuadCoords[1] = this->getSrcQuadCoord(dstIndx, {1, 0});
+			srcQuadCoords[2] = this->getSrcQuadCoord(dstIndx, {1, 1});
+			srcQuadCoords[3] = this->getSrcQuadCoord(dstIndx, {0, 1});
+
+			intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
+			intersector.collectIntersectPoints(&numIntersectPoints, &intersectPoints);
+			if (numIntersectPoints >= 3) {
+				// must be able to build at least one triangle
+				SgTriangulate_type triangulator(numIntersectPoints, intersectPoints);
+				double area = triangulator.getConvexHullArea();
+				indWght.push_back(std::pair<size_t, double>(srcIndx, area));
+			}
+		}
+		if (indWght.size() > 0) {
+			this->weight.insert(std::pair(dstIndx, indWght));
+		}
+	}
 };
  
 #ifdef __cplusplus

@@ -71,6 +71,45 @@ struct SgTriangulate_type {
     // or negative
     double eps;
 
+SgTriangulate_type(int numPoints, const double** points) {
+
+    // tolerance for floating point comparisons
+    this->eps = 1.e-12;
+
+    this->points.resize(2 * numPoints);
+
+    SgSortByDistanceSquareFunctor sortFunc(numPoints, points);
+ 
+    // set the indices before the sort
+    std::vector<size_t> sortedInds(numPoints);
+    for (int i = 0; i < numPoints; ++i) {
+        sortedInds[i] = i;
+    }
+    // sort the point indices by increasing distance from the centre of gravity
+    std::sort(sortedInds.begin(), sortedInds.end(), sortFunc);
+
+    // set the points in increasing distance from the centre of gravity
+    this->points.resize(2 * numPoints);
+    for (size_t i = 0; i < sortedInds.size(); ++i) {
+        size_t indx = sortedInds[i];
+        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+            this->points[2*i + j] = points[indx][j];
+        }        
+    }
+
+    // remove degenerate points
+    this->removeDegenerateSegments();
+
+    // create the first, non-degenerate triangle
+    size_t lastIndexOfFirstTriangle = this->makeFirstTriangle();
+
+    // add the remaining points
+    for (int ip = lastIndexOfFirstTriangle + 1; ip < numPoints; ++ip) {
+        this->addPoint(ip);
+    }
+
+}
+
 double getDistanceSquare(size_t i0, size_t i1) {
     double res = 0;
     for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
@@ -187,11 +226,11 @@ size_t makeFirstTriangle() {
     return lastPointIndexOfFirstTriangle;
 }
 
-double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) {
+double inline getParallelipipedArea(size_t ip0, size_t ip1, size_t ip2) const {
     double d1[] = {0, 0};
     double d2[] = {0, 0};
     for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-        double& p0 = this->points[ip0*NDIMS_2D_PHYS + j];
+        const double& p0 = this->points[ip0*NDIMS_2D_PHYS + j];
         d1[j] = this->points[ip1*NDIMS_2D_PHYS + j] - p0;
         d2[j] = this->points[ip2*NDIMS_2D_PHYS + j] - p0;
     }
@@ -216,6 +255,17 @@ bool inline isEdgeVisible(size_t ip, size_t ie0, size_t ie1) {
     }
     return false;
 }
+
+double getConvexHullArea() const {
+    double area = 0;
+    for (std::set< std::vector<size_t> >::const_iterator it = this->triIndices.begin();
+         it != this->triIndices.end(); ++it) {
+        area += this->getParallelipipedArea((*it)[0], (*it)[1], (*it)[2]);
+    }
+    area *= 0.5;
+    return area;
+}
+
 
 void addPoint(size_t ip) {
 
