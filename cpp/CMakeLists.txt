@@ -12,6 +12,7 @@ set(LIB_FILES
   SgFindPointInCell.cpp
   SgQuadIntersect.cpp
   SgTriangulate.cpp
+  SgConserveInterp2D.cpp
 )
 
 set(HEADER_FILES
@@ -24,6 +25,7 @@ set(HEADER_FILES
   SgFindPointInCell.h
   SgQuadIntersect.h
   SgTriangulate.h
+  SgConserveInterp2D.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})

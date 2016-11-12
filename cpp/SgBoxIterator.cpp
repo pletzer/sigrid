@@ -23,7 +23,7 @@
     (*self)->dimProd[i] = 1;
     (*self)->numElems *= (*self)->dims[i];
   }
-  for (int i = (int) 1; i >= 0; --i) {
+  for (int i = (int) NDIMS_TOPO - 2; i >= 0; --i) {
     // last index varies fastest
     (*self)->dimProd[i] =  (*self)->dimProd[i + 1] * (*self)->dims[i + 1];
   }

@@ -144,6 +144,48 @@ struct SgQuadIntersect_type {
 	
     }
 
+    void setQuadPoints(const double** quad1Coords, const double** quad2Coords) {
+        this->quad1Coords = (double**) quad1Coords;
+        this->quad2Coords = (double**) quad2Coords;
+    }
+
+
+    void collectIntersectPoints(int* numPoints, double** points) {
+
+        // quickly check if there is any chance of overlap
+        if (!this->checkIfBoxesOverlap()) {
+            // no chance to have an overlap
+            return;
+        }
+
+        // seems like the quads are at least partially overlapping 
+        this->collectNodesInsideQuad((const double**)this->quad1Coords, 
+                                     (const double**)this->quad2Coords);
+        this->collectNodesInsideQuad((const double**)this->quad2Coords,
+                                     (const double**)this->quad1Coords);
+        // iterate over edges
+        for (size_t i = 0; i < 4; ++i) {
+            // the edge of one of the first quad
+            size_t quad1Indx0 = i;
+            size_t quad1Indx1 = (i + 1) % 4;
+            const double* quad1Coord0 = this->quad1Coords[quad1Indx0];
+            const double* quad1Coord1 = this->quad1Coords[quad1Indx1];
+            // iterate over the other quad's edges
+            for (size_t j = 0; j < 4; ++j) {
+                // the edges of the second quad
+                size_t quad2Indx0 = j;
+                size_t quad2Indx1 = (j + 1) % 4;
+                const double* quad2Coord0 = this->quad2Coords[quad2Indx0];
+                const double* quad2Coord1 = this->quad2Coords[quad2Indx1];
+                this->collectEdgeToEdgeIntersectionPoints(quad1Coord0, quad1Coord1,
+                                                          quad2Coord0, quad2Coord1);
+            }
+        }
+
+        *numPoints = this->numIntersectionPoints;
+        *points = this->intersectionPoints;
+    }
+
 };
  
 #ifdef __cplusplus
