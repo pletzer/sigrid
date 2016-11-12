@@ -124,6 +124,11 @@ void removeDegenerateSegments() {
 
     size_t numPoints = this->points.size() / NDIMS_2D_PHYS;
 
+    if (numPoints < 1) {
+        // nothing to do 
+        return;
+    }
+
     // start with the first point
     std::vector<double> pts;
     for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
