@@ -23,9 +23,7 @@ struct SgQuadIntersect_type {
     double* quad2Coords;
 
     // the collection of intersection points as a flat array
-    // 6 is the max number of intersection points
-    double intersectionPoints[6*NDIMS_2D_PHYS];
-    int numIntersectionPoints;
+    std::vector<double> intersectionPoints;
 
     // a tolerance to determine whether a two edges intersect
     // or a point is within a triangle
@@ -115,18 +113,14 @@ struct SgQuadIntersect_type {
 
         for (size_t i = 0; i < 4; ++i) {
 
-            // number of nodes so far
-            size_t n = this->numIntersectionPoints;
-
             if (this->checkIfPointIsInsideTriangle(&nodes[i*NDIMS_2D_PHYS], 
                                                    &quad[0*NDIMS_2D_PHYS],
                                                    &quad[1*NDIMS_2D_PHYS],
                                                    &quad[3*NDIMS_2D_PHYS])) {
                 // pt is in inside triangle 0, 1, 3 of quad
                 for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                    this->intersectionPoints[n*NDIMS_2D_PHYS + j] = nodes[i*NDIMS_2D_PHYS + j];
+                    this->intersectionPoints.push_back(nodes[i*NDIMS_2D_PHYS + j]);
                 }
-                this->numIntersectionPoints++;
             }
             else if (this->checkIfPointIsInsideTriangle(&nodes[i*NDIMS_2D_PHYS], 
                                                         &quad[2*NDIMS_2D_PHYS],
@@ -134,9 +128,8 @@ struct SgQuadIntersect_type {
                                                         &quad[1*NDIMS_2D_PHYS])) {
                 // pt is inside triangle 2, 3, 1 of quad
                 for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                    this->intersectionPoints[n*NDIMS_2D_PHYS + j] = nodes[i*NDIMS_2D_PHYS + j];
+                    this->intersectionPoints.push_back(nodes[i*NDIMS_2D_PHYS + j]);
                 }
-                this->numIntersectionPoints++;
             }
         }
     }
@@ -167,12 +160,10 @@ struct SgQuadIntersect_type {
         if (xis[0] > -this->tol && xis[0] <= 1 + this->tol && 
             xis[1] > -this->tol && xis[1] <= 1 + this->tol) {
             // the two edges intersect
-            size_t n = this->numIntersectionPoints; // number of intersetion points so far
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                this->intersectionPoints[n*NDIMS_2D_PHYS + j] = edge1Point0[j]
-                                                              + xis[0]*(edge1Point1[j] - edge1Point0[j]);
+                double p = edge1Point0[j] + xis[0]*(edge1Point1[j] - edge1Point0[j]);
+                this->intersectionPoints.push_back(p);
             }
-            this->numIntersectionPoints++;
         }
     }
 
@@ -203,21 +194,21 @@ struct SgQuadIntersect_type {
             // the edge of one of the first quad
             size_t quad1IndxA = i;
             size_t quad1IndxB = (i + 1) % 4;
-            double* quad1CoordA = &this->quad1Coords[quad1IndxA];
-            double* quad1CoordB = &this->quad1Coords[quad1IndxB];
+            double* quad1CoordA = &this->quad1Coords[quad1IndxA*NDIMS_2D_PHYS];
+            double* quad1CoordB = &this->quad1Coords[quad1IndxB*NDIMS_2D_PHYS];
             // iterate over the other quad's edges
             for (size_t j = 0; j < 4; ++j) {
                 // the edges of the second quad
                 size_t quad2IndxA = j;
                 size_t quad2IndxB = (j + 1) % 4;
-                double* quad2CoordA = &this->quad2Coords[quad2IndxA];
-                double* quad2CoordB = &this->quad2Coords[quad2IndxB];
+                double* quad2CoordA = &this->quad2Coords[quad2IndxA*NDIMS_2D_PHYS];
+                double* quad2CoordB = &this->quad2Coords[quad2IndxB*NDIMS_2D_PHYS];
                 this->collectEdgeToEdgeIntersectionPoints(quad1CoordA, quad1CoordB,
                                                           quad2CoordA, quad2CoordB);
             }
         }
 
-        *numPoints = this->numIntersectionPoints;
+        *numPoints = this->intersectionPoints.size() / NDIMS_2D_PHYS;
     }
 
 };
