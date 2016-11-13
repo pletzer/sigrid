@@ -146,8 +146,7 @@ bool testPartial3Points() {
     SgQuadIntersect_del(&qis);
 
     std::cout << "testPartial3Points: num intersection points = " << numPoints << '\n';
-    // need to check!
-    //assert(fabs(area - 0.06982142857142856) < 1.e-8);
+    assert(fabs(area - 0.0755716) < 1.e-6);
 
     if (numPoints != 3) {
         /// error
