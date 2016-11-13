@@ -176,7 +176,6 @@ struct SgQuadIntersect_type {
     void collectIntersectPoints(int* numPoints, double** points) {
 
         *numPoints = 0;
-        *points = &this->intersectionPoints[0];
 
         // quickly check if there is any chance of overlap
         if (!this->checkIfBoxesOverlap()) {
@@ -208,7 +207,12 @@ struct SgQuadIntersect_type {
             }
         }
 
+        // set the return values
         *numPoints = this->intersectionPoints.size() / NDIMS_2D_PHYS;
+        *points = NULL;
+        if (*numPoints > 0) {
+            *points = &this->intersectionPoints[0];
+        }
     }
 
 };
