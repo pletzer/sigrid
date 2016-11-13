@@ -6,7 +6,7 @@
 #include <iostream>
 
 extern "C"
-int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double** points) {
+int SgTriangulate_new(SgTriangulate_type** self, int numPoints, const double points[]) {
 
     *self = new SgTriangulate_type(numPoints, points);
 

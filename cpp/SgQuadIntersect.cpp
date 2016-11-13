@@ -35,7 +35,7 @@ int SgQuadIntersect_del(SgQuadIntersect_type** self) {
 
 extern "C"
 int SgQuadIntersect_setQuadPoints(SgQuadIntersect_type** self,
-	                              const double** quad1Coords, const double** quad2Coords) {
+	                              const double* quad1Coords, const double* quad2Coords) {
  	(*self)->setQuadPoints(quad1Coords, quad2Coords);
  	return 0;
 }

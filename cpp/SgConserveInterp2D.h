@@ -128,25 +128,31 @@ struct SgConserveInterp2D_type {
 	/** 
 	 * Extract the destination cell coordinates from the grid
 	 * @param indx nodal flat index
-	 * @param offset diplacement from the above node
+	 * @param offset displacement from the above node
+	 * @param coords array of asize NDIMS_2D_PHYS to be filled in 
 	 */
-	const double* getDstQuadCoord(size_t indx, const int offset[]) const {
+	void getDstQuadCoord(size_t indx, int offset[], double coords[]) const {
 		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 			indx += this->dstNodeDimProd[j] * offset[j];
 		}
-		return &this->dstGrdCoords[indx];
+		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+			coords[j] = this->dstGrdCoords[indx*NDIMS_2D_PHYS + j];
+		}
 	}
 
 	/** 
 	 * Extract the destination cell coordinates from the grid
 	 * @param indx nodal flat index
-	 * @param offset diplacement from the above node
+	 * @param offset displacement from the above node
+	 * @param coords array of asize NDIMS_2D_PHYS to be filled in 
 	 */
-	const double* getSrcQuadCoord(size_t indx, int offset[]) const {
+	void getSrcQuadCoord(size_t indx, int offset[], double coords[]) const {
 		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 			indx += this->srcNodeDimProd[j] * offset[j];
 		}
-		return &this->srcGrdCoords[indx];
+		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+			coords[j] = this->srcGrdCoords[indx*NDIMS_2D_PHYS + j];
+		}
 	}
 
 	/** 
@@ -155,26 +161,26 @@ struct SgConserveInterp2D_type {
 	void computeWeights() {
 
 		int numIntersectPoints;
-		double** intersectPoints;
+		double* intersectPoints;
 		SgQuadIntersect_type intersector;
-		const double* dstQuadCoords[] = {NULL, NULL, NULL, NULL};
-		const double* srcQuadCoords[] = {NULL, NULL, NULL, NULL};
+		double dstQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
+		double srcQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
 		int offset[] = {0, 0};
 
 		// iterate over the dst cells
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
 			offset[0] = 0; offset[1] = 0;
-			dstQuadCoords[0] = this->getDstQuadCoord(dstIndx, offset);
+			this->getDstQuadCoord(dstIndx, offset, &dstQuadCoords[0*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 0;
-			dstQuadCoords[1] = this->getDstQuadCoord(dstIndx, offset);
+			this->getDstQuadCoord(dstIndx, offset, &dstQuadCoords[1*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 1;
-			dstQuadCoords[2] = this->getDstQuadCoord(dstIndx, offset);
+			this->getDstQuadCoord(dstIndx, offset, &dstQuadCoords[2*NDIMS_2D_PHYS]);
 			offset[0] = 0; offset[1] = 1;
-			dstQuadCoords[3] = this->getDstQuadCoord(dstIndx, offset);
+			this->getDstQuadCoord(dstIndx, offset, &dstQuadCoords[3*NDIMS_2D_PHYS]);
 
 			// compute the dst cell area
-			SgTriangulate_type dstTriangulator(4, (const double**) dstQuadCoords);
+			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
 			double dstArea = dstTriangulator.getConvexHullArea();
 
 			// iterate over the src cells
@@ -182,19 +188,19 @@ struct SgConserveInterp2D_type {
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
 				offset[0] = 0; offset[1] = 0;
-				srcQuadCoords[0] = this->getSrcQuadCoord(dstIndx, offset);
+				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[0*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 0;
-				srcQuadCoords[1] = this->getSrcQuadCoord(dstIndx, offset);
+				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[1*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 1;
-				srcQuadCoords[2] = this->getSrcQuadCoord(dstIndx, offset);
+				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[2*NDIMS_2D_PHYS]);
 				offset[0] = 0; offset[1] = 1;
-				srcQuadCoords[3] = this->getSrcQuadCoord(dstIndx, offset);
+				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[3*NDIMS_2D_PHYS]);
 
 				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
-				intersector.collectIntersectPoints(&numIntersectPoints, intersectPoints);
+				intersector.collectIntersectPoints(&numIntersectPoints, &intersectPoints);
 				if (numIntersectPoints >= 3) {
 					// must be able to build at least one triangle
-					SgTriangulate_type triangulator(numIntersectPoints, (const double**) intersectPoints);
+					SgTriangulate_type triangulator(numIntersectPoints, intersectPoints);
 					double area = triangulator.getConvexHullArea();
 					indWght.push_back(std::pair<size_t, double>(srcIndx, area/dstArea));
 				}

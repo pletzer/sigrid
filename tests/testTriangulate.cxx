@@ -7,8 +7,7 @@
 #include <cassert>
 
 void test1Point() {
-    const double p0[] = {0., 0.};
-    const double* points[] = {p0};
+    const double points[] = {0., 0.};
     const int numPoints = 1;
     SgTriangulate_type* tri;
     SgTriangulate_new(&tri, numPoints, points);
@@ -20,9 +19,8 @@ void test1Point() {
 }
 
 void test2Points() {
-    const double p0[] = {0., 0.};
-    const double p1[] = {1., 0.};
-    const double* points[] = {p0, p1};
+    const double points[] = {0., 0.,
+                             1., 0.};
     const int numPoints = 2;
     SgTriangulate_type* tri;
     SgTriangulate_new(&tri, numPoints, points);
@@ -34,10 +32,9 @@ void test2Points() {
 }
 
 void test3Points() {
-    const double p0[] = {0., 0.};
-    const double p1[] = {1., 0.};
-    const double p2[] = {1., 1.};
-    const double* points[] = {p0, p1, p2};
+    const double points[] = {0., 0.,
+                             1., 0.,
+                             1., 1.};
     const int numPoints = 3;
     SgTriangulate_type* tri;
     SgTriangulate_new(&tri, numPoints, points);
@@ -49,11 +46,10 @@ void test3Points() {
 }
 
 void test4Points() {
-    const double p0[] = {0., 0.};
-    const double p1[] = {1., 0.};
-    const double p2[] = {1., 1.};
-    const double p3[] = {0., 1.};
-    const double* points[] = {p0, p1, p2, p3};
+    const double points[] = {0., 0.,
+                             1., 0.,
+                             1., 1.,
+                             0., 1.};
     const int numPoints = 4;
     SgTriangulate_type* tri;
     SgTriangulate_new(&tri, numPoints, points);
@@ -65,13 +61,12 @@ void test4Points() {
 }
 
 void test6Points() {
-    const double p0[] = {0., 0.};
-    const double p1[] = {1., 0.};
-    const double p2[] = {1., 1.};
-    const double p3[] = {0., 1.};
-    const double p4[] = {0.5, 1.};
-    const double p5[] = {0.5, 0.};
-    const double* points[] = {p0, p1, p2, p3, p4, p5};
+    const double points[] = {0., 0.,
+                             1., 0.,
+                             1., 1.,
+                             0., 1.,
+                             0.5, 1.,
+                             0.5, 0.};
     const int numPoints = 6;
     SgTriangulate_type* tri;
     SgTriangulate_new(&tri, numPoints, points);
@@ -83,14 +78,13 @@ void test6Points() {
 }
 
 void test7PointsDegenerate() {
-    const double p0[] = {0., 0.};
-    const double p1[] = {1., 0.};
-    const double p2[] = {1., 1.};
-    const double p3[] = {0., 1.};
-    const double p4[] = {0., 0.};
-    const double p5[] = {0.1, 0.};
-    const double p6[] = {0.2, 0.};
-    const double* points[] = {p0, p1, p2, p3, p4, p5, p6};
+    const double points[] = {0., 0.,
+                             1., 0.,
+                             1., 1.,
+                             0., 1.,
+                             0., 0.,
+                             0.1, 0.,
+                             0.2, 0.};
     const int numPoints = 7;
     SgTriangulate_type* tri;
     SgTriangulate_new(&tri, numPoints, points);
