@@ -156,9 +156,11 @@ struct SgQuadIntersect_type {
         }
         double* xis;
         SgLinearSolve_getSolution(&this->slvr, &xis);
-        // make sure the parametric coordinates are within the (0, 1) range
-        if (xis[0] > -this->tol && xis[0] <= 1 + this->tol && 
-            xis[1] > -this->tol && xis[1] <= 1 + this->tol) {
+        // make sure the parametric coordinates are within the (0+, 1-) range
+        // no need to inclde the end points since they are already taken into 
+        // account when looking for nodes inside cell
+        if (xis[0] > this->tol && xis[0] <= 1 - this->tol && 
+            xis[1] > this->tol && xis[1] <= 1 - this->tol) {
             // the two edges intersect
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
                 double p = edge1Point0[j] + xis[0]*(edge1Point1[j] - edge1Point0[j]);
