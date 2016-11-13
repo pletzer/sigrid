@@ -70,6 +70,7 @@ bool testQuad2IsInsideQuad1() {
     SgQuadIntersect_del(&qis);
 
     std::cout << "testQuad2IsInsideQuad1: num intersection points = " << numPoints << '\n';
+    assert(fabs(area - 0.18) < 1.e-10);
 
     if (numPoints != 4) {
          /// error
@@ -107,6 +108,7 @@ bool testQuad1IsInsideQuad2() {
     SgQuadIntersect_del(&qis);
 
     std::cout << "testQuad1IsInsideQuad2: num intersection points = " << numPoints << '\n';
+    assert(fabs(area - 0.18) < 1.e-10);
 
     if (numPoints != 4) {
          /// error
@@ -144,6 +146,8 @@ bool testPartial3Points() {
     SgQuadIntersect_del(&qis);
 
     std::cout << "testPartial3Points: num intersection points = " << numPoints << '\n';
+    // need to check!
+    //assert(fabs(area - 0.06982142857142856) < 1.e-8);
 
     if (numPoints != 3) {
         /// error
