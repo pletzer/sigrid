@@ -57,6 +57,7 @@ struct SgConserveInterp2D_type {
 			this->dstNumCells *= dims[j] - 1;
 		}
 		this->dstCellDimProd[NDIMS_2D_TOPO - 1] = 1;
+		this->dstNodeDimProd[NDIMS_2D_TOPO - 1] = 1;
 		for (int j = NDIMS_2D_TOPO - 2; j >= 0; --j) {
     		// last index varies fastest
     		this->dstCellDimProd[j] = this->dstCellDimProd[j + 1] * this->dstCellDims[j + 1];
@@ -89,6 +90,7 @@ struct SgConserveInterp2D_type {
 			this->srcNumCells *= dims[j] - 1;
 		}
 		this->srcCellDimProd[NDIMS_2D_TOPO - 1] = 1;
+		this->srcNodeDimProd[NDIMS_2D_TOPO - 1] = 1;
 		for (int j = NDIMS_2D_TOPO - 2; j >= 0; --j) {
     		// last index varies fastest
     		this->srcCellDimProd[j] = this->srcCellDimProd[j + 1] * this->srcCellDims[j + 1];
@@ -218,27 +220,27 @@ struct SgConserveInterp2D_type {
 extern "C" {
 #endif
 
- int SgConserveInterp2D_new(SgConserveInterp2D_type** self);
+    int SgConserveInterp2D_new(SgConserveInterp2D_type** self);
                        
- int SgConserveInterp2D_del(SgConserveInterp2D_type** self);
+    int SgConserveInterp2D_del(SgConserveInterp2D_type** self);
 
- int SgConserveInterp2D_setDstGrid(SgConserveInterp2D_type** self, 
- 	                               const int dims[], const double** coords);
+    int SgConserveInterp2D_setDstGrid(SgConserveInterp2D_type** self, 
+ 	                                  const int dims[], const double** coords);
 
- int SgConserveInterp2D_setSrcGrid(SgConserveInterp2D_type** self, 
- 	                               const int dims[], const double** coords);
+    int SgConserveInterp2D_setSrcGrid(SgConserveInterp2D_type** self, 
+ 	                                  const int dims[], const double** coords);
 
- int SgConserveInterp2D_computeWeights(SgConserveInterp2D_type** self);
+    int SgConserveInterp2D_computeWeights(SgConserveInterp2D_type** self);
 
- int SgConserveInterp2D_apply(SgConserveInterp2D_type** self,
- 	                          const double srcData[], double dstData[]);
+    int SgConserveInterp2D_apply(SgConserveInterp2D_type** self,
+ 	                             const double srcData[], double dstData[]);
 
- int SgConserveInterp2D_reset(SgConserveInterp2D_type** self);
+    int SgConserveInterp2D_reset(SgConserveInterp2D_type** self);
 
- int SgConserveInterp2D_next(SgConserveInterp2D_type** self);
+    int SgConserveInterp2D_next(SgConserveInterp2D_type** self);
 
- int SgConserveInterp2D_get(SgConserveInterp2D_type** self,
- 	                        int* srcIndx, int* dstIndx, double* weight);
+    int SgConserveInterp2D_get(SgConserveInterp2D_type** self,
+ 	                           int* srcIndx, int* dstIndx, double* weight);
 
 #ifdef __cplusplus
 }

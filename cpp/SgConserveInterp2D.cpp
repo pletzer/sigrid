@@ -58,27 +58,32 @@ int SgConserveInterp2D_reset(SgConserveInterp2D_type** self) {
 extern "C"
 int SgConserveInterp2D_next(SgConserveInterp2D_type** self) {
 
-	if ((*self)->weightIt2 != (*self)->weightIt->second.end()) {
-		// increment the src index counter
-		(*self)->weightIt2++;
-		return 0;
-	}
-	else if ((*self)->weightIt != (*self)->weights.end()) {
-		// increment the dst index counter
+	// increment source counter
+	(*self)->weightIt2++;
+	if ((*self)->weightIt2 == (*self)->weightIt->second.end()) {
+		// reached end of src counter, increment dst counter
 		(*self)->weightIt++;
+		// reset src counter
 		(*self)->weightIt2 = (*self)->weightIt->second.begin();
-		return 0;
+		if ((*self)->weightIt == (*self)->weights.end()) {
+			// reached end of dst counter
+			// reset dst and src counters
+			(*self)->weightIt = (*self)->weights.begin();
+			(*self)->weightIt2 = (*self)->weightIt->second.begin();
+			// end of iteration 
+			return 1;
+		}
 	}
-
-	// reached end (error)
-	return 1;
+	return 0;
 }
 
 extern "C"
 int SgConserveInterp2D_get(SgConserveInterp2D_type** self,
                            int* srcIndx, int* dstIndx, double* weight) {
+
 	*dstIndx = (*self)->weightIt->first;
 	*srcIndx = (*self)->weightIt2->first;
 	*weight = (*self)->weightIt2->second;
+
 	return 0;
 }
