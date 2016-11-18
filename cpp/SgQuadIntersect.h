@@ -44,6 +44,10 @@ struct SgQuadIntersect_type {
         this->quad2Coords = NULL;
     }
 
+    void reset() {
+        this->intersectionPoints.resize(0);
+    }
+
     /**
      * Check if the boxes containg the two quads overlap
      * @return true if they overlap, false otherwise

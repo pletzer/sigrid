@@ -190,14 +190,15 @@ struct SgConserveInterp2D_type {
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
 				offset[0] = 0; offset[1] = 0;
-				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[0*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcQuadCoords[0*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 0;
-				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[1*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcQuadCoords[1*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 1;
-				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[2*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcQuadCoords[2*NDIMS_2D_PHYS]);
 				offset[0] = 0; offset[1] = 1;
-				this->getSrcQuadCoord(dstIndx, offset, &srcQuadCoords[3*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcQuadCoords[3*NDIMS_2D_PHYS]);
 
+				intersector.reset();
 				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
 				intersector.collectIntersectPoints(&numIntersectPoints, &intersectPoints);
 				if (numIntersectPoints >= 3) {
