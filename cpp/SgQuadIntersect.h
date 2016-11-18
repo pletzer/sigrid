@@ -30,6 +30,21 @@ struct SgQuadIntersect_type {
     double tol;
 
     /**
+     * Constructor
+     */
+     SgQuadIntersect_type() {
+
+        // tolerance for floating point comparisons
+        this->tol = 1.e-12;
+
+        this->slvr = NULL;
+        SgLinearSolve_new(&this->slvr, 2, 2);
+
+        this->quad1Coords = NULL;
+        this->quad2Coords = NULL;
+    }
+
+    /**
      * Check if the boxes containg the two quads overlap
      * @return true if they overlap, false otherwise
      */

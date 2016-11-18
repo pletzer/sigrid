@@ -10,15 +10,6 @@ int SgQuadIntersect_new(SgQuadIntersect_type** self) {
 
  	*self = new SgQuadIntersect_type();
 
- 	// tolerance for floating point comparisons
- 	(*self)->tol = 1.e-12;
-
- 	(*self)->slvr = NULL;
- 	SgLinearSolve_new(&(*self)->slvr, 2, 2);
-
- 	(*self)->quad1Coords = NULL;
- 	(*self)->quad2Coords = NULL;
-
  	return 0;
 }
       
