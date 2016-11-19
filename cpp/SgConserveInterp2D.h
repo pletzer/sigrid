@@ -129,31 +129,55 @@ struct SgConserveInterp2D_type {
 
 	/** 
 	 * Extract the destination cell coordinates from the grid
-	 * @param indx nodal flat index
+	 * @param indx cell flat index
 	 * @param offset displacement from the above node
 	 * @param coords array of asize NDIMS_2D_PHYS to be filled in 
 	 */
 	void getDstQuadCoord(size_t indx, int offset[], double coords[]) const {
+
+		// compute the index set of the cell and add the offset
+		size_t cellIndsOffset[NDIMS_2D_TOPO];
 		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-			indx += this->dstNodeDimProd[j] * offset[j];
+    		cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
+    		cellIndsOffset[j] += offset[j];
+  		}
+
+  		// compute the low-corner flat index of the node coorresponding to this cell
+  		size_t nodeIndx = 0;
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			nodeIndx += this->dstNodeDimProd[j] * cellIndsOffset[j];
 		}
+
+		// fill in the node's coordinates
 		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-			coords[j] = this->dstGrdCoords[indx*NDIMS_2D_PHYS + j];
+			coords[j] = this->dstGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
 		}
 	}
 
 	/** 
-	 * Extract the destination cell coordinates from the grid
+	 * Extract the source cell coordinates from the grid
 	 * @param indx nodal flat index
 	 * @param offset displacement from the above node
 	 * @param coords array of asize NDIMS_2D_PHYS to be filled in 
 	 */
 	void getSrcQuadCoord(size_t indx, int offset[], double coords[]) const {
+
+		// compute the index set of the cell and add the offset
+		size_t cellIndsOffset[NDIMS_2D_TOPO];
 		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-			indx += this->srcNodeDimProd[j] * offset[j];
+    		cellIndsOffset[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
+    		cellIndsOffset[j] += offset[j];
+  		}
+
+  		// compute the low-corner flat index of the node coorresponding to this cell
+  		size_t nodeIndx = 0;
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			nodeIndx += this->srcNodeDimProd[j] * cellIndsOffset[j];
 		}
+
+		// fill in the node's coordinates
 		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-			coords[j] = this->srcGrdCoords[indx*NDIMS_2D_PHYS + j];
+			coords[j] = this->srcGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
 		}
 	}
 
