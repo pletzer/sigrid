@@ -12,12 +12,13 @@ void create2DGrid(const int nodeDims[],
                   const double xmins[], const double xmaxs[], 
                   double** coords) {
 
-
+    double deltas[] = {(xmaxs[0] - xmins[0])/double(nodeDims[0] - 1),
+                       (xmaxs[1] - xmins[1])/double(nodeDims[1] - 1)};
     size_t index = 0;
     for (size_t i = 0; i < nodeDims[0]; ++i) {
         for (size_t j = 0; j < nodeDims[1]; ++j) {
-            coords[0][index] = xmins[0] + (xmaxs[0] - xmins[0])*i/float(nodeDims[0] - 1);
-            coords[1][index] = xmins[1] + (xmaxs[1] - xmins[1])*j/float(nodeDims[1] - 1);
+            coords[0][index] = xmins[0] + deltas[0]*j;
+            coords[1][index] = xmins[1] + deltas[1]*i;
             index++;
         }
     }
