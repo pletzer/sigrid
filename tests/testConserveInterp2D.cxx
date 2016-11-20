@@ -88,23 +88,28 @@ bool testSrc10By10() {
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
     double weight;
+    double totalWeight = 0;
     int end = 0;
     SgConserveInterp2D_reset(&interp);
     while (!end) {
         SgConserveInterp2D_get(&interp, &srcIndex, &dstIndex, &weight);
-        std::cout << "tstSrc10By10 src index: " << srcIndex << " dst index: " 
-                  << dstIndex << " weight: " << weight << '\n';
+        totalWeight += weight;
         end = SgConserveInterp2D_next(&interp);
     }
     SgConserveInterp2D_del(&interp);
 
+    if (fabs(totalWeight -  1.0) > 1.e-10) {
+        // sum of the weights should match number of dst cells
+        return false;
+    }
+
     return true;
 }
 
-bool testSrc10By10Dst100By100() {
+bool testSrc10By20Dst100By200() {
 
     // source grid
-    const int srcDims[] = {11, 11}; // number of nodes
+    const int srcDims[] = {11, 21}; // number of nodes
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
     int srcNumPoints = srcDims[0] * srcDims[1];
@@ -112,7 +117,7 @@ bool testSrc10By10Dst100By100() {
     create2DGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
 
     // destination grid
-    const int dstDims[] = {101, 101};
+    const int dstDims[] = {101, 201};
     const double dstXmins[] = {0., 0.};
     const double dstXmaxs[] = {1., 1.};
     int dstNumPoints = dstDims[0] * dstDims[1];
@@ -126,15 +131,20 @@ bool testSrc10By10Dst100By100() {
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
     double weight;
+    double totalWeight = 0;
     int end = 0;
     SgConserveInterp2D_reset(&interp);
     while (!end) {
         SgConserveInterp2D_get(&interp, &srcIndex, &dstIndex, &weight);
-        std::cout << "testSrc10By10Dst100By100 src index: " << srcIndex << " dst index: " 
-                  << dstIndex << " weight: " << weight << '\n';
+        totalWeight += weight;
         end = SgConserveInterp2D_next(&interp);
     }
     SgConserveInterp2D_del(&interp);
+
+    if (fabs(totalWeight -  200*100) > 1.e-10) {
+        // sum of the weights should match number of dst cells
+        return false;
+    }
 
     return true;
 }
@@ -144,7 +154,7 @@ int main(int argc, char** argv) {
 
     if (!testSimple()) return 1;
     if (!testSrc10By10()) return 2;
-    //if (!testSrc10By10Dst100By100()) return 3;
+    if (!testSrc10By20Dst100By200()) return 3;
 
     std::cout << "SUCCESS\n";
     return 0;

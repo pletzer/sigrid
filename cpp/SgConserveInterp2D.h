@@ -33,7 +33,7 @@ struct SgConserveInterp2D_type {
 	size_t dstNumPoints;
 	size_t dstNumCells;
 
-	// the interpolation weights
+	// the interpolation weights (ratios of overlap areas to dst cell areas)
 	// dst flat index -> {src flat index: weight}
 	std::map<size_t, std::vector< std::pair<size_t, double> > > weights;
 
