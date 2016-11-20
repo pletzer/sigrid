@@ -162,15 +162,18 @@ struct SgTriangulate_type {
         std::vector<size_t> inds(3);
         inds[0] = i0; inds[1] = i1; inds[2] = i2;
         double dotProduct = 1;
-        size_t ia, ib;
+        size_t ia, ib, iBase;
         size_t j = 0;
-        while (dotProduct > 0) {
+        while (dotProduct > this->eps && j < 3) {
+            iBase = inds[j];
             ia = inds[(j + 1) % 3];
             ib = inds[(j + 2) % 3];
             dotProduct = 0;
             for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
-                const double& da = this->points[ia*NDIMS_2D_PHYS + k];
-                const double& db = this->points[ib*NDIMS_2D_PHYS + k];
+                double da = this->points[ia*NDIMS_2D_PHYS + k];
+                da -= this->points[iBase*NDIMS_2D_PHYS + k];
+                double db = this->points[ib*NDIMS_2D_PHYS + k];
+                db -= this->points[iBase*NDIMS_2D_PHYS + k];
                 dotProduct += da*db;
             }
             j++;
