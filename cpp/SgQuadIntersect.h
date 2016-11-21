@@ -37,8 +37,7 @@ struct SgQuadIntersect_type {
         // tolerance for floating point comparisons
         this->tol = 1.e-12;
 
-        this->slvr = NULL;
-        SgLinearSolve_new(&this->slvr, 2, 2);
+        this->slvr = new SgLinearSolve_type(2, 2);
 
         this->quad1Coords = NULL;
         this->quad2Coords = NULL;
@@ -106,15 +105,15 @@ struct SgQuadIntersect_type {
             mat[2*i + 0] = node1[i] - node0[i];
             mat[2*i + 1] = node2[i] - node0[i];
         }
-        SgLinearSolve_setMatrix(&this->slvr, &mat[0]);
-        SgLinearSolve_setRightHandSide(&this->slvr, &rhs[0]);
-        int ier = SgLinearSolve_solve(&this->slvr);
+        this->slvr->setMatrix(&mat[0]);
+        this->slvr->setRightHandSide(&rhs[0]);
+        int ier = this->slvr->solve();
         if (ier > 0) {
             // singular system, likely degenerate triangle
             return false;
         }
         double* xis;
-        SgLinearSolve_getSolution(&this->slvr, &xis);
+        this->slvr->getSolution(&xis);
         // make sure the parametric coordinates are within triangle
         // (0 <= xi < 1 and 0 <= xi + eta < 1). Allow for a small tolerance
         // in case the point is right on the triangle's edges
@@ -165,16 +164,16 @@ struct SgQuadIntersect_type {
             mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
             mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
         }
-        SgLinearSolve_setMatrix(&this->slvr, &mat[0]);
-        SgLinearSolve_setRightHandSide(&this->slvr, &rhs[0]);
-        int ier = SgLinearSolve_solve(&this->slvr);
+        this->slvr->setMatrix(&mat[0]);
+        this->slvr->setRightHandSide(&rhs[0]);
+        int ier = this->slvr->solve();
         if (ier > 0) {
             // singular system, likely because the two edges are parallel 
             // not adding any point, even if the edges are degenerate
             return;
         }
         double* xis;
-        SgLinearSolve_getSolution(&this->slvr, &xis);
+        this->slvr->getSolution(&xis);
         // make sure the parametric coordinates are within the (0+, 1-) range
         // no need to inclde the end points since they are already taken into 
         // account when looking for nodes inside cell

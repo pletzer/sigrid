@@ -16,7 +16,7 @@ int SgQuadIntersect_new(SgQuadIntersect_type** self) {
 extern "C"                   
 int SgQuadIntersect_del(SgQuadIntersect_type** self) {
 
- 	if ((*self)->slvr) SgLinearSolve_del(&(*self)->slvr);
+ 	if ((*self)->slvr) delete (*self)->slvr;
  	delete *self;
 
  	return 0;
