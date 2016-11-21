@@ -48,6 +48,17 @@ struct SgFindPointInCell_type {
  	// target point minus current position (initially)
  	std::vector<double> rhs;
 
+SgFindPointInCell_type(int nitermax, double tolpos) {
+	this->tolpos = tolpos;
+ 	this->nitermax = nitermax;
+ 	this->slvr = NULL;
+ 	this->iter = 0;
+}
+
+~SgFindPointInCell_type() {
+if (this->slvr) SgLinearSolve_del(&this->slvr);
+}
+
 void getWeightsAndFlatIndices(const std::vector<double>& dInds,
  		                      std::vector<double>& weights, 
 		                      std::vector<size_t>& flatInds) {
@@ -120,6 +131,48 @@ void computeJacobianAndRHS() {
  	}
 }
 
+void setGrid(int ndims, const int dims[],
+ 	         const double** coords) {
+
+ 	if (ndims <= 0) return;
+
+ 	this->coords.resize(ndims);
+ 	this->prodDims.resize(ndims);
+ 	this->nodeProdDims.resize(ndims);
+ 	this->dims.resize(ndims);
+ 	this->jacMatrix.resize(ndims * ndims);
+ 	this->rhs.resize(ndims);
+ 	this->dIndices.resize(ndims);
+ 	this->targetPoint.resize(ndims);
+
+ 	// must have at least one dimension
+ 	this->prodDims[ndims - 1] = 1;
+ 	this->nodeProdDims[ndims - 1] = 1;
+ 	for (int i = ndims - 2; i >= 0; --i) {
+ 		this->prodDims[i] = this->prodDims[i + 1] * dims[i + 1];
+ 		this->nodeProdDims[i] = this->nodeProdDims[i + 1] * 2;
+ 	}
+
+ 	// total number of nodes
+ 	int ntot = 1;
+ 	for (int i = 0; i < ndims; ++i) {
+ 		ntot *= dims[i];
+ 		this->dims[i] = dims[i];
+ 	}
+
+ 	// set the coordinates
+ 	for (int i = 0; i < ndims; ++i) {
+ 		this->coords[i].resize(ntot);
+ 		for (int j = 0; j < ntot; ++j) {
+ 			this->coords[i][j] = coords[i][j];
+ 		}
+ 	}
+
+ 	// create a solver
+ 	SgLinearSolve_new(&this->slvr, ndims, ndims);
+}
+
+
 std::vector<double> getPosition() {
 	size_t ndims = this->dims.size();
 	std::vector<double> pos(ndims);
@@ -127,6 +180,15 @@ std::vector<double> getPosition() {
 		pos[i] = this->interp(this->dIndices, this->coords[i]);
 	}
 	return pos;
+}
+
+void reset(const double dIndices[], const double targetPoint[]) {
+	size_t ndims = this->dims.size();
+	for (size_t i = 0; i < ndims; ++i) {
+		this->dIndices[i] = dIndices[i];
+		this->targetPoint[i] = targetPoint[i];
+	}
+	this->iter = 0;
 }
 
 /** 
