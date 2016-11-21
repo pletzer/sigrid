@@ -230,13 +230,11 @@ bool testPolar() {
     return true;
 }
 
-
-
 int main(int argc, char** argv) {
 
-    //if (!testSimple()) return 1;
-    //if (!testSrc10By10()) return 2;
-    //if (!testSrc10By20Dst100By200()) return 3;
+    if (!testSimple()) return 1;
+    if (!testSrc10By10()) return 2;
+    if (!testSrc10By20Dst100By200()) return 3;
     if (!testPolar()) return 4;
 
     std::cout << "SUCCESS\n";
