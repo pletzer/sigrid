@@ -56,7 +56,7 @@ SgFindPointInCell_type(int nitermax, double tolpos) {
 }
 
 ~SgFindPointInCell_type() {
-if (this->slvr) SgLinearSolve_del(&this->slvr);
+	if (this->slvr) delete this->slvr;
 }
 
 void getWeightsAndFlatIndices(const std::vector<double>& dInds,
@@ -169,7 +169,7 @@ void setGrid(int ndims, const int dims[],
  	}
 
  	// create a solver
- 	SgLinearSolve_new(&this->slvr, ndims, ndims);
+ 	this->slvr = new SgLinearSolve_type(ndims, ndims);
 }
 
 
@@ -198,12 +198,12 @@ void reset(const double dIndices[], const double targetPoint[]) {
 int next() {
 
 	this->computeJacobianAndRHS();
-	SgLinearSolve_setMatrix(&this->slvr, &this->jacMatrix[0]);
-	SgLinearSolve_setRightHandSide(&this->slvr, &this->rhs[0]);
-	SgLinearSolve_solve(&this->slvr);
+	this->slvr->setMatrix(&this->jacMatrix[0]);
+	this->slvr->setRightHandSide(&this->rhs[0]);
+	this->slvr->solve();
 
 	double* sol;
-	SgLinearSolve_getSolution(&this->slvr, &sol);
+	this->slvr->getSolution(&sol);
 
 	size_t ndims = this->dims.size();
 
