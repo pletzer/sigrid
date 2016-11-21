@@ -37,8 +37,8 @@ int SgLinearSolve_setMatrix(SgLinearSolve_type** self,
                             const double mat[]) {
                             
     // row major storage
-    for (size_t i = 0; i < (*self)->nrow; ++i) {
-        for (size_t j = 0; j < (*self)->ncol; ++j) {
+    for (int i = 0; i < (*self)->nrow; ++i) {
+        for (int j = 0; j < (*self)->ncol; ++j) {
         // C storage
             size_t k = i*(*self)->ncol + j;
             (*self)->mat[k] = mat[k];
@@ -51,8 +51,7 @@ int SgLinearSolve_setMatrix(SgLinearSolve_type** self,
 extern "C"                          
 int SgLinearSolve_setRightHandSide(SgLinearSolve_type** self,
                                    const double b[]) {
-    size_t n = (*self)->b.size();
-    for (size_t i = 0; i < (*self)->nrow; ++i) {
+    for (int i = 0; i < (*self)->nrow; ++i) {
         (*self)->x[i] = b[i];
         (*self)->b[i] = b[i];
     } 
@@ -65,7 +64,6 @@ int SgLinearSolve_solve(SgLinearSolve_type** self) {
     int errCode = 0;
     char t = 'T'; // C storage
     int nrhs = 1;
-    int mn = (int) (*self)->b.size();
     int ldb = (int) (*self)->b.size();
     _GELS_(&t, 
            &(*self)->nrow, 
@@ -96,11 +94,11 @@ extern "C"
 int SgLinearSolve_getResidual(SgLinearSolve_type** self,
                               double* res) {
     *res = 0;
-    for (size_t i = 0; i < (*self)->nrow; ++i) {
+    for (int i = 0; i < (*self)->nrow; ++i) {
       double val = 0;
-        for (size_t j = 0; j < (*self)->ncol; ++j) {
-          size_t k = i*(*self)->ncol + j;
-            val += (*self)->matOri[k]*(*self)->x[j];
+        for (int j = 0; j < (*self)->ncol; ++j) {
+          int k = i*(*self)->ncol + j;
+          val += (*self)->matOri[k]*(*self)->x[j];
         }
         val -= (*self)->b[i];
         *res += fabs(val);

@@ -157,23 +157,21 @@ struct SgTriangulate_type {
         // choose each point as the base point, compute the dot product of the 
         // other vectors minus this point. If the dot product is negative then 
         // the point is a middle point. Return the other two points
-        double da[] = {0, 0};
-        double db[] = {0, 0};
         std::vector<size_t> inds(3);
         inds[0] = i0; inds[1] = i1; inds[2] = i2;
         double dotProduct = 1;
-        size_t ia, ib, iBase;
+        size_t ia = 0, ib = 0, ic = 0;
         size_t j = 0;
         while (dotProduct > this->eps && j < 3) {
-            iBase = inds[j];
+            ic = inds[j];
             ia = inds[(j + 1) % 3];
             ib = inds[(j + 2) % 3];
             dotProduct = 0;
             for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
                 double da = this->points[ia*NDIMS_2D_PHYS + k];
-                da -= this->points[iBase*NDIMS_2D_PHYS + k];
+                da -= this->points[ic*NDIMS_2D_PHYS + k];
                 double db = this->points[ib*NDIMS_2D_PHYS + k];
-                db -= this->points[iBase*NDIMS_2D_PHYS + k];
+                db -= this->points[ic*NDIMS_2D_PHYS + k];
                 dotProduct += da*db;
             }
             j++;
