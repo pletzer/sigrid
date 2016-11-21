@@ -120,6 +120,66 @@ void computeJacobianAndRHS() {
  	}
 }
 
+std::vector<double> getPosition() {
+	size_t ndims = this->dims.size();
+	std::vector<double> pos(ndims);
+	for (size_t i = 0; i < ndims; ++i) {
+		pos[i] = this->interp(this->dIndices, this->coords[i]);
+	}
+	return pos;
+}
+
+/** 
+ * Perform one Newton iteration
+ * @return 0 if not yeat reached target, 1 otherwise
+ */
+int next() {
+
+	this->computeJacobianAndRHS();
+	SgLinearSolve_setMatrix(&this->slvr, &this->jacMatrix[0]);
+	SgLinearSolve_setRightHandSide(&this->slvr, &this->rhs[0]);
+	SgLinearSolve_solve(&this->slvr);
+
+	double* sol;
+	SgLinearSolve_getSolution(&this->slvr, &sol);
+
+	size_t ndims = this->dims.size();
+
+	// update the indices
+	for (size_t i = 0; i < ndims; ++i) {
+		this->dIndices[i] += sol[i];
+	}
+
+	// check if the next iterator is still valid
+	this->iter++;
+	std::vector<double> pos = this->getPosition();
+
+	// use Eulerian distance as error measure
+	double posError = 0;
+	for (size_t i = 0; i < ndims; ++i) {
+		double dp = pos[i] - this->targetPoint[i];
+		posError += dp * dp;
+	}
+	posError = sqrt(posError);
+
+	if (this->iter >= this->nitermax) {
+		// reached max number of iterations
+		return -1; 
+	}
+	if (posError < this->tolpos) {
+		// done!
+		return 1;
+	}
+
+	// has not yet converged
+	return 0;
+}
+
+std::vector<double> getIndices() const {
+ 	return this->dIndices;
+}
+
+
 };
  
 #ifdef __cplusplus
