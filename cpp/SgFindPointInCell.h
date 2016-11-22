@@ -192,7 +192,7 @@ void reset(const double dIndices[], const double targetPoint[]) {
 
 /** 
  * Perform one Newton iteration
- * @return 0 if not yeat reached target, 1 otherwise
+ * @return 0 if not yet reached target, 1 otherwise
  */
 int next() {
 

@@ -1,5 +1,5 @@
 /**
- * A class that finds all the structured grid cells that overlap with a polygon
+ * A class that finds all the structured grid cells that overlap with a polygon using simple box heuristics
  */
  
 #ifndef SG_FIND_OVERLAPPING_CELLS_2D_H
@@ -18,6 +18,15 @@ struct SgFindOverlappingCells2D_type {
 
 	// high corner index set
 	std::vector<double> hiIndxCorner;
+
+	// the dimensions of the source grid
+	std::vector<int> srcNodeDims;
+
+	// to go from an index set to a flat index
+	std::vector<int> srcCellProdDims;
+
+	// collection of cell flat indices
+	std::vector<int> srcCellFlatInds;
 
 	// source grid coordinates (component, node)
 	double** srcCoords;
@@ -38,12 +47,13 @@ struct SgFindOverlappingCells2D_type {
 	 */
 	SgFindOverlappingCells2D_type() {
 
-		this->loIndxCorner.resize(2); // 2D
-		this->hiIndxCorner.resize(2); // 2D
+		this->loIndxCorner.resize(NDIMS_2D_TOPO); // 2D
+		this->hiIndxCorner.resize(NDIMS_2D_TOPO); // 2D
 		const int nitermax = 100;
 		const double tolpos = 1.e-6;
 		this->pointFinder = new SgFindPointInCell_type(nitermax, tolpos);
 		this->eps = 0.01;
+		this->srcCellFlatInds.reserve(100); // rough estimate
 	}
 
 	/** 
@@ -59,7 +69,16 @@ struct SgFindOverlappingCells2D_type {
 	 * @param coords coordinates (component, node)
 	 */
 	void setSrcGrid(const int dims[], const double** coords) {
-
+		this->srcNodeDims.resize(NDIMS_2D_TOPO);
+		this->srcCellProdDims.resize(NDIMS_2D_TOPO);
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			this->srcNodeDims[j] = dims[j];
+		}
+		this->srcCellProdDims[NDIMS_2D_TOPO - 1] = 1;
+		for (int j = NDIMS_2D_TOPO - 2; j >= 0; --j) {
+    		// last index varies fastest
+    		this->srcCellProdDims[j] = this->srcCellProdDims[j + 1] * dims[j + 1];
+  		}
 		this->pointFinder->setGrid(2, dims, coords);
 	}
 
@@ -72,42 +91,87 @@ struct SgFindOverlappingCells2D_type {
 		this->numPolyPoints = numPoints;
 		this->polyPoints.resize(this->numPolyPoints);
 		for (size_t i = 0; i < this->numPolyPoints; ++i) {
-			for (size_t j = 0; j < NDIMS_PHYS_2D; ++j) {
-				this->polyPoints[NDIMS_PHYS_2D*i + j] = coords[NDIMS_PHYS_2D*i + j];
+			for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+				this->polyPoints[NDIMS_2D_PHYS*i + j] = coords[NDIMS_2D_PHYS*i + j];
 			}
 		}
 	}
 
-	void findIndexBox() {
-		// TO DO!!!
+	void findFloatIndexBox() {
+
+		// initial guess, somewhere in the middle
+		double dIndices[] = {this->srcNodeDims[0]/2.123353, this->srcNodeDims[1]/1.9647354};
+
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			this->loIndxCorner[j] = this->srcNodeDims[j] - 2;
+			this->hiIndxCorner[j] = 0;
+		}
+
+		std::vector<double> pos;
+
+		// iterate over the polygon's points
+		for (int i = 0; i < this->numPolyPoints; ++i) {
+			bool iterFlag = true;
+			size_t icount = 0;
+			const double* targetPoint = &this->polyPoints[i*NDIMS_2D_PHYS];
+			this->pointFinder->reset(dIndices, targetPoint);
+			pos = this->pointFinder->getPosition();
+			while (iterFlag) {
+				int ier = this->pointFinder->next();
+				pos = this->pointFinder->getPosition();
+				if (ier != 0) {
+					iterFlag = false;
+				}
+				else {
+					icount++;
+				}
+			}
+			// need to check for errors here!!!!
+
+			// correct the index box corners
+			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+				this->loIndxCorner[j] = (dIndices[j] < this->loIndxCorner[j]? 
+					                     dIndices[j]: this->loIndxCorner[j]);
+				this->hiIndxCorner[j] = (dIndices[j] > this->hiIndxCorner[j]? 
+					                     dIndices[j]: this->hiIndxCorner[j]);
+			}
+		}
+
+		// make sure the index box corners are in the domain
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			this->loIndxCorner[j] = (this->loIndxCorner[j] < 0? 
+				                     0: this->loIndxCorner[j]);
+			this->hiIndxCorner[j] = (this->hiIndxCorner[j] > this->srcNodeDims[j] - 2? 
+				                     this->srcNodeDims[j] - 2: this->hiIndxCorner[j]);
+		}
 	}
 
-	std::vector<size_t> getSrcCellIndices() {
+	std::vector<size_t> findSrcCellIndices() {
 
-		this->findIndexBox();
+		this->findFloatIndexBox();
 
 		// set the low/high of the index box
-		int loInds[NDIMS_TOPO_2D];
-		int hiInds[NDIMS_TOPO_2D];
-		for (size_t j = 0; j < NDIMS_TOPO_2D; ++j) {
+		int loInds[NDIMS_2D_TOPO];
+		int hiInds[NDIMS_2D_TOPO];
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 			loInds[j] = floor(this->loIndxCorner[j] - this->eps);
 			hiInds[j] = floor(this->hiIndxCorner[j] + this->eps);
 			// make sure the lo/hi index corners are in the domain
 			loInds[j] = (loInds[j] >= 0? loInds[j]: 0);
-			hiInds[j] = (hiInds[j] < this->srcCellDims[j]? hiInds[j]: this->srcCellDims[j] - 1);
+			hiInds[j] = (hiInds[j] < this->srcNodeDims[j] - 1? hiInds[j]: this->srcNodeDims[j] - 2);
 		}
 
 		// iterate over the cells inside the index box
-		int inds[NDIMS_TOPO_2D];
+		int inds[NDIMS_2D_TOPO];
 		std::vector<size_t> cellFlatInds;
-		cellFlatInds.capacity(100); // rough guess
+		this->srcCellFlatInds.resize(0);
 		SgBoxIterator_type boxIter(loInds, hiInds);
 		int numCells = boxIter.getNumberOfElements();
 		for (int i = 0; i < numCells; ++i) {
 			boxIter.getElement(i, inds);
 			// compute the flat index of the cell
 			size_t cellIndx = 0;
-			for (size_t j = 0; j < NDIMS_TOPO_2D; ++j) {
+			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 				cellIndx += this->srcCellProdDims[j] * inds[j];
 			}
 			// add the index to the list
@@ -116,7 +180,6 @@ struct SgFindOverlappingCells2D_type {
 
 		return cellFlatInds;
 	}
-
 };
  
 #ifdef __cplusplus
@@ -127,27 +190,23 @@ extern "C" {
                        
     int SgFindOverlappingCells2D_del(SgFindOverlappingCells2D_type** self);
 
-    int SgFindOverlappingCells2D_setDstGrid(SgFindOverlappingCells2D_type** self, 
- 	                                  const int dims[], const double** coords);
+    int SgFindOverlappingCells2D_setSrcGrid(SgFindOverlappingCells2D_type** self,
+    	                                    const int dims[], const double** coords);
 
-    int SgFindOverlappingCells2D_setSrcGrid(SgFindOverlappingCells2D_type** self, 
- 	                                  const int dims[], const double** coords);
+    int SgFindOverlappingCells2D_setPolygonPoints(SgFindOverlappingCells2D_type** self, 
+ 	                                              int numPoints, const double coords[]);
 
-    int SgFindOverlappingCells2D_computeWeights(SgFindOverlappingCells2D_type** self);
+    int SgFindOverlappingCells2D_findSrcCellIndices(SgFindOverlappingCells2D_type** self);
 
-    int SgFindOverlappingCells2D_apply(SgFindOverlappingCells2D_type** self,
- 	                             const double srcData[], double dstData[]);
+    int SgFindOverlappingCells2D_getNumberOfSrcCellIndices(SgFindOverlappingCells2D_type** self,
+    	                                                   int* numSrcCells);
 
-    int SgFindOverlappingCells2D_reset(SgFindOverlappingCells2D_type** self);
-
-    int SgFindOverlappingCells2D_next(SgFindOverlappingCells2D_type** self);
-
-    int SgFindOverlappingCells2D_get(SgFindOverlappingCells2D_type** self,
- 	                           int* srcIndx, int* dstIndx, double* weight);
+    int SgFindOverlappingCells2D_getSrcCellIndices(SgFindOverlappingCells2D_type** self,
+    	                                           int** srcCellInds);
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif // SG_CONSERVE_INTERP_2D_H
+#endif // SG_FIND_OVERLAPPING_CELLS_2D_H

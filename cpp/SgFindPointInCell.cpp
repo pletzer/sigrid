@@ -8,7 +8,7 @@
 
 extern "C"
 int SgFindPointInCell_new(SgFindPointInCell_type** self,
-                           int nitermax, double tolpos) {
+                          int nitermax, double tolpos) {
  	*self = new SgFindPointInCell_type(nitermax, tolpos);
  	return 0;
 }
@@ -21,8 +21,8 @@ int SgFindPointInCell_del(SgFindPointInCell_type** self) {
 
 extern "C"
 int SgFindPointInCell_setGrid(SgFindPointInCell_type** self, 
- 	                           int ndims, const int dims[],
- 	                           const double** coords) {
+ 	                          int ndims, const int dims[],
+ 	                          const double** coords) {
 	(*self)->setGrid(ndims, dims, coords);
  	return 0;
 }

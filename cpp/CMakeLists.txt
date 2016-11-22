@@ -13,6 +13,7 @@ set(LIB_FILES
   SgQuadIntersect.cpp
   SgTriangulate.cpp
   SgConserveInterp2D.cpp
+  SgFindOverlappingCells2D.cpp
 )
 
 set(HEADER_FILES
@@ -26,6 +27,7 @@ set(HEADER_FILES
   SgQuadIntersect.h
   SgTriangulate.h
   SgConserveInterp2D.h
+  SgFindOverlappingCells2D.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
