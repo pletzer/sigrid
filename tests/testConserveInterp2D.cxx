@@ -92,6 +92,12 @@ bool testSimple() {
     }
     SgConserveInterp2D_del(&interp);
 
+    // clean up
+    delete[] srcCoords[0];
+    delete[] srcCoords[1];
+    delete[] dstCoords[0];
+    delete[] dstCoords[1];
+
     return true;
 }
 
@@ -129,6 +135,12 @@ bool testSrc10By10() {
         end = SgConserveInterp2D_next(&interp);
     }
     SgConserveInterp2D_del(&interp);
+
+    // clean up
+    delete[] srcCoords[0];
+    delete[] srcCoords[1];
+    delete[] dstCoords[0];
+    delete[] dstCoords[1];
 
     std::cout << "testSrc10By10: total weight = " << totalWeight << '\n';
     if (fabs(totalWeight -  1.0) > 1.e-10) {
@@ -174,6 +186,12 @@ bool testSrc10By20Dst100By200() {
     }
     SgConserveInterp2D_del(&interp);
 
+    // clean up
+    delete[] srcCoords[0];
+    delete[] srcCoords[1];
+    delete[] dstCoords[0];
+    delete[] dstCoords[1];
+
     std::cout << "testSrc10By20Dst100By200: total weight = " << totalWeight << '\n';
     if (fabs(totalWeight -  200*100) > 1.e-10) {
         // sum of the weights should match number of dst cells
@@ -218,6 +236,12 @@ bool testPolar() {
         end = SgConserveInterp2D_next(&interp);
     }
     SgConserveInterp2D_del(&interp);
+
+    // clean up
+    delete[] srcCoords[0];
+    delete[] srcCoords[1];
+    delete[] dstCoords[0];
+    delete[] dstCoords[1];
 
     std::cout << "testPolar: total weight = " << totalWeight << '\n';
     int dstNumCells = (dstDims[0] - 1) * (dstDims[1] - 1);

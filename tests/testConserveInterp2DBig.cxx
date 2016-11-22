@@ -93,6 +93,12 @@ bool testPolar() {
     }
     SgConserveInterp2D_del(&interp);
 
+    // clean up
+    delete[] srcCoords[0];
+    delete[] srcCoords[1];
+    delete[] dstCoords[0];
+    delete[] dstCoords[1];
+
     std::cout << "testPolar: total weight = " << totalWeight << '\n';
     int dstNumCells = (dstDims[0] - 1) * (dstDims[1] - 1);
     if (fabs(totalWeight -  1.0 * dstNumCells) > 1.e-10) {
