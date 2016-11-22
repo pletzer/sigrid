@@ -47,7 +47,11 @@ struct SgFindPointInCell_type {
 
     // target point minus current position (initially)
     std::vector<double> rhs;
-
+/**
+ * Constructor
+ * @param nitermax max number of Newton iterations
+ * @param tolpos tolerance in physical space
+ */
 SgFindPointInCell_type(int nitermax, double tolpos) {
     this->tolpos = tolpos;
     this->nitermax = nitermax;
@@ -59,6 +63,12 @@ SgFindPointInCell_type(int nitermax, double tolpos) {
     if (this->slvr) delete this->slvr;
 }
 
+/**
+ * Get the interpolation weights and flat node indices
+ * @param dInds position in index space
+ * @param weights interpolation weights to be filled in
+ * @param flatInds flat node indices to be filled in
+ */
 void getWeightsAndFlatIndices(const std::vector<double>& dInds,
                               std::vector<double>& weights, 
                               std::vector<size_t>& flatInds) {
@@ -79,6 +89,11 @@ void getWeightsAndFlatIndices(const std::vector<double>& dInds,
     }
 }
 
+/**
+ * Interpolate a nodal field
+ * @param dInds position in index space
+ * @param nodalField values of the nodal fields in the order returned by getWeightsAndFlatIndices
+ */
 double interp(const std::vector<double>& dInds,
               const std::vector<double>& nodalField) {
 
@@ -95,12 +110,15 @@ double interp(const std::vector<double>& dInds,
     return res;
 }
 
+/**
+ * Compute the current Jacobian and right hand side vector using finite differences
+ */
 void computeJacobianAndRHS() {
 
     size_t ndims = this->dims.size();
 
-    // start at the current location
-    std::vector<double> dInds(dIndices);
+    std::vector<double> dIndsHi(dIndices);
+    std::vector<double> dIndsLo(dIndices);
 
     // iterate over the physical space dimensions
     size_t k = 0;
@@ -112,25 +130,32 @@ void computeJacobianAndRHS() {
         // iterate over the index space dimensions
         for (size_t j = 0; j < ndims; ++j) {
 
-            // high end of the cell
-            dInds[j] = floor(dIndices[j]) + 1.0;
-            double xHi = this->interp(dInds, this->coords[i]);
+            dIndsHi[j] += 0.5;
+            dIndsHi[j] = (dIndsHi[j] < this->dims[j] - 1? dIndsHi[j]: this->dims[j] - 2);
+            double xHi = this->interp(dIndsHi, this->coords[i]);
 
-            // low end of the cell
-            dInds[j] = floor(dIndices[j]);
-            double xLo = this->interp(dInds, this->coords[i]);
-
-            // reset to mid cell
-            dInds[j] = dIndices[j];
+            dIndsLo[j] -= 0.5;
+            dIndsLo[j] = (dIndsLo[j] >= 0? dIndsLo[j]: 0);
+            double xLo = this->interp(dIndsLo, this->coords[i]);
 
             // average difference of the i-th coordinate anlong the j-th topo direction
-            this->jacMatrix[k] = xHi - xLo;
+            this->jacMatrix[k] = (xHi - xLo)/(dIndsHi[j] - dIndsLo[j]);
+
+            // reset
+            dIndsHi[j] = dIndices[j];
+            dIndsLo[j] = dIndices[j];
 
             k++;            
         }
     }
 }
 
+/**
+ * Set the grid 
+ * @param ndims number of physical and topological dimensions
+ * @param dims number of nodes along each dimensions
+ * @param coords arrays of flat coordinates (component, coordinates)
+ */
 void setGrid(int ndims, const int dims[],
               const double** coords) {
 
@@ -172,6 +197,10 @@ void setGrid(int ndims, const int dims[],
     this->slvr = new SgLinearSolve_type(ndims, ndims);
 }
 
+/**
+ * Get the current position
+ * @return psoition
+ */
 std::vector<double> getPosition() {
     size_t ndims = this->dims.size();
     std::vector<double> pos(ndims);
@@ -192,7 +221,9 @@ void reset(const double dIndices[], const double targetPoint[]) {
 
 /** 
  * Perform one Newton iteration
- * @return 0 if not yet reached target, 1 otherwise
+ * @return 0 if not yet reached target
+ *         1 converged
+ *         -1 hit max number of iterations
  */
 int next() {
 
@@ -236,6 +267,10 @@ int next() {
     return 0;
 }
 
+/**
+ * Get the current index space position
+ * @return index position
+ */
 std::vector<double> getIndices() const {
     return this->dIndices;
 }
