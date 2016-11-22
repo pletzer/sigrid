@@ -12,182 +12,182 @@
  
 struct SgFindPointInCell_type {
 
- 	// linear solver
- 	SgLinearSolve_type* slvr;
+    // linear solver
+    SgLinearSolve_type* slvr;
 
- 	// the curvilinear coordinate points as ndims flat arrays
- 	std::vector<std::vector<double> > coords;
+    // the curvilinear coordinate points as ndims flat arrays
+    std::vector<std::vector<double> > coords;
 
- 	// used to get the flat index
- 	std::vector<size_t> prodDims;
+    // used to get the flat index
+    std::vector<size_t> prodDims;
 
- 	// used when iterating over cell nodes
- 	std::vector<size_t> nodeProdDims;
+    // used when iterating over cell nodes
+    std::vector<size_t> nodeProdDims;
 
- 	// the number of grid points for each dimension
- 	std::vector<size_t> dims;
+    // the number of grid points for each dimension
+    std::vector<size_t> dims;
 
- 	// the target point
- 	std::vector<double> targetPoint;
+    // the target point
+    std::vector<double> targetPoint;
 
- 	// max number of Newton iterations
- 	int nitermax;
+    // max number of Newton iterations
+    int nitermax;
 
- 	// tolerance in coordinate space
- 	double tolpos;
+    // tolerance in coordinate space
+    double tolpos;
 
- 	// current iteration
- 	int iter;
+    // current iteration
+    int iter;
 
- 	// current index location
- 	std::vector<double> dIndices;
+    // current index location
+    std::vector<double> dIndices;
 
- 	// current Jacobian matrix
- 	std::vector<double> jacMatrix;
+    // current Jacobian matrix
+    std::vector<double> jacMatrix;
 
- 	// target point minus current position (initially)
- 	std::vector<double> rhs;
+    // target point minus current position (initially)
+    std::vector<double> rhs;
 
 SgFindPointInCell_type(int nitermax, double tolpos) {
-	this->tolpos = tolpos;
- 	this->nitermax = nitermax;
- 	this->slvr = NULL;
- 	this->iter = 0;
+    this->tolpos = tolpos;
+    this->nitermax = nitermax;
+     this->slvr = NULL;
+     this->iter = 0;
 }
 
 ~SgFindPointInCell_type() {
-	if (this->slvr) delete this->slvr;
+    if (this->slvr) delete this->slvr;
 }
 
 void getWeightsAndFlatIndices(const std::vector<double>& dInds,
- 		                      std::vector<double>& weights, 
-		                      std::vector<size_t>& flatInds) {
+                               std::vector<double>& weights, 
+                              std::vector<size_t>& flatInds) {
 
- 	size_t ndims = this->dims.size();
- 	size_t nnodes = weights.size();
- 	for (size_t j = 0; j < nnodes; ++j) {
- 		flatInds[j] = 0;
- 		weights[j] = 1;
- 		for (size_t i = 0; i < ndims; ++i) {
- 			int loCornerIndx = (int) floor(dInds[i]);
- 			int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);
- 			flatInds[j] += (size_t) this->prodDims[i] * indx;
- 			double dindx = (double) indx;
- 			double w = (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
- 			weights[j] *= w;
- 		}
- 	}
+     size_t ndims = this->dims.size();
+     size_t nnodes = weights.size();
+     for (size_t j = 0; j < nnodes; ++j) {
+         flatInds[j] = 0;
+         weights[j] = 1;
+         for (size_t i = 0; i < ndims; ++i) {
+             int loCornerIndx = (int) floor(dInds[i]);
+             int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);
+             flatInds[j] += (size_t) this->prodDims[i] * indx;
+             double dindx = (double) indx;
+             double w = (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
+             weights[j] *= w;
+         }
+     }
 }
 
 double interp(const std::vector<double>& dInds,
- 		      const std::vector<double>& nodalField) {
+               const std::vector<double>& nodalField) {
 
- 	double res = 0;
- 	size_t ndims = this->dims.size();
- 	size_t nnodes = pow(2, ndims);
- 	std::vector<double> weights(nnodes);
- 	std::vector<size_t> flatInds(nnodes);
- 	this->getWeightsAndFlatIndices(dInds, weights, flatInds);
- 	for (size_t j = 0; j < nnodes; ++j) {
- 		size_t bindx = flatInds[j];
- 		res += weights[j] * nodalField[bindx];
- 	}
- 	return res;
+     double res = 0;
+     size_t ndims = this->dims.size();
+     size_t nnodes = pow(2, ndims);
+     std::vector<double> weights(nnodes);
+     std::vector<size_t> flatInds(nnodes);
+     this->getWeightsAndFlatIndices(dInds, weights, flatInds);
+     for (size_t j = 0; j < nnodes; ++j) {
+         size_t bindx = flatInds[j];
+         res += weights[j] * nodalField[bindx];
+     }
+     return res;
 }
 
 void computeJacobianAndRHS() {
 
- 	size_t ndims = this->dims.size();
+     size_t ndims = this->dims.size();
 
- 	// start at the current location
- 	std::vector<double> dInds(dIndices);
+     // start at the current location
+     std::vector<double> dInds(dIndices);
 
- 	// iterate over the physical space dimensions
- 	size_t k = 0;
- 	for (size_t i = 0; i < ndims; ++i) {
+     // iterate over the physical space dimensions
+     size_t k = 0;
+     for (size_t i = 0; i < ndims; ++i) {
 
- 		double pos = this->interp(this->dIndices, this->coords[i]);
- 		this->rhs[i] = this->targetPoint[i] - pos;
+         double pos = this->interp(this->dIndices, this->coords[i]);
+         this->rhs[i] = this->targetPoint[i] - pos;
 
- 		// iterate over the index space dimensions
- 		for (size_t j = 0; j < ndims; ++j) {
+         // iterate over the index space dimensions
+         for (size_t j = 0; j < ndims; ++j) {
 
- 			// high end of the cell
- 			dInds[j] = floor(dIndices[j]) + 1.0;
- 			double xHi = this->interp(dInds, this->coords[i]);
+             // high end of the cell
+             dInds[j] = floor(dIndices[j]) + 1.0;
+             double xHi = this->interp(dInds, this->coords[i]);
 
- 			// low end of the cell
- 			dInds[j] = floor(dIndices[j]);
- 			double xLo = this->interp(dInds, this->coords[i]);
+             // low end of the cell
+             dInds[j] = floor(dIndices[j]);
+             double xLo = this->interp(dInds, this->coords[i]);
 
- 			// reset to mid cell
- 			dInds[j] = dIndices[j];
+             // reset to mid cell
+             dInds[j] = dIndices[j];
 
-			// average difference of the i-th coordinate anlong the j-th topo direction
- 			this->jacMatrix[k] = xHi - xLo;
+            // average difference of the i-th coordinate anlong the j-th topo direction
+             this->jacMatrix[k] = xHi - xLo;
 
- 			k++;			
- 		}
- 	}
+             k++;            
+         }
+     }
 }
 
 void setGrid(int ndims, const int dims[],
- 	         const double** coords) {
+              const double** coords) {
 
- 	if (ndims <= 0) return;
+     if (ndims <= 0) return;
 
- 	this->coords.resize(ndims);
- 	this->prodDims.resize(ndims);
- 	this->nodeProdDims.resize(ndims);
- 	this->dims.resize(ndims);
- 	this->jacMatrix.resize(ndims * ndims);
- 	this->rhs.resize(ndims);
- 	this->dIndices.resize(ndims);
- 	this->targetPoint.resize(ndims);
+     this->coords.resize(ndims);
+     this->prodDims.resize(ndims);
+     this->nodeProdDims.resize(ndims);
+     this->dims.resize(ndims);
+     this->jacMatrix.resize(ndims * ndims);
+     this->rhs.resize(ndims);
+     this->dIndices.resize(ndims);
+     this->targetPoint.resize(ndims);
 
- 	// must have at least one dimension
- 	this->prodDims[ndims - 1] = 1;
- 	this->nodeProdDims[ndims - 1] = 1;
- 	for (int i = ndims - 2; i >= 0; --i) {
- 		this->prodDims[i] = this->prodDims[i + 1] * dims[i + 1];
- 		this->nodeProdDims[i] = this->nodeProdDims[i + 1] * 2;
- 	}
+     // must have at least one dimension
+     this->prodDims[ndims - 1] = 1;
+     this->nodeProdDims[ndims - 1] = 1;
+     for (int i = ndims - 2; i >= 0; --i) {
+         this->prodDims[i] = this->prodDims[i + 1] * dims[i + 1];
+         this->nodeProdDims[i] = this->nodeProdDims[i + 1] * 2;
+     }
 
- 	// total number of nodes
- 	int ntot = 1;
- 	for (int i = 0; i < ndims; ++i) {
- 		ntot *= dims[i];
- 		this->dims[i] = dims[i];
- 	}
+     // total number of nodes
+     int ntot = 1;
+     for (int i = 0; i < ndims; ++i) {
+         ntot *= dims[i];
+         this->dims[i] = dims[i];
+     }
 
- 	// set the coordinates
- 	for (int i = 0; i < ndims; ++i) {
- 		this->coords[i].resize(ntot);
- 		for (int j = 0; j < ntot; ++j) {
- 			this->coords[i][j] = coords[i][j];
- 		}
- 	}
+     // set the coordinates
+     for (int i = 0; i < ndims; ++i) {
+         this->coords[i].resize(ntot);
+         for (int j = 0; j < ntot; ++j) {
+             this->coords[i][j] = coords[i][j];
+         }
+     }
 
- 	// create a solver
- 	this->slvr = new SgLinearSolve_type(ndims, ndims);
+     // create a solver
+     this->slvr = new SgLinearSolve_type(ndims, ndims);
 }
 
 std::vector<double> getPosition() {
-	size_t ndims = this->dims.size();
-	std::vector<double> pos(ndims);
-	for (size_t i = 0; i < ndims; ++i) {
-		pos[i] = this->interp(this->dIndices, this->coords[i]);
-	}
-	return pos;
+    size_t ndims = this->dims.size();
+    std::vector<double> pos(ndims);
+    for (size_t i = 0; i < ndims; ++i) {
+        pos[i] = this->interp(this->dIndices, this->coords[i]);
+    }
+    return pos;
 }
 
 void reset(const double dIndices[], const double targetPoint[]) {
-	size_t ndims = this->dims.size();
-	for (size_t i = 0; i < ndims; ++i) {
-		this->dIndices[i] = dIndices[i];
-		this->targetPoint[i] = targetPoint[i];
-	}
-	this->iter = 0;
+    size_t ndims = this->dims.size();
+    for (size_t i = 0; i < ndims; ++i) {
+        this->dIndices[i] = dIndices[i];
+        this->targetPoint[i] = targetPoint[i];
+    }
+    this->iter = 0;
 }
 
 /** 
@@ -196,50 +196,49 @@ void reset(const double dIndices[], const double targetPoint[]) {
  */
 int next() {
 
-	this->computeJacobianAndRHS();
-	this->slvr->setMatrix(&this->jacMatrix[0]);
-	this->slvr->setRightHandSide(&this->rhs[0]);
-	this->slvr->solve();
+    this->computeJacobianAndRHS();
+    this->slvr->setMatrix(&this->jacMatrix[0]);
+    this->slvr->setRightHandSide(&this->rhs[0]);
+    this->slvr->solve();
 
-	double* sol;
-	this->slvr->getSolution(&sol);
+    double* sol;
+    this->slvr->getSolution(&sol);
 
-	size_t ndims = this->dims.size();
+    size_t ndims = this->dims.size();
 
-	// update the indices
-	for (size_t i = 0; i < ndims; ++i) {
-		this->dIndices[i] += sol[i];
-	}
+    // update the indices
+    for (size_t i = 0; i < ndims; ++i) {
+        this->dIndices[i] += sol[i];
+    }
 
-	// check if the next iterator is still valid
-	this->iter++;
-	std::vector<double> pos = this->getPosition();
+    // check if the next iterator is still valid
+    this->iter++;
+    std::vector<double> pos = this->getPosition();
 
-	// use Eulerian distance as error measure
-	double posError = 0;
-	for (size_t i = 0; i < ndims; ++i) {
-		double dp = pos[i] - this->targetPoint[i];
-		posError += dp * dp;
-	}
-	posError = sqrt(posError);
+    // use Eulerian distance as error measure
+    double posError = 0;
+    for (size_t i = 0; i < ndims; ++i) {
+        double dp = pos[i] - this->targetPoint[i];
+        posError += dp * dp;
+    }
+    posError = sqrt(posError);
 
-	if (this->iter >= this->nitermax) {
-		// reached max number of iterations
-		return -1; 
-	}
-	if (posError < this->tolpos) {
-		// done!
-		return 1;
-	}
+    if (this->iter >= this->nitermax) {
+        // reached max number of iterations
+        return -1; 
+    }
+    if (posError < this->tolpos) {
+        // done!
+        return 1;
+    }
 
-	// has not yet converged
-	return 0;
+    // has not yet converged
+    return 0;
 }
 
 std::vector<double> getIndices() const {
- 	return this->dIndices;
+    return this->dIndices;
 }
-
 
 };
  
@@ -247,28 +246,27 @@ std::vector<double> getIndices() const {
 extern "C" {
 #endif
 
- int SgFindPointInCell_new(SgFindPointInCell_type** self,
-                       int nitermax, double tolpos);
+int SgFindPointInCell_new(SgFindPointInCell_type** self,
+                          int nitermax, double tolpos);
                        
- int SgFindPointInCell_del(SgFindPointInCell_type** self);
+int SgFindPointInCell_del(SgFindPointInCell_type** self);
 
- int SgFindPointInCell_setGrid(SgFindPointInCell_type** self, 
- 	                           int ndims, const int dims[], 
- 	                           const double** coords);
+int SgFindPointInCell_setGrid(SgFindPointInCell_type** self, 
+                              int ndims, const int dims[], 
+                              const double** coords);
 
- int SgFindPointInCell_getPosition(SgFindPointInCell_type** self, 
- 	                               double pos[]);
+int SgFindPointInCell_getPosition(SgFindPointInCell_type** self, 
+                                  double pos[]);
 
- int SgFindPointInCell_reset(SgFindPointInCell_type** self, 
-	                         const double dIndices[], 
-	                         const double targetPoint[]);
+int SgFindPointInCell_reset(SgFindPointInCell_type** self, 
+                            const double dIndices[], 
+                            const double targetPoint[]);
 
- int SgFindPointInCell_next(SgFindPointInCell_type** self);
+int SgFindPointInCell_next(SgFindPointInCell_type** self);
 
- int SgFindPointInCell_getIndices(SgFindPointInCell_type** self,
- 	                              double dIndices[]);
+int SgFindPointInCell_getIndices(SgFindPointInCell_type** self,
+                                 double dIndices[]);
  
-
 #ifdef __cplusplus
 }
 #endif
