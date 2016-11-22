@@ -172,7 +172,6 @@ void setGrid(int ndims, const int dims[],
  	this->slvr = new SgLinearSolve_type(ndims, ndims);
 }
 
-
 std::vector<double> getPosition() {
 	size_t ndims = this->dims.size();
 	std::vector<double> pos(ndims);

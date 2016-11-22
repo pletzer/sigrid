@@ -131,7 +131,7 @@ struct SgConserveInterp2D_type {
 	 * Extract the destination cell coordinates from the grid
 	 * @param indx cell flat index
 	 * @param offset displacement from the above node
-	 * @param coords array of asize NDIMS_2D_PHYS to be filled in 
+	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
 	 */
 	void getDstQuadCoord(size_t indx, const int offset[], double coords[]) const {
 
@@ -158,7 +158,7 @@ struct SgConserveInterp2D_type {
 	 * Extract the source cell coordinates from the grid
 	 * @param indx nodal flat index
 	 * @param offset displacement from the above node
-	 * @param coords array of asize NDIMS_2D_PHYS to be filled in 
+	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
 	 */
 	void getSrcQuadCoord(size_t indx, const int offset[], double coords[]) const {
 
