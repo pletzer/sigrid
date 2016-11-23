@@ -235,6 +235,19 @@ void reset(const double dIndices[], const double targetPoint[]) {
 }
 
 /** 
+ * Ensure that the indices fall inside the domain
+ */
+void truncateIndices() {
+    for (size_t i = 0; i < this->dims.size(); ++i) {
+        // make sure the indices are within the domain
+        this->dIndices[i] = (this->dIndices[i] < 0? 
+                             0: this->dIndices[i]);
+        this->dIndices[i] = (this->dIndices[i] > this->dims[i] - 1? 
+                             this->dims[i] - 1: this->dIndices[i]);
+    }
+}
+
+/** 
  * Perform one Newton iteration
  * @return 0 if not yet reached target
  *         1 converged
@@ -255,13 +268,10 @@ int next() {
     // update the indices
     for (size_t i = 0; i < ndims; ++i) {
         this->dIndices[i] += sol[i];
-
-        // make sure the indices are within the domain
-        this->dIndices[i] = (this->dIndices[i] < 0? 
-                             0: this->dIndices[i]);
-        this->dIndices[i] = (this->dIndices[i] > this->dims[i] - 1? 
-                             this->dims[i] - 1: this->dIndices[i]);
     }
+
+    // indices must be in valid range
+    this->truncateIndices();
 
     // check if the next iterator is still valid
     this->iter++;
