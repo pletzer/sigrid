@@ -90,7 +90,7 @@ struct SgFindOverlappingCells2D_type {
 	 */
 	void setPolygonPoints(int numPoints, const double coords[]) {
 		this->numPolyPoints = numPoints;
-		this->polyPoints.resize(this->numPolyPoints);
+		this->polyPoints.resize(this->numPolyPoints * NDIMS_2D_PHYS);
 		for (size_t i = 0; i < this->numPolyPoints; ++i) {
 			for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
 				this->polyPoints[NDIMS_2D_PHYS*i + j] = coords[NDIMS_2D_PHYS*i + j];

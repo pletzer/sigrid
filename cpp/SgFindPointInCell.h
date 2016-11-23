@@ -50,6 +50,13 @@ struct SgFindPointInCell_type {
 
     // target point minus current position (initially)
     std::vector<double> rhs;
+
+    // flat node indices for one cell
+    std::vector<size_t> flatInds;
+
+    // interpolation weights for one cell
+    std::vector<double> weights;
+
 /**
  * Constructor
  * @param nitermax max number of Newton iterations
@@ -67,27 +74,23 @@ SgFindPointInCell_type(int nitermax, double tolpos) {
 }
 
 /**
- * Get the interpolation weights and flat node indices
+ * Compute the interpolation weights and flat node indices
  * @param dInds position in index space
- * @param weights interpolation weights to be filled in
- * @param flatInds flat node indices to be filled in
  */
-void getWeightsAndFlatIndices(const std::vector<double>& dInds,
-                              std::vector<double>& weights, 
-                              std::vector<size_t>& flatInds) {
+void computeWeightsAndFlatIndices(const std::vector<double>& dInds) {
 
     size_t ndims = this->dims.size();
-    size_t nnodes = weights.size();
+    size_t nnodes = this->weights.size();
     for (size_t j = 0; j < nnodes; ++j) {
-        flatInds[j] = 0;
-        weights[j] = 1;
+        this->flatInds[j] = 0;
+        this->weights[j] = 1;
         for (size_t i = 0; i < ndims; ++i) {
             int loCornerIndx = (int) floor(dInds[i]);
             int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);
-            flatInds[j] += (size_t) this->prodDims[i] * indx;
+            this->flatInds[j] += (size_t) this->prodDims[i] * indx;
             double dindx = (double) indx;
             double w = (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
-            weights[j] *= w;
+            this->weights[j] *= w;
         }
     }
 }
@@ -95,20 +98,18 @@ void getWeightsAndFlatIndices(const std::vector<double>& dInds,
 /**
  * Interpolate a nodal field
  * @param dInds position in index space
- * @param nodalField values of the nodal fields in the order returned by getWeightsAndFlatIndices
+ * @param nodalField values of the nodal fields in the order returned by computeWeightsAndFlatIndices
  */
 double interp(const std::vector<double>& dInds,
               const std::vector<double>& nodalField) {
 
     double res = 0;
     size_t ndims = this->dims.size();
-    size_t nnodes = pow(2, ndims);
-    std::vector<double> weights(nnodes);
-    std::vector<size_t> flatInds(nnodes);
-    this->getWeightsAndFlatIndices(dInds, weights, flatInds);
+    this->computeWeightsAndFlatIndices(dInds);
+    size_t nnodes = this->weights.size();
     for (size_t j = 0; j < nnodes; ++j) {
-        size_t bindx = flatInds[j];
-        res += weights[j] * nodalField[bindx];
+        size_t bindx = this->flatInds[j];
+        res += this->weights[j] * nodalField[bindx];
     }
     return res;
 }
@@ -173,6 +174,11 @@ void setGrid(int ndims, const int dims[], const int periodicity[],
     this->rhs.resize(ndims);
     this->dIndices.resize(ndims);
     this->targetPoint.resize(ndims);
+
+    // number of the nodes per cuboid cell
+    size_t nnodes = pow(2, ndims);
+    this->flatInds.resize(nnodes);
+    this->weights.resize(nnodes);
 
     // default is no periodicity
     this->indexPeriodicity.resize(ndims, 0.0);
