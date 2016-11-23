@@ -210,6 +210,21 @@ std::vector<double> getPosition() {
     return pos;
 }
 
+/** 
+ * Get the current error
+ * @return error
+ */
+double getError() {
+    double res = 0;
+    std::vector<double> pos = this->getPosition();
+    size_t ndims = this->dims.size();
+    for (size_t i = 0; i < ndims; ++i) {
+        double dp = pos[i] - this->targetPoint[i];
+        res += dp * dp;
+    }
+    return sqrt(res);
+}
+
 void reset(const double dIndices[], const double targetPoint[]) {
     size_t ndims = this->dims.size();
     for (size_t i = 0; i < ndims; ++i) {
@@ -240,19 +255,19 @@ int next() {
     // update the indices
     for (size_t i = 0; i < ndims; ++i) {
         this->dIndices[i] += sol[i];
+
+        // make sure the indices are within the domain
+        this->dIndices[i] = (this->dIndices[i] < 0? 
+                             0: this->dIndices[i]);
+        this->dIndices[i] = (this->dIndices[i] > this->dims[i] - 1? 
+                             this->dims[i] - 1: this->dIndices[i]);
     }
 
     // check if the next iterator is still valid
     this->iter++;
-    std::vector<double> pos = this->getPosition();
 
-    // use Eulerian distance as error measure
-    double posError = 0;
-    for (size_t i = 0; i < ndims; ++i) {
-        double dp = pos[i] - this->targetPoint[i];
-        posError += dp * dp;
-    }
-    posError = sqrt(posError);
+    // update the error
+    double posError = this->getError();
 
     if (this->iter >= this->nitermax) {
         // reached max number of iterations
@@ -292,6 +307,9 @@ int SgFindPointInCell_setGrid(SgFindPointInCell_type** self,
 
 int SgFindPointInCell_getPosition(SgFindPointInCell_type** self, 
                                   double pos[]);
+
+int SgFindPointInCell_getError(SgFindPointInCell_type** self, 
+                               double* error);
 
 int SgFindPointInCell_reset(SgFindPointInCell_type** self, 
                             const double dIndices[], 
