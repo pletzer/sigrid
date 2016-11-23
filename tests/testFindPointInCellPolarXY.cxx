@@ -55,7 +55,10 @@ int main(int argc, char** argv) {
     ier = SgFindPointInCell_new(&picf, nitermax, tolpos);
     assert(ier == 0);
 
-    ier = SgFindPointInCell_setGrid(&picf, ndims, dims, (const double**) &coords[0]);
+    // periodic in the second index
+    const int periodicity[] = {0, 1};
+    ier = SgFindPointInCell_setGrid(&picf, ndims, dims,
+                                    periodicity, (const double**) &coords[0]);
     assert(ier == 0);
 
     ier = SgFindPointInCell_reset(&picf, dIndices, targetPoint);

@@ -17,8 +17,9 @@ int SgFindOverlappingCells2D_del(SgFindOverlappingCells2D_type** self) {
 
 extern "C"
 int SgFindOverlappingCells2D_setSrcGrid(SgFindOverlappingCells2D_type** self,
-    	                                const int dims[], const double** coords) {
-	(*self)->setSrcGrid(dims, coords);
+    	                                const int dims[], const int periodicity[],
+    	                                const double** coords) {
+	(*self)->setSrcGrid(dims, periodicity, coords);
 	return 0;
 }
 

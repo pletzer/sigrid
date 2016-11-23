@@ -66,9 +66,11 @@ bool testRect() {
     double* srcGrdCoords[] = {new double[numNodes], new double[numNodes]};
     const double xmins[] = {-1.0, -1.0};
     const double xmaxs[] = {1.0, 1.0};
+    const int periodicity[] = {0, 0};
     createRectangularGrid(nodeDims, xmins, xmaxs, srcGrdCoords);
 
-    SgFindOverlappingCells2D_setSrcGrid(&foc, nodeDims, (const double**) srcGrdCoords);
+    SgFindOverlappingCells2D_setSrcGrid(&foc, nodeDims, periodicity,
+                                        (const double**) srcGrdCoords);
 
     double polyCoords[] = {-1., -1.,
                            -1., 1.,

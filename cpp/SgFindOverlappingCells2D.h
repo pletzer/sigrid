@@ -66,9 +66,10 @@ struct SgFindOverlappingCells2D_type {
 	/**
 	 * Set the source grid 
 	 * @param dims number of nodes in each direction
+	 * @param periodicity array of 0 (not periodic) and 1 (periodic)
 	 * @param coords coordinates (component, node)
 	 */
-	void setSrcGrid(const int dims[], const double** coords) {
+	void setSrcGrid(const int dims[], const int periodicity[], const double** coords) {
 		this->srcNodeDims.resize(NDIMS_2D_TOPO);
 		this->srcCellProdDims.resize(NDIMS_2D_TOPO);
 		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
@@ -79,7 +80,7 @@ struct SgFindOverlappingCells2D_type {
     		// last index varies fastest
     		this->srcCellProdDims[j] = this->srcCellProdDims[j + 1] * dims[j + 1];
   		}
-		this->pointFinder->setGrid(2, dims, coords);
+		this->pointFinder->setGrid(2, dims, periodicity, coords);
 	}
 
 	/** 
@@ -191,7 +192,8 @@ extern "C" {
     int SgFindOverlappingCells2D_del(SgFindOverlappingCells2D_type** self);
 
     int SgFindOverlappingCells2D_setSrcGrid(SgFindOverlappingCells2D_type** self,
-    	                                    const int dims[], const double** coords);
+    	                                    const int dims[], const int periodicity[],
+    	                                    const double** coords);
 
     int SgFindOverlappingCells2D_setPolygonPoints(SgFindOverlappingCells2D_type** self, 
  	                                              int numPoints, const double coords[]);

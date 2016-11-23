@@ -24,6 +24,9 @@ struct SgFindPointInCell_type {
     // used when iterating over cell nodes
     std::vector<size_t> nodeProdDims;
 
+    // periodicity length in index space
+    std::vector<double> indexPeriodicity;
+
     // the number of grid points for each dimension
     std::vector<size_t> dims;
 
@@ -154,10 +157,11 @@ void computeJacobianAndRHS() {
  * Set the grid 
  * @param ndims number of physical and topological dimensions
  * @param dims number of nodes along each dimensions
+ * @param periodicity flags indicating peridocity (1) or lack or it (0) along each dimension
  * @param coords arrays of flat coordinates (component, coordinates)
  */
-void setGrid(int ndims, const int dims[],
-              const double** coords) {
+void setGrid(int ndims, const int dims[], const int periodicity[],
+             const double** coords) {
 
     if (ndims <= 0) return;
 
@@ -169,6 +173,14 @@ void setGrid(int ndims, const int dims[],
     this->rhs.resize(ndims);
     this->dIndices.resize(ndims);
     this->targetPoint.resize(ndims);
+
+    // default is no periodicity
+    this->indexPeriodicity.resize(ndims, 0.0);
+    for (size_t i = 0; i < ndims; ++i) {
+        if (periodicity[i] != 0) {
+            this->indexPeriodicity[i] = (double) dims[i];
+        }
+    }
 
     // must have at least one dimension
     this->prodDims[ndims - 1] = 1;
@@ -235,10 +247,16 @@ void reset(const double dIndices[], const double targetPoint[]) {
 }
 
 /** 
- * Ensure that the indices fall inside the domain
+ * Ensure that the indices fall inside the index domain
  */
 void truncateIndices() {
     for (size_t i = 0; i < this->dims.size(); ++i) {
+        // take into account periodicity 
+        if (this->indexPeriodicity[i] != 0) {
+            this->dIndices[i] = fmod(
+                fmod(dIndices[i], this->indexPeriodicity[i]) + this->indexPeriodicity[i], 
+                this->indexPeriodicity[i]);
+        }
         // make sure the indices are within the domain
         this->dIndices[i] = (this->dIndices[i] < 0? 
                              0: this->dIndices[i]);
@@ -313,6 +331,7 @@ int SgFindPointInCell_del(SgFindPointInCell_type** self);
 
 int SgFindPointInCell_setGrid(SgFindPointInCell_type** self, 
                               int ndims, const int dims[], 
+                              const int periodicity[], 
                               const double** coords);
 
 int SgFindPointInCell_getPosition(SgFindPointInCell_type** self, 
