@@ -68,91 +68,6 @@ SgFindPointInCell_type(int nitermax, double tolpos) {
 }
 
 /**
- * Interpolate a nodal field
- * @param dInds position in index space
- * @param nodalField values of the nodal fields in the order returned by computeWeightsAndFlatIndices
- */
-double interp(const std::vector<double>& dInds,
-              const std::vector<double>& nodalField) {
-
-    double res = 0;
-    size_t ndims = this->dims.size();
-    size_t nnodes = pow(2, ndims);
-
-    // iterate over the cell nodes
-    for (size_t j = 0; j < nnodes; ++j) {
-
-        size_t flatIndx = 0;
-        double wght = 1;
-
-        // itereate over the dimensions
-        for (size_t i = 0; i < ndims; ++i) {
-
-            int loCornerIndx = (int) floor(dInds[i]);
-
-            // need to a full cell to the right of loCornerIndx
-            loCornerIndx = (loCornerIndx >= 0? loCornerIndx: 0);
-            loCornerIndx = (loCornerIndx <= this->dims[i] - 2? loCornerIndx: this->dims[i] - 2);
-
-            // index along this dimension
-            int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);
-
-            // update flat index
-            flatIndx += (size_t) this->prodDims[i] * indx;
-
-            double dindx = (double) indx;
-
-            // weight depends on whether the node is on the low or high side
-            wght *= (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
-        }
-
-        res += wght * nodalField[flatIndx];
-    }
-
-    return res;
-}
-
-/**
- * Compute the current Jacobian and right hand side vector using finite differences
- */
-void computeJacobianAndRHS() {
-
-    size_t ndims = this->dims.size();
-
-    std::vector<double> dIndsHi(dIndices);
-    std::vector<double> dIndsLo(dIndices);
-
-    // iterate over the physical space dimensions
-    size_t k = 0;
-    for (size_t i = 0; i < ndims; ++i) {
-
-        double pos = this->interp(this->dIndices, this->coords[i]);
-        this->rhs[i] = this->targetPoint[i] - pos;
-
-        // iterate over the index space dimensions
-        for (size_t j = 0; j < ndims; ++j) {
-
-            dIndsHi[j] += 0.5;
-            dIndsHi[j] = (dIndsHi[j] < this->dims[j] - 1? dIndsHi[j]: this->dims[j] - 2);
-            double xHi = this->interp(dIndsHi, this->coords[i]);
-
-            dIndsLo[j] -= 0.5;
-            dIndsLo[j] = (dIndsLo[j] >= 0? dIndsLo[j]: 0);
-            double xLo = this->interp(dIndsLo, this->coords[i]);
-
-            // average difference of the i-th coordinate anlong the j-th topo direction
-            this->jacMatrix[k] = (xHi - xLo)/(dIndsHi[j] - dIndsLo[j]);
-
-            // reset
-            dIndsHi[j] = dIndices[j];
-            dIndsLo[j] = dIndices[j];
-
-            k++;            
-        }
-    }
-}
-
-/**
  * Set the grid 
  * @param ndims number of physical and topological dimensions
  * @param dims number of nodes along each dimensions
@@ -244,25 +159,6 @@ void reset(const double dIndices[], const double targetPoint[]) {
     this->iter = 0;
 }
 
-/** 
- * Ensure that the indices fall inside the index domain
- */
-void truncateIndices() {
-
-    for (size_t i = 0; i < this->dims.size(); ++i) {
-        // take into account periodicity 
-        if (this->indexPeriodicity[i] != 0) {
-            this->dIndices[i] = fmod(
-                fmod(dIndices[i], this->indexPeriodicity[i]) + this->indexPeriodicity[i], 
-                this->indexPeriodicity[i]);
-        }
-        // make sure the indices are within the domain
-        this->dIndices[i] = (this->dIndices[i] < 0? 
-                             0: this->dIndices[i]);
-        this->dIndices[i] = (this->dIndices[i] > this->dims[i] - 1? 
-                             this->dims[i] - 1: this->dIndices[i]);
-    }
-}
 
 /** 
  * Perform one Newton iteration
@@ -315,6 +211,113 @@ int next() {
  */
 std::vector<double> getIndices() const {
     return this->dIndices;
+}
+
+private:
+
+/**
+ * Interpolate a nodal field
+ * @param dInds position in index space
+ * @param nodalField values of the nodal fields in the order returned by computeWeightsAndFlatIndices
+ */
+double interp(const std::vector<double>& dInds,
+              const std::vector<double>& nodalField) {
+
+    double res = 0;
+    size_t ndims = this->dims.size();
+    size_t nnodes = pow(2, ndims);
+
+    // iterate over the cell nodes
+    for (size_t j = 0; j < nnodes; ++j) {
+
+        size_t flatIndx = 0;
+        double wght = 1;
+
+        // itereate over the dimensions
+        for (size_t i = 0; i < ndims; ++i) {
+
+            int loCornerIndx = (int) floor(dInds[i]);
+
+            // need to a full cell to the right of loCornerIndx
+            loCornerIndx = (loCornerIndx >= 0? loCornerIndx: 0);
+            loCornerIndx = (loCornerIndx <= this->dims[i] - 2? loCornerIndx: this->dims[i] - 2);
+
+            // index along this dimension
+            int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);
+
+            // update flat index
+            flatIndx += (size_t) this->prodDims[i] * indx;
+
+            double dindx = (double) indx;
+
+            // weight depends on whether the node is on the low or high side
+            wght *= (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
+        }
+
+        res += wght * nodalField[flatIndx];
+    }
+
+    return res;
+}
+
+/**
+ * Compute the current Jacobian and right hand side vector using finite differences
+ */
+void computeJacobianAndRHS() {
+
+    size_t ndims = this->dims.size();
+
+    std::vector<double> dIndsHi(dIndices);
+    std::vector<double> dIndsLo(dIndices);
+
+    // iterate over the physical space dimensions
+    size_t k = 0;
+    for (size_t i = 0; i < ndims; ++i) {
+
+        double pos = this->interp(this->dIndices, this->coords[i]);
+        this->rhs[i] = this->targetPoint[i] - pos;
+
+        // iterate over the index space dimensions
+        for (size_t j = 0; j < ndims; ++j) {
+
+            dIndsHi[j] += 0.5;
+            dIndsHi[j] = (dIndsHi[j] < this->dims[j] - 1? dIndsHi[j]: this->dims[j] - 2);
+            double xHi = this->interp(dIndsHi, this->coords[i]);
+
+            dIndsLo[j] -= 0.5;
+            dIndsLo[j] = (dIndsLo[j] >= 0? dIndsLo[j]: 0);
+            double xLo = this->interp(dIndsLo, this->coords[i]);
+
+            // average difference of the i-th coordinate anlong the j-th topo direction
+            this->jacMatrix[k] = (xHi - xLo)/(dIndsHi[j] - dIndsLo[j]);
+
+            // reset
+            dIndsHi[j] = dIndices[j];
+            dIndsLo[j] = dIndices[j];
+
+            k++;            
+        }
+    }
+}
+
+/** 
+ * Ensure that the indices fall inside the index domain
+ */
+void truncateIndices() {
+
+    for (size_t i = 0; i < this->dims.size(); ++i) {
+        // take into account periodicity 
+        if (this->indexPeriodicity[i] != 0) {
+            this->dIndices[i] = fmod(
+                fmod(dIndices[i], this->indexPeriodicity[i]) + this->indexPeriodicity[i], 
+                this->indexPeriodicity[i]);
+        }
+        // make sure the indices are within the domain
+        this->dIndices[i] = (this->dIndices[i] < 0? 
+                             0: this->dIndices[i]);
+        this->dIndices[i] = (this->dIndices[i] > this->dims[i] - 1? 
+                             this->dims[i] - 1: this->dIndices[i]);
+    }
 }
 
 };
