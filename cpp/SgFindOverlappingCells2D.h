@@ -98,28 +98,32 @@ struct SgFindOverlappingCells2D_type {
         }
     }
 
-    void findFloatIndexBox() {
+    /**
+     * Find the low/high corner indices of the polygon 
+     */
+    int findFloatIndexBoxOfPolygon() {
 
         // initial guess, somewhere in the middle
         double dIndices[] = {this->srcNodeDims[0]/2.123353, this->srcNodeDims[1]/1.9647354};
 
+        // set the lo/hi corner values to the max/min values allowed in the domain
         for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
             this->loIndxCorner[j] = this->srcNodeDims[j] - 2;
             this->hiIndxCorner[j] = 0;
         }
 
-        std::vector<double> pos;
-
         // iterate over the polygon's points
+
+        // Newton iterator's error flag (0 = continue, 1 = finished, -1 = finished with an error)
+        int ier;
+        int totError = 0;
         for (int i = 0; i < this->numPolyPoints; ++i) {
             bool iterFlag = true;
             size_t icount = 0;
             const double* targetPoint = &this->polyPoints[i*NDIMS_2D_PHYS];
             this->pointFinder->reset(dIndices, targetPoint);
-            pos = this->pointFinder->getPosition();
             while (iterFlag) {
-                int ier = this->pointFinder->next();
-                pos = this->pointFinder->getPosition();
+                ier = this->pointFinder->next();
                 if (ier != 0) {
                     iterFlag = false;
                 }
@@ -127,29 +131,22 @@ struct SgFindOverlappingCells2D_type {
                     icount++;
                 }
             }
-            // need to check for errors here!!!!
-
-            // correct the index box corners
-            for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-                this->loIndxCorner[j] = (dIndices[j] < this->loIndxCorner[j]? 
-                                         dIndices[j]: this->loIndxCorner[j]);
-                this->hiIndxCorner[j] = (dIndices[j] > this->hiIndxCorner[j]? 
-                                         dIndices[j]: this->hiIndxCorner[j]);
+            if (ier < 0) {
+                std::cerr << "ERROR: failed to find theindex point for " << 
+                     this->polyPoints[i*NDIMS_2D_PHYS] << ", " << this->polyPoints[i*NDIMS_2D_PHYS + 1] << '\n';
+                totError += 1;
             }
         }
 
-        // make sure the index box corners are in the domain
-        for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-            this->loIndxCorner[j] = (this->loIndxCorner[j] < 0? 
-                                     0: this->loIndxCorner[j]);
-            this->hiIndxCorner[j] = (this->hiIndxCorner[j] > this->srcNodeDims[j] - 2? 
-                                     this->srcNodeDims[j] - 2: this->hiIndxCorner[j]);
-        }
+        return totError;
     }
 
+    /**
+     * Find the source grid cells under the polygon
+     */
     std::vector<size_t> findSrcCellIndices() {
 
-        this->findFloatIndexBox();
+        int ier = this->findFloatIndexBoxOfPolygon();
 
         // set the low/high of the index box
         int loInds[NDIMS_2D_TOPO];
