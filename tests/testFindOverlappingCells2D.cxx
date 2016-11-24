@@ -63,6 +63,7 @@ bool testRect() {
 
     const int nodeDims[] = {2, 3};
     int numNodes = nodeDims[0] * nodeDims[1];
+    int numCells = (nodeDims[0] - 1) * (nodeDims[1] - 1);
     double* srcGrdCoords[] = {new double[numNodes], new double[numNodes]};
     const double xmins[] = {-1.0, -1.0};
     const double xmaxs[] = {1.0, 1.0};
@@ -81,12 +82,12 @@ bool testRect() {
     SgFindOverlappingCells2D_setPolygonPoints(&foc, numPolyPoints, polyCoords);
 
     SgFindOverlappingCells2D_findSrcCellIndices(&foc);
-    int numSrcCells;
-    SgFindOverlappingCells2D_getNumberOfSrcCellIndices(&foc, &numSrcCells);
+    int numSrcCellsUnderPoly;
+    SgFindOverlappingCells2D_getNumberOfSrcCellIndices(&foc, &numSrcCellsUnderPoly);
     int* srcInds = NULL;
     SgFindOverlappingCells2D_getSrcCellIndices(&foc, &srcInds);
 
-    if (numSrcCells != numNodes) {
+    if (numSrcCellsUnderPoly != numCells) {
         return false;
     }
 

@@ -166,7 +166,7 @@ struct SgFindOverlappingCells2D_type {
     /**
      * Find the source grid cells under the polygon
      */
-    std::vector<size_t> findSrcCellIndices() {
+    void findSrcCellIndices() {
 
         int ier = this->findFloatIndexBoxOfPolygon();
 
@@ -184,7 +184,6 @@ struct SgFindOverlappingCells2D_type {
 
         // iterate over the cells inside the index box
         int inds[NDIMS_2D_TOPO];
-        std::vector<size_t> cellFlatInds;
         this->srcCellFlatInds.resize(0);
         SgBoxIterator_type boxIter(NDIMS_2D_TOPO, loInds, hiInds);
         int numCells = boxIter.getNumberOfElements();
@@ -196,10 +195,8 @@ struct SgFindOverlappingCells2D_type {
                 cellIndx += this->srcCellProdDims[j] * inds[j];
             }
             // add the index to the list
-            cellFlatInds.push_back(cellIndx);
+            this->srcCellFlatInds.push_back(cellIndx);
         }
-
-        return cellFlatInds;
     }
 };
  
