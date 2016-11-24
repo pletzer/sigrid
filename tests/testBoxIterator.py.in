@@ -5,10 +5,11 @@ import numpy
 sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
 
 this = c_void_p()
+ndims = 3
 begInds = numpy.array([1, 2, 3], numpy.int32)
 endInds = numpy.array([2, 4, 7], numpy.int32)
 
-ier = sg.SgBoxIterator_new(byref(this),
+ier = sg.SgBoxIterator_new(byref(this), ndims,
                            begInds.ctypes.data_as(POINTER(c_int)),
                            endInds.ctypes.data_as(POINTER(c_int)))
 assert(ier == 0)

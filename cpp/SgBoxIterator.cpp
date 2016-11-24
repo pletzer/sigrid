@@ -6,9 +6,10 @@
 
 extern "C"
 int SgBoxIterator_new(SgBoxIterator_type** self,
-                       const int* begInds, 
-                       const int* endInds) {
-  *self = new SgBoxIterator_type(begInds, endInds);
+                      int ndims,
+                      const int* begInds, 
+                      const int* endInds) {
+  *self = new SgBoxIterator_type(ndims, begInds, endInds);
   return 0;
 }
                        

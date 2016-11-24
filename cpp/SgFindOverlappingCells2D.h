@@ -108,33 +108,55 @@ struct SgFindOverlappingCells2D_type {
 
         // set the lo/hi corner values to the max/min values allowed in the domain
         for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-            this->loIndxCorner[j] = this->srcNodeDims[j] - 2;
+            this->loIndxCorner[j] = this->srcNodeDims[j] - 1;
             this->hiIndxCorner[j] = 0;
         }
 
-        // iterate over the polygon's points
-
         // Newton iterator's error flag (0 = continue, 1 = finished, -1 = finished with an error)
         int ier;
+
+        // total number of Newton search errors
         int totError = 0;
+
+        // iterate over the polygon's points
         for (int i = 0; i < this->numPolyPoints; ++i) {
+
             bool iterFlag = true;
-            size_t icount = 0;
+
+            // make this polygon's point th etarget point
             const double* targetPoint = &this->polyPoints[i*NDIMS_2D_PHYS];
+
+            // start search
             this->pointFinder->reset(dIndices, targetPoint);
             while (iterFlag) {
                 ier = this->pointFinder->next();
                 if (ier != 0) {
+                    // reached end of iterations
                     iterFlag = false;
                 }
-                else {
-                    icount++;
-                }
             }
+
+            // error handling
             if (ier < 0) {
                 std::cerr << "ERROR: failed to find theindex point for " << 
                      this->polyPoints[i*NDIMS_2D_PHYS] << ", " << this->polyPoints[i*NDIMS_2D_PHYS + 1] << '\n';
                 totError += 1;
+            }
+
+            // update the low/high box corners
+            std::vector<double> dInds = this->pointFinder->getIndices();
+            for (size_t j = 0; j < this->loIndxCorner.size(); ++j) {
+                this->loIndxCorner[j] = (dInds[j] < this->loIndxCorner[j]?
+                                         dInds[j]: this->loIndxCorner[j]);
+                this->hiIndxCorner[j] = (dInds[j] > this->hiIndxCorner[j]?
+                                         dInds[j]: this->hiIndxCorner[j]);
+
+                // make sure we don't go out of bounds
+                this->loIndxCorner[j] = (this->loIndxCorner[j] >= 0?
+                                         this->loIndxCorner[j]: 0);
+                this->hiIndxCorner[j] = (this->hiIndxCorner[j] <= this->srcNodeDims[j] - 1?
+                                         this->hiIndxCorner[j]: this->srcNodeDims[j] - 1);
+
             }
         }
 
@@ -153,17 +175,18 @@ struct SgFindOverlappingCells2D_type {
         int hiInds[NDIMS_2D_TOPO];
         for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
             loInds[j] = floor(this->loIndxCorner[j] - this->eps);
-            hiInds[j] = floor(this->hiIndxCorner[j] + this->eps);
+            hiInds[j] = ceil(this->hiIndxCorner[j] + this->eps);
             // make sure the lo/hi index corners are in the domain
             loInds[j] = (loInds[j] >= 0? loInds[j]: 0);
-            hiInds[j] = (hiInds[j] < this->srcNodeDims[j] - 1? hiInds[j]: this->srcNodeDims[j] - 2);
+            hiInds[j] = (hiInds[j] < this->srcNodeDims[j] - 1?
+                         hiInds[j]: this->srcNodeDims[j] - 1);
         }
 
         // iterate over the cells inside the index box
         int inds[NDIMS_2D_TOPO];
         std::vector<size_t> cellFlatInds;
         this->srcCellFlatInds.resize(0);
-        SgBoxIterator_type boxIter(loInds, hiInds);
+        SgBoxIterator_type boxIter(NDIMS_2D_TOPO, loInds, hiInds);
         int numCells = boxIter.getNumberOfElements();
         for (int i = 0; i < numCells; ++i) {
             boxIter.getElement(i, inds);
