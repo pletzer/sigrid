@@ -86,17 +86,69 @@ bool testSimple() {
     SgConserveInterp2D_reset(&interp);
     while (!end) {
         SgConserveInterp2D_get(&interp, &srcIndex, &dstIndex, &weight);
-        std::cout << "tstSimple src index: " << srcIndex << " dst index: " 
+        std::cout << "testSimple src index: " << srcIndex << " dst index: " 
                   << dstIndex << " weight: " << weight << '\n';
         end = SgConserveInterp2D_next(&interp);
     }
     SgConserveInterp2D_del(&interp);
 
     // clean up
-    delete[] srcCoords[0];
-    delete[] srcCoords[1];
-    delete[] dstCoords[0];
-    delete[] dstCoords[1];
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
+
+    return true;
+}
+
+bool testSrcInsideDst() {
+
+    // source grid
+    const int srcDims[] = {2, 2};
+    const double srcXmins[] = {0.25, 0.25};
+    const double srcXmaxs[] = {0.75, 0.75};
+    int srcNumPoints = srcDims[0] * srcDims[1];
+    double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
+    createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
+
+    // destination grid
+    const int dstDims[] = {2, 2};
+    const double dstXmins[] = {0., 0.};
+    const double dstXmaxs[] = {1., 1.};
+    int dstNumPoints = dstDims[0] * dstDims[1];
+    double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
+    createRectangularGrid(dstDims, dstXmins, dstXmaxs, dstCoords);    
+
+    SgConserveInterp2D_type* interp = NULL;
+    SgConserveInterp2D_new(&interp);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
+    SgConserveInterp2D_computeWeights(&interp);
+    int srcIndex, dstIndex;
+    double weight;
+    double totalWeight = 0;
+    int end = 0;
+    SgConserveInterp2D_reset(&interp);
+    while (!end) {
+        SgConserveInterp2D_get(&interp, &srcIndex, &dstIndex, &weight);
+        std::cout << "testPartialDstInsideSrc src index: " << srcIndex << " dst index: " 
+                  << dstIndex << " weight: " << weight << '\n';
+        totalWeight += weight;
+        end = SgConserveInterp2D_next(&interp);
+    }
+    SgConserveInterp2D_del(&interp);
+
+    // clean up
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
+
+    std::cout << "Total weight: " << totalWeight << '\n';
+    if (fabs(totalWeight - 0.25) > 1.e-10) {
+        // error
+        return false;
+    }
 
     return true;
 }
@@ -137,10 +189,10 @@ bool testSrc10By10() {
     SgConserveInterp2D_del(&interp);
 
     // clean up
-    delete[] srcCoords[0];
-    delete[] srcCoords[1];
-    delete[] dstCoords[0];
-    delete[] dstCoords[1];
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
 
     std::cout << "testSrc10By10: total weight = " << totalWeight << '\n';
     if (fabs(totalWeight -  1.0) > 1.e-10) {
@@ -187,10 +239,10 @@ bool testSrc10By20Dst100By200() {
     SgConserveInterp2D_del(&interp);
 
     // clean up
-    delete[] srcCoords[0];
-    delete[] srcCoords[1];
-    delete[] dstCoords[0];
-    delete[] dstCoords[1];
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
 
     std::cout << "testSrc10By20Dst100By200: total weight = " << totalWeight << '\n';
     if (fabs(totalWeight -  200*100) > 1.e-10) {
@@ -238,10 +290,10 @@ bool testPolar() {
     SgConserveInterp2D_del(&interp);
 
     // clean up
-    delete[] srcCoords[0];
-    delete[] srcCoords[1];
-    delete[] dstCoords[0];
-    delete[] dstCoords[1];
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
 
     std::cout << "testPolar: total weight = " << totalWeight << '\n';
     int dstNumCells = (dstDims[0] - 1) * (dstDims[1] - 1);
@@ -257,6 +309,7 @@ bool testPolar() {
 int main(int argc, char** argv) {
 
     if (!testSimple()) return 1;
+    if (!testSrcInsideDst()) return 5;
     if (!testSrc10By10()) return 2;
     if (!testSrc10By20Dst100By200()) return 3;
     if (!testPolar()) return 4;

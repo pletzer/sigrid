@@ -59,21 +59,21 @@ void createPolarGrid(const int nodeDims[],
 
 bool test() {
 
-    // source grid
-    const int srcDims[] = {5, 5};
-    const double srcXmins[] = {-1., -1.};
-    const double srcXmaxs[] = {1., 1.};
+    // source grid is disk
+    const int srcDims[] = {5, 33};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
-    createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
+    const double radius = 1.0;
+    createPolarGrid(srcDims, radius, srcCoords);
 
-    // destination grid
-    const int dstDims[] = {3, 9};
+    // destination grid is rectangle encompassing src grid
+    const int dstDims[] = {401, 401};
+    const double dstXmins[] = {-1., -1.};
+    const double dstXmaxs[] = {1., 1.};
     int dstNumPoints = dstDims[0] * dstDims[1];
     int dstNumCells = (dstDims[0] - 1) * (dstDims[1] - 1);
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
-    const double radius = 1.0;
-    createPolarGrid(dstDims, radius, dstCoords);    
+    createRectangularGrid(dstDims, dstXmins, dstXmaxs, dstCoords);    
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
@@ -92,7 +92,8 @@ bool test() {
     }
     SgConserveInterp2D_del(&interp);
 
-    std::cout << "Total weight: " << totalWeight << '\n';
+    std::cout << "Total weight: " << totalWeight << " totalWeight/dstNumCells = " << 
+        (double) totalWeight / (double) dstNumCells << " ~ pi/4 = " << M_PI/4.0 << '\n';
     // expect partial cells
     if (totalWeight >= dstNumCells - 1.e-8) {
         // error
