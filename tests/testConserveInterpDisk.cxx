@@ -96,7 +96,7 @@ bool test() {
     std::cout << "Total weight: " << totalWeight << " totalWeight/dstNumCells = " << 
         (double) totalWeight / (double) dstNumCells << " ~ pi/4 = " << M_PI/4.0 << '\n';
     // expect partial cells
-    if (totalWeight >= dstNumCells - 1.e-8) {
+    if (fabs(totalWeight - dstNumCells*0.780361) < 1.e-5) {
         // error
         return false;
     }

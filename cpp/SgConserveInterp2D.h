@@ -192,9 +192,52 @@ struct SgConserveInterp2D_type {
 		}
 	}
 
+	/**
+	 * reset the iterators
+	 */
+	void reset() {
+		this->weightIt = this->weights.begin();
+		this->weightIt2 = this->weightIt->second.begin();		
+	}
+
+	/** 
+	 * Do one step
+	 * @return 0 (= continue) or 1 (= stop)
+	 */
+	int next() {
+		// increment source counter
+		this->weightIt2++;
+		if (this->weightIt2 == this->weightIt->second.end()) {
+			// reached end of src counter, increment dst counter
+			this->weightIt++;
+			// reset src counter
+			this->weightIt2 = this->weightIt->second.begin();
+			if (this->weightIt == this->weights.end()) {
+				// reached end of dst counter
+				// reset dst and src counters
+				this->reset();
+				// end of iteration 
+				return 1;
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Get the current src grid index, dst grid index and weight
+	 * @param srcIndx src grid flat index (output)
+	 * @param dstIndx dst grid flat index (output)
+	 * @param weight interpolation weight (output)
+	 */
+	void get(int* srcIndx, int* dstIndx, double* weight) {
+		*dstIndx = this->weightIt->first;
+		*srcIndx = this->weightIt2->first;
+		*weight = this->weightIt2->second;
+	}
+
 private:
 
-		/** 
+    /** 
 	 * Extract the destination cell coordinates from the grid
 	 * @param indx cell flat index
 	 * @param offset displacement from the above node
