@@ -8,6 +8,7 @@
 #include "SgNdims.h"
 #include "SgQuadIntersect.h"
 #include "SgTriangulate.h"
+#include "SgFindOverlappingCells2D.h"
 #include <vector>
 #include <map>
 #include <cstdio> // size_t
@@ -38,9 +39,27 @@ struct SgConserveInterp2D_type {
 	// dst flat index -> {src flat index: weight}
 	std::map<size_t, std::vector< std::pair<size_t, double> > > weights;
 
+	// finds all the src cell under a dst cell
+	SgFindOverlappingCells2D_type* srcCover;
+
 	// iterators
     std::map<size_t, std::vector<std::pair<size_t, double> > >::const_iterator weightIt;
     std::vector<std::pair<size_t, double> >::const_iterator weightIt2;
+
+    /** 
+     * Constructor
+     */
+    SgConserveInterp2D_type() {
+    	this->srcCover = new SgFindOverlappingCells2D_type;
+    	this->reset();
+    }
+
+    /**
+     * Destructor
+     */
+    ~SgConserveInterp2D_type() {
+    	delete this->srcCover;
+    }
 
 	/**
 	 * Set the destination grid 

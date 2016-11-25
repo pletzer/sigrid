@@ -9,10 +9,7 @@
 extern "C"
 int SgConserveInterp2D_new(SgConserveInterp2D_type** self) {
  	*self = new SgConserveInterp2D_type();
-
- 	// reset
- 	SgConserveInterp2D_reset(self);
- 	return 0;
+	return 0;
 }
       
 extern "C"                   
