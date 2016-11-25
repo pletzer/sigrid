@@ -103,6 +103,8 @@ struct SgConserveInterp2D_type {
 		            const int periodicity[], 
 		            const double** coords) {
 
+		this->srcCover->setSrcGrid(dims, periodicity, coords);
+
 		this->srcNumPoints = 1;
 		this->srcNumCells = 1;
 		this->periodicity.resize(NDIMS_2D_TOPO);
@@ -180,8 +182,20 @@ struct SgConserveInterp2D_type {
 			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
 			double dstArea = dstTriangulator.getConvexHullArea();
 
-			// iterate over the src cells
 			std::vector< std::pair<size_t, double> > indWght;
+
+			// get the src cells covered by this dst cell
+			//this->srcCover->setPolygonPoints(4, &dstQuadCoords[0]);
+			//this->srcCover->findSrcCellIndices();
+			//std::vector<int> srcUnderDstInds = this->srcCover->getSrcCellIndices();
+			//indWght.reserve(srcUnderDstInds.size());
+
+			// iterate over the covered src cells
+			//for (size_t i = 0; i < srcUnderDstInds.size(); ++i) {
+
+			//	size_t srcIndx = srcUnderDstInds[i];
+
+			indWght.reserve(100);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
 				offset[0] = 0; offset[1] = 0;

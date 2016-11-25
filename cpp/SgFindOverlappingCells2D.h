@@ -136,12 +136,15 @@ struct SgFindOverlappingCells2D_type {
                 }
             }
 
-            // error handling
-            if (ier < 0) {
-                std::cerr << "ERROR: failed to find theindex point for " << 
-                     this->polyPoints[i*NDIMS_2D_PHYS] << ", " << this->polyPoints[i*NDIMS_2D_PHYS + 1] << '\n';
-                totError += 1;
-            }
+            // error handling. In the case where the target point is outside the src grid, 
+            // we expect pointFinder to return the index location just inside the src grid
+            // corresponding to the physical position that is closest to the target point. 
+            // I don't think we need to do anything special... TO CHECK!!!
+            //if (ier < 0) {
+            //    std::cerr << "ERROR: failed to find the index point for " << 
+            //         this->polyPoints[i*NDIMS_2D_PHYS] << ", " << this->polyPoints[i*NDIMS_2D_PHYS + 1] << '\n';
+            //    totError += 1;
+            //}
 
             // update the low/high box corners
             std::vector<double> dInds = this->pointFinder->getIndices();
@@ -174,7 +177,8 @@ struct SgFindOverlappingCells2D_type {
         int loInds[NDIMS_2D_TOPO];
         int hiInds[NDIMS_2D_TOPO];
         for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-            loInds[j] = floor(this->loIndxCorner[j] - this->eps);
+            // eps ensures that ceil and floor never give the same value
+            loInds[j] = floor(this->loIndxCorner[j]);
             hiInds[j] = ceil(this->hiIndxCorner[j] + this->eps);
             // make sure the lo/hi index corners are in the domain
             loInds[j] = (loInds[j] >= 0? loInds[j]: 0);
