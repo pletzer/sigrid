@@ -68,7 +68,7 @@ bool test() {
     createPolarGrid(srcDims, radius, srcCoords);
 
     // destination grid is rectangle encompassing src grid
-    const int dstDims[] = {401, 401};
+    const int dstDims[] = {11, 11}; //{401, 401};
     const double dstXmins[] = {-1., -1.};
     const double dstXmaxs[] = {1., 1.};
     int dstNumPoints = dstDims[0] * dstDims[1];
@@ -93,11 +93,13 @@ bool test() {
     }
     SgConserveInterp2D_del(&interp);
 
+    double ratioOfValidCells = (double) totalWeight / (double) dstNumCells;
     std::cout << "Total weight: " << totalWeight << " totalWeight/dstNumCells = " << 
-        (double) totalWeight / (double) dstNumCells << " ~ pi/4 = " << M_PI/4.0 << '\n';
+        ratioOfValidCells << " ~ pi/4 = " << M_PI/4.0 << '\n';
     // expect partial cells
-    if (fabs(totalWeight - dstNumCells*0.780361) < 1.e-5) {
+    if (fabs(ratioOfValidCells - 0.780361) > 1.e-5) {
         // error
+        std::cout << "error = " << ratioOfValidCells - 0.780361 << '\n';
         return false;
     }
 
