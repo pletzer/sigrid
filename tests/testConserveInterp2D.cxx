@@ -63,6 +63,7 @@ bool testSimple() {
     const int srcDims[] = {2, 2};
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
+    const int periodicity[] = {0, 0};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
@@ -77,7 +78,7 @@ bool testSimple() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
@@ -107,6 +108,7 @@ bool testSrcInsideDst() {
     const int srcDims[] = {2, 2};
     const double srcXmins[] = {0.25, 0.25};
     const double srcXmaxs[] = {0.75, 0.75};
+    const int periodicity[] = {0, 0};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
@@ -121,7 +123,7 @@ bool testSrcInsideDst() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
@@ -159,6 +161,7 @@ bool testSrc10By10() {
     const int srcDims[] = {11, 11}; // number of nodes
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
+    const int periodicity[] = {0, 0};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
@@ -173,7 +176,7 @@ bool testSrc10By10() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
@@ -209,6 +212,7 @@ bool testSrc10By20Dst100By200() {
     const int srcDims[] = {11, 21}; // number of nodes
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
+    const int periodicity[] = {0, 0};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
@@ -223,7 +227,7 @@ bool testSrc10By20Dst100By200() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
@@ -259,6 +263,7 @@ bool testPolar() {
     const int srcDims[] = {2, 3}; // number of nodes
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
+    const int periodicity[] = {0, 0};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
@@ -272,7 +277,7 @@ bool testPolar() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;

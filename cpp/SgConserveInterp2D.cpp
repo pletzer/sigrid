@@ -23,15 +23,18 @@ int SgConserveInterp2D_del(SgConserveInterp2D_type** self) {
 
 extern "C"
 int SgConserveInterp2D_setDstGrid(SgConserveInterp2D_type** self, 
- 	                              const int dims[], const double** coords) {
+ 	                              const int dims[],
+ 	                              const double** coords) {
 	(*self)->setDstGrid(dims, coords);
 	return 0;
 }
 
 extern "C"
 int SgConserveInterp2D_setSrcGrid(SgConserveInterp2D_type** self, 
- 	                              const int dims[], const double** coords) {
-	(*self)->setSrcGrid(dims, coords);
+ 	                              const int dims[], 
+ 	                              const int periodicity[],
+ 	                              const double** coords) {
+	(*self)->setSrcGrid(dims, periodicity, coords);
 	return 0;
 }
 

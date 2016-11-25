@@ -61,6 +61,7 @@ bool test() {
 
     // source grid is disk
     const int srcDims[] = {5, 33};
+    const int periodicity[] = {0, 1};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     const double radius = 1.0;
@@ -77,7 +78,7 @@ bool test() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;

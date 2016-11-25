@@ -21,6 +21,7 @@ struct SgConserveInterp2D_type {
 	int srcNodeDimProd[NDIMS_2D_TOPO];
 	int srcCellDimProd[NDIMS_2D_TOPO];
 	std::vector<double> srcGrdCoords; // flat array (node, components)
+	std::vector<int> periodicity; // 0=not periodic, 1=periodic
 	size_t srcNumPoints;
 	size_t srcNumCells;
 
@@ -79,15 +80,19 @@ struct SgConserveInterp2D_type {
 	 * @param dims number of nodes in each direction
 	 * @param coords coordinates (component, node)
 	 */
-	void setSrcGrid(const int dims[], const double** coords) {
+	void setSrcGrid(const int dims[], 
+		            const int periodicity[], 
+		            const double** coords) {
 
 		this->srcNumPoints = 1;
 		this->srcNumCells = 1;
+		this->periodicity.resize(NDIMS_2D_TOPO);
 		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
 			this->srcNodeDims[j] = dims[j];
 			this->srcCellDims[j] = dims[j] - 1;
 			this->srcNumPoints *= dims[j];
 			this->srcNumCells *= dims[j] - 1;
+			this->periodicity[j] = periodicity[j];
 		}
 		this->srcCellDimProd[NDIMS_2D_TOPO - 1] = 1;
 		this->srcNodeDimProd[NDIMS_2D_TOPO - 1] = 1;
@@ -127,59 +132,6 @@ struct SgConserveInterp2D_type {
 		}
 	}
 
-	/** 
-	 * Extract the destination cell coordinates from the grid
-	 * @param indx cell flat index
-	 * @param offset displacement from the above node
-	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
-	 */
-	void getDstQuadCoord(size_t indx, const int offset[], double coords[]) const {
-
-		// compute the index set of the cell and add the offset
-		size_t cellIndsOffset[NDIMS_2D_TOPO];
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-    		cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
-    		cellIndsOffset[j] += offset[j];
-  		}
-
-  		// compute the low-corner flat index of the node coorresponding to this cell
-  		size_t nodeIndx = 0;
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-			nodeIndx += this->dstNodeDimProd[j] * cellIndsOffset[j];
-		}
-
-		// fill in the node's coordinates
-		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-			coords[j] = this->dstGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
-		}
-	}
-
-	/** 
-	 * Extract the source cell coordinates from the grid
-	 * @param indx nodal flat index
-	 * @param offset displacement from the above node
-	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
-	 */
-	void getSrcQuadCoord(size_t indx, const int offset[], double coords[]) const {
-
-		// compute the index set of the cell and add the offset
-		size_t cellIndsOffset[NDIMS_2D_TOPO];
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-    		cellIndsOffset[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
-    		cellIndsOffset[j] += offset[j];
-  		}
-
-  		// compute the low-corner flat index of the node coorresponding to this cell
-  		size_t nodeIndx = 0;
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-			nodeIndx += this->srcNodeDimProd[j] * cellIndsOffset[j];
-		}
-
-		// fill in the node's coordinates
-		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-			coords[j] = this->srcGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
-		}
-	}
 
 	/** 
 	 * Compute the interpolation weights
@@ -239,6 +191,63 @@ struct SgConserveInterp2D_type {
 			}
 		}
 	}
+
+private:
+
+		/** 
+	 * Extract the destination cell coordinates from the grid
+	 * @param indx cell flat index
+	 * @param offset displacement from the above node
+	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
+	 */
+	void getDstQuadCoord(size_t indx, const int offset[], double coords[]) const {
+
+		// compute the index set of the cell and add the offset
+		size_t cellIndsOffset[NDIMS_2D_TOPO];
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+    		cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
+    		cellIndsOffset[j] += offset[j];
+  		}
+
+  		// compute the low-corner flat index of the node coorresponding to this cell
+  		size_t nodeIndx = 0;
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			nodeIndx += this->dstNodeDimProd[j] * cellIndsOffset[j];
+		}
+
+		// fill in the node's coordinates
+		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+			coords[j] = this->dstGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
+		}
+	}
+
+	/** 
+	 * Extract the source cell coordinates from the grid
+	 * @param indx nodal flat index
+	 * @param offset displacement from the above node
+	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
+	 */
+	void getSrcQuadCoord(size_t indx, const int offset[], double coords[]) const {
+
+		// compute the index set of the cell and add the offset
+		size_t cellIndsOffset[NDIMS_2D_TOPO];
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+    		cellIndsOffset[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
+    		cellIndsOffset[j] += offset[j];
+  		}
+
+  		// compute the low-corner flat index of the node coorresponding to this cell
+  		size_t nodeIndx = 0;
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+			nodeIndx += this->srcNodeDimProd[j] * cellIndsOffset[j];
+		}
+
+		// fill in the node's coordinates
+		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+			coords[j] = this->srcGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
+		}
+	}
+
 };
  
 #ifdef __cplusplus
@@ -253,7 +262,9 @@ extern "C" {
  	                                  const int dims[], const double** coords);
 
     int SgConserveInterp2D_setSrcGrid(SgConserveInterp2D_type** self, 
- 	                                  const int dims[], const double** coords);
+ 	                                  const int dims[], 
+ 	                                  const int periodicity[],
+ 	                                  const double** coords);
 
     int SgConserveInterp2D_computeWeights(SgConserveInterp2D_type** self);
 

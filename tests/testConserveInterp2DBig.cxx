@@ -64,6 +64,7 @@ bool testPolar() {
     const int srcDims[] = {101, 201}; // number of nodes
     const double srcXmins[] = {-1., -1.};
     const double srcXmaxs[] = {1., 1.};
+    const int periodicity[] = {0, 1};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
@@ -78,7 +79,7 @@ bool testPolar() {
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
-    SgConserveInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
+    SgConserveInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgConserveInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgConserveInterp2D_computeWeights(&interp);
     int srcIndex, dstIndex;
@@ -94,10 +95,10 @@ bool testPolar() {
     SgConserveInterp2D_del(&interp);
 
     // clean up
-    delete[] srcCoords[0];
-    delete[] srcCoords[1];
-    delete[] dstCoords[0];
-    delete[] dstCoords[1];
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
 
     std::cout << "testPolar: total weight = " << totalWeight << '\n';
     int dstNumCells = (dstDims[0] - 1) * (dstDims[1] - 1);

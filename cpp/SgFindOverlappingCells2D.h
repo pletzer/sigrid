@@ -198,6 +198,14 @@ struct SgFindOverlappingCells2D_type {
             this->srcCellFlatInds.push_back(cellIndx);
         }
     }
+
+    /**
+     * Get the collection of source cells under this polygon
+     * @return array of flat indices
+     */
+    std::vector<int> getSrcCellIndices() const {
+        return this->srcCellFlatInds;
+    }
 };
  
 #ifdef __cplusplus
