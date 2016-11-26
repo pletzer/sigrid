@@ -32,6 +32,9 @@ target_link_libraries(testQuadOverlap_CXX sigrid)
 add_executable(testConserveInterp2D_CXX testConserveInterp2D.cxx)
 target_link_libraries(testConserveInterp2D_CXX sigrid)
 
+add_executable(testNodeInterp2D_CXX testNodeInterp2D.cxx)
+target_link_libraries(testNodeInterp2D_CXX sigrid)
+
 add_executable(testConserveInterp2DBig_CXX testConserveInterp2DBig.cxx)
 target_link_libraries(testConserveInterp2DBig_CXX sigrid)
 
@@ -63,6 +66,7 @@ add_test(testQuadIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadIntersect_CXX)
 add_test(testTriangulate_CXX ${CMAKE_BINARY_DIR}/tests/testTriangulate_CXX)
 add_test(testQuadOverlap_CXX ${CMAKE_BINARY_DIR}/tests/testQuadOverlap_CXX)
 add_test(testConserveInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterp2D_CXX)
+add_test(testNodeInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testNodeInterp2D_CXX)
 add_test(testConserveInterp2DBig_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterp2DBig_CXX)
 add_test(testConserveInterpDisk_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterpDisk_CXX)
 add_test(testFindOverlappingCells2D_CXX ${CMAKE_BINARY_DIR}/tests/testFindOverlappingCells2D_CXX)
