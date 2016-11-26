@@ -213,21 +213,18 @@ std::vector<double> getIndices() const {
     return this->dIndices;
 }
 
-private:
-
 /**
- * Interpolate a nodal field
- * @param dInds position in index space
- * @param nodalField values of the nodal fields in the order returned by computeWeightsAndFlatIndices
+ * Get the flat source indices and interpolation weights 
+ * @param dIndices index location in source grid
+ * @param array of src flat index and weight pairs
  */
-double interp(const std::vector<double>& dInds,
-              const std::vector<double>& nodalField) {
+const std::vector< std::pair<size_t, double> > 
+getSrcIndicesAndWeights(const std::vector<double>& dInds) const {
 
-    double res = 0;
     size_t ndims = this->dims.size();
     size_t nnodes = pow(2, ndims);
+    std::vector< std::pair<size_t, double> > res(nnodes);
 
-    // iterate over the cell nodes
     for (size_t j = 0; j < nnodes; ++j) {
 
         size_t flatIndx = 0;
@@ -254,7 +251,30 @@ double interp(const std::vector<double>& dInds,
             wght *= (dInds[i] >= dindx? dindx + 1 - dInds[i]: dInds[i] - dindx + 1);
         }
 
-        res += wght * nodalField[flatIndx];
+        res[j] = std::pair<size_t, double>(flatIndx, wght);
+    }
+
+    return res;
+}
+
+private:
+
+/**
+ * Interpolate a nodal field
+ * @param dInds position in index space
+ * @param nodalField values of the nodal fields in the order returned by computeWeightsAndFlatIndices
+ */
+double interp(const std::vector<double>& dInds,
+              const std::vector<double>& nodalField)  const {
+
+    const std::vector< std::pair<size_t, double> > iw = this->getSrcIndicesAndWeights(dInds);
+
+    double res = 0;
+    for (std::vector< std::pair<size_t, double> >::const_iterator it = iw.begin();
+                      it != iw.end(); ++it) {
+        size_t srcNodeIndex = it->first;
+        double wght = it->second;
+        res += wght * nodalField[srcNodeIndex];
     }
 
     return res;

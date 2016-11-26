@@ -13,6 +13,7 @@ set(LIB_FILES
   SgQuadIntersect.cpp
   SgTriangulate.cpp
   SgConserveInterp2D.cpp
+  SgNodeInterp2D.cpp
   SgFindOverlappingCells2D.cpp
 )
 
@@ -27,6 +28,7 @@ set(HEADER_FILES
   SgQuadIntersect.h
   SgTriangulate.h
   SgConserveInterp2D.h
+  SgNodeInterp2D.h
   SgFindOverlappingCells2D.h
 )
 
