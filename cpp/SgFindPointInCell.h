@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstdio> // size_t
 #include <cmath>
+#include <limits>
 #include "SgLinearSolve.h"
  
 struct SgFindPointInCell_type {
@@ -51,6 +52,9 @@ struct SgFindPointInCell_type {
     // target point minus current position (initially)
     std::vector<double> rhs;
 
+    // old iteration error
+    double oldError;
+
 /**
  * Constructor
  * @param nitermax max number of Newton iterations
@@ -61,6 +65,7 @@ SgFindPointInCell_type(int nitermax, double tolpos) {
     this->nitermax = nitermax;
     this->slvr = NULL;
     this->iter = 0;
+    this->oldError = std::numeric_limits<double>::max();
 }
 
 ~SgFindPointInCell_type() {
@@ -165,6 +170,7 @@ void reset(const double dIndices[], const double targetPoint[]) {
  * @return 0 if not yet reached target
  *         1 converged
  *         -1 hit max number of iterations
+ *         -2 hit a fixed point?
  */
 int next() {
 
@@ -191,6 +197,11 @@ int next() {
 
     // update the error
     double posError = this->getError();
+    double eps = std::numeric_limits<double>::epsilon();
+    if (fabs(posError - this->oldError) < eps) {
+        // we're not improving, fixed point?
+        return -2;
+    }
 
     if (this->iter >= this->nitermax) {
         // reached max number of iterations
@@ -202,6 +213,7 @@ int next() {
     }
 
     // has not yet converged
+    this->oldError = posError;
     return 0;
 }
 

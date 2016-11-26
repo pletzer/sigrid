@@ -193,6 +193,7 @@ struct SgNodeInterp2D_type {
                 std::vector<double> pos = this->pointFinder->getPosition();
                 std::cerr << "        best position so far is: " << pos[0] << ", " << pos[1] << '\n';
                 std::cerr << "        error in phys space: " << this->pointFinder->getError() << '\n';
+                std::cerr << "        error code: " << ier << '\n';
             }
 		}
 
