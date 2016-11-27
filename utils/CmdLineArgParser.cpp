@@ -11,7 +11,7 @@
 CmdLineArgParser::CmdLineArgParser() {
   // always activate -h
   this->set("-h", false, "Print help.");
-  this->footer = "\nReport bugs to pletzer@txcorp.com\n";
+  this->footer = "\nReport bugs to alexander@gokliya.net\n";
 }
   
 CmdLineArgParser::~CmdLineArgParser() {}

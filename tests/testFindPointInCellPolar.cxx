@@ -9,31 +9,53 @@
 #include <cmath>
 #include "SgFindPointInCell.h"
 #include "createGrids2D.h"
+#include "CmdLineArgParser.h"
 
+std::vector<double> getDoubleVectorFromString(const std::string& s) {
+	std::vector<double> res;
+	size_t begPos = 0;
+	size_t endPos = 0;
+	while (endPos != s.size()) {
+		endPos = s.find(',', begPos);
+		size_t n = endPos - begPos;
+		std::string sval = s.substr(begPos, n);
+		double val = atof(sval.c_str());
+		res.push_back(val);
+		begPos = endPos + 1;
+	}
+	return res;
+}
 
 
 int main(int argc, char** argv) {
 
-	int ier;
-	const int nitermax = 100;
-	const double tolpos = 1.e-10;
+	CmdLineArgParser prsr;
+	prsr.set("-p", "0., 0.", "Target position");
+	prsr.set("-i", "0., 0.", "Initial index location (guess)");
+	prsr.set("-nr", 11, "Number of grid radii");
+	prsr.set("-nt", 33, "Number of grid poloidal points");
+	prsr.set("-m", 100, "Max number of iterations");
+	prsr.set("-t", 1.e-10, "Tolerance in physical space");
+	prsr.parse(argc, argv);
 
+	int nitermax = prsr.get<int>("-m");
+	int tolpos = prsr.get<double>("-t");
+	int nt = prsr.get<int>("-nt");
+	int nr = prsr.get<int>("-nr");
+
+	std::vector<double> targetPoint = getDoubleVectorFromString(prsr.get<std::string>("-p"));
+	std::vector<double> dIndices = getDoubleVectorFromString(prsr.get<std::string>("-i"));
+
+	int ier;
 	// number of dimensions
 	const int ndims = 2;
 
-	// initial guess
-	double dIndices[] = {6.8, 3.4};
-
-	// target position
-	const double targetPoint[] = {0.7, M_PI/3.};
 	std::cout << "target point is ";
 	for (size_t i = 0; i < ndims; ++i) std::cout << targetPoint[i] << ' ';
 	std::cout << '\n';
 
 	// grid
 	
-	int nr = 11;
-	int nt = 33;
 	int dims[] = {nr, nt};
 	double* coords[] = {new double[nr * nt], new double[nr * nt]};
 	const double center[] = {0., 0.};
@@ -53,23 +75,17 @@ int main(int argc, char** argv) {
 		                            (const double**) &coords[0]);
 	assert(ier == 0);
 
-	ier = SgFindPointInCell_reset(&picf, dIndices, targetPoint);
+	ier = SgFindPointInCell_reset(&picf, &dIndices[0], &targetPoint[0]);
 	assert(ier == 0);
 
-	bool iterFlag = true;
+	int end = 0;
 	size_t icount = 0;
-	while (iterFlag) {
+	while (end != 0) {
 
 		ier = SgFindPointInCell_getPosition(&picf, oldPos);
 		assert(ier == 0);
 
-		ier = SgFindPointInCell_next(&picf);
-		if (ier != 0) {
-			iterFlag = false;
-			if (ier < 0) {
-				std::cout << "*** reached max number of iterations!\n";
-			}
-		}
+		end = SgFindPointInCell_next(&picf);
 
 		ier = SgFindPointInCell_getPosition(&picf, pos);
 		assert(ier == 0);

@@ -1,4 +1,5 @@
-include_directories(${CMAKE_SOURCE_DIR}/cpp)
+include_directories(${CMAKE_SOURCE_DIR}/cpp
+                    ${CMAKE_SOURCE_DIR}/utils)
 
 configure_file(testLinearSolve.py.in testLinearSolve.py)
 configure_file(testLinearSolveOverDetermined.py.in testLinearSolveOverDetermined.py)
@@ -12,7 +13,7 @@ add_executable(testFindPointInCell1D_CXX testFindPointInCell1D.cxx)
 target_link_libraries(testFindPointInCell1D_CXX sigrid)
 
 add_executable(testFindPointInCellPolar_CXX testFindPointInCellPolar.cxx)
-target_link_libraries(testFindPointInCellPolar_CXX sigrid)
+target_link_libraries(testFindPointInCellPolar_CXX sigrid sgutils)
 
 add_executable(testFindPointInCellPolarXY_CXX testFindPointInCellPolarXY.cxx)
 target_link_libraries(testFindPointInCellPolarXY_CXX sigrid)
