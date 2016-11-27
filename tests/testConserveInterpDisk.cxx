@@ -16,8 +16,9 @@ bool test() {
     const int periodicity[] = {0, 1};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
+    const double center[] = {0., 0.};
     const double radius = 1.0;
-    createPolarGrid(srcDims, radius, srcCoords);
+    createPolarGrid(srcDims, center, radius, srcCoords);
 
     // destination grid is rectangle encompassing src grid
     const int dstDims[] = {11, 11}; //{401, 401};

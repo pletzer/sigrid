@@ -223,10 +223,11 @@ bool testPolar() {
 
     // destination grid
     const int dstDims[] = {2, 5};
+    const double center[] = {0., 0.};
     const double radius = 1.0;
     int dstNumPoints = dstDims[0] * dstDims[1];
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
-    createPolarGrid(dstDims, radius, dstCoords);    
+    createPolarGrid(dstDims, center, radius, dstCoords);    
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);

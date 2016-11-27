@@ -153,8 +153,9 @@ bool testRect2Polar() {
     const int dstDims[] = {11, 41};
     int dstNumPoints = dstDims[0] * dstDims[1];
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
+    const double center[] = {0., 0.};
     const double radius = 1.0;
-    createPolarGrid(dstDims, radius, dstCoords);
+    createPolarGrid(dstDims, center, radius, dstCoords);
     std::vector<double> dstDataExact(dstNumPoints);
     std::vector<double> dstDataInterp(dstNumPoints);
     setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
@@ -187,11 +188,12 @@ bool testPolar2Rect() {
 
     // source grid
     const int srcDims[] = {21, 65};
+    const double center[] = {0., 0.};
     const double radius = 1.0;
     const int periodicity[] = {0, 1};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
-    createPolarGrid(srcDims, radius, srcCoords);
+    createPolarGrid(srcDims, center, radius, srcCoords);
     std::vector<double> srcData(srcNumPoints);
     setLinearField(srcNumPoints, (const double**) srcCoords, &srcData[0]);
 
