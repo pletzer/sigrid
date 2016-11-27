@@ -1,18 +1,21 @@
 /**
- * Testing cell search in 2D rectilinear grid
+ * Testing cell search in 2D polar grid
  */
 
- #include <vector>
- #include <cassert>
- #include <cstdio>
- #include <iostream>
- #include <cmath>
- #include "SgFindPointInCell.h"
+#include <vector>
+#include <cassert>
+#include <cstdio>
+#include <iostream>
+#include <cmath>
+#include "SgFindPointInCell.h"
+#include "createGrids2D.h"
+
+
 
 int main(int argc, char** argv) {
 
 	int ier;
-	const int nitermax = 1;
+	const int nitermax = 100;
 	const double tolpos = 1.e-10;
 
 	// number of dimensions
@@ -28,25 +31,14 @@ int main(int argc, char** argv) {
 	std::cout << '\n';
 
 	// grid
-	size_t nr = 11;
-	size_t nt = 21;
-	std::vector<double> rho(nr * nt);
-	std::vector<double> the(nr * nt);
-	size_t k = 0;
-	for (size_t i = 0; i < nr; ++i) {
-		double r = 0. + (1. - 0.) * i / double(nr - 1);
-		for (size_t j = 0; j < nt; ++j) {
-			double t = 0. + (2*M_PI - 0.)* j / double(nt - 1);
-			rho[k] = r;
-			the[k] = t;
-			k++;
-		}
-	}
-
-	const int dims[] = {nr, nt};
-	std::vector< double* > coords(ndims);
-	coords[0] = &rho[0];
-	coords[1] = &the[0];
+	
+	int nr = 11;
+	int nt = 33;
+	int dims[] = {nr, nt};
+	double* coords[] = {new double[nr * nt], new double[nr * nt]};
+	const double center[] = {0., 0.};
+	const double radius = 1.0;
+	createPolarGrid(dims, center, radius, coords);
 
 	double pos[ndims];
 	double oldPos[ndims];
@@ -55,9 +47,8 @@ int main(int argc, char** argv) {
 	ier = SgFindPointInCell_new(&picf, nitermax, tolpos);
 	assert(ier == 0);
 
-	// there is no periodicity in physicial position space
-	// (theta + 2*pi != theta)
-	const int periodicity[] = {0, 0};
+	// periodic in theta
+	const int periodicity[] = {0, 1};
 	ier = SgFindPointInCell_setGrid(&picf, ndims, dims, periodicity,
 		                            (const double**) &coords[0]);
 	assert(ier == 0);
@@ -88,12 +79,9 @@ int main(int argc, char** argv) {
 		std::cout << " -> new = ";
 	    for (int j = 0; j < ndims; ++j) std::cout << pos[j] << " ";
 
-		double error = 0;
-		for (int j = 0; j < ndims; ++j) {
-			double dp = targetPoint[j] - pos[j];
-			error = dp * dp;
-		}
-		error = sqrt(error);
+		double error;
+		ier = SgFindPointInCell_getError(&picf, &error);
+		assert(ier == 0);
 		std::cout << " (error = " << error << ")\n";
 
 		icount++;

@@ -36,5 +36,6 @@ find_package(PythonInterp REQUIRED)
 enable_testing()
 
 add_subdirectory(cpp)
+add_subdirectory(utils)
 add_subdirectory(tests)
 
