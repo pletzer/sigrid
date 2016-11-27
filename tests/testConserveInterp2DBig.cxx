@@ -1,5 +1,5 @@
 /**
- * Testing cconservative interpolation in 2D
+ * Testing conservative interpolation in 2D
  */
 
 #include <vector>

@@ -14,24 +14,26 @@
 std::vector<double> getDoubleVectorFromString(const std::string& s) {
 	std::vector<double> res;
 	size_t begPos = 0;
-	size_t endPos = 0;
-	while (endPos != s.size()) {
-		endPos = s.find(',', begPos);
+	bool cont = true;
+	while (cont) {
+		size_t endPos = s.find(',', begPos);
 		size_t n = endPos - begPos;
 		std::string sval = s.substr(begPos, n);
 		double val = atof(sval.c_str());
 		res.push_back(val);
 		begPos = endPos + 1;
+		if (endPos > s.size()) {
+			cont = false;
+		}
 	}
 	return res;
 }
 
-
 int main(int argc, char** argv) {
 
 	CmdLineArgParser prsr;
-	prsr.set("-p", "0., 0.", "Target position");
-	prsr.set("-i", "0., 0.", "Initial index location (guess)");
+	prsr.set("-p", std::string("0., 0."), "Target position");
+	prsr.set("-i", std::string("0., 0."), "Initial index location (guess)");
 	prsr.set("-nr", 11, "Number of grid radii");
 	prsr.set("-nt", 33, "Number of grid poloidal points");
 	prsr.set("-m", 100, "Max number of iterations");
