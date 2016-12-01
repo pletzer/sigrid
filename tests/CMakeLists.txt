@@ -60,7 +60,9 @@ add_test(testLine
 add_test(testFindPointInCell1D
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D.py)
 add_test(testFindPointInCell1D_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D_CXX)
-add_test(testFindPointInCellPolar_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolar_CXX)
+add_test(testFindPointInCellPolar_1 
+	     ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolar_CXX 
+	     -t 1.e-10 -m 100 -p "0, 0.707107" -i "3,10" -nr 21 -nt 65)
 add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolarXY_CXX)
 add_test(testLinearSolve_CXX ${CMAKE_BINARY_DIR}/tests/testLinearSolve_CXX)
 add_test(testQuadIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadIntersect_CXX)

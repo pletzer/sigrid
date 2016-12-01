@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 	prsr.parse(argc, argv);
 
 	int nitermax = prsr.get<int>("-m");
-	int tolpos = prsr.get<double>("-t");
+	double tolpos = prsr.get<double>("-t");
 	int nt = prsr.get<int>("-nt");
 	int nr = prsr.get<int>("-nr");
 
@@ -82,7 +82,10 @@ int main(int argc, char** argv) {
 
 	int end = 0;
 	size_t icount = 0;
-	while (end != 0) {
+	double error = std::numeric_limits<double>::max();
+	while (end == 0) {
+
+		std::cout << "Iteration: " << icount << '\n';
 
 		ier = SgFindPointInCell_getPosition(&picf, oldPos);
 		assert(ier == 0);
@@ -97,7 +100,6 @@ int main(int argc, char** argv) {
 		std::cout << " -> new = ";
 	    for (int j = 0; j < ndims; ++j) std::cout << pos[j] << " ";
 
-		double error;
 		ier = SgFindPointInCell_getError(&picf, &error);
 		assert(ier == 0);
 		std::cout << " (error = " << error << ")\n";
@@ -108,5 +110,12 @@ int main(int argc, char** argv) {
 	ier = SgFindPointInCell_del(&picf);
 	assert(ier == 0);
 
+	if (error > tolpos) {
+		// did not converge
+		std::cout << "ERROR " << end << '\n';
+		return 1;
+	}
+
+	std::cout << "SUCCESS\n";
 	return 0;
 }
