@@ -10,14 +10,14 @@ void test2D() {
     size_t ndims = 2;
     SgSideIterator_type sit(ndims);
     sit.reset();
-    int stop = 0;
-    while (!stop) {
+    size_t numElems = sit.getNumberOfElements();
+    for (size_t i = 0; i < numElems; ++i) {
         std::vector<int> side = sit.get();
-        for (size_t i = 0; i < ndims; ++i) {
-            std::cout << side[i] << ", ";
+        for (size_t j = 0; j < ndims; ++j) {
+            std::cout << side[j] << ", ";
         }
         std::cout << '\n';
-        stop = sit.next();
+        sit.next();
     }
 }
 
@@ -26,14 +26,14 @@ void test3D() {
     size_t ndims = 3;
     SgSideIterator_type sit(ndims);
     sit.reset();
-    int stop = 0;
-    while (!stop) {
+    size_t numElems = sit.getNumberOfElements();
+    for (size_t i = 0; i < numElems; ++i) {
         std::vector<int> side = sit.get();
-        for (size_t i = 0; i < ndims; ++i) {
-            std::cout << side[i] << ", ";
+        for (size_t j = 0; j < ndims; ++j) {
+            std::cout << side[j] << ", ";
         }
         std::cout << '\n';
-        stop = sit.next();
+        sit.next();
     }
 }
 
