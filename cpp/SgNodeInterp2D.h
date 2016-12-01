@@ -163,17 +163,13 @@ struct SgNodeInterp2D_type {
 		for (size_t dstNodeIndex = 0; dstNodeIndex < this->dstNumPoints; ++dstNodeIndex) {
 
 			// find the index position 
-            bool iterFlag = true;
+            int stop = 0;
             const double* targetPoint = &this->dstGrdCoords[dstNodeIndex*NDIMS_2D_PHYS];
 
             // start search
             this->pointFinder->reset(&dIndices[0], targetPoint);
-            while (iterFlag) {
-                ier = this->pointFinder->next();
-                if (ier != 0) {
-                    // reached end of iterations
-                    iterFlag = false;
-                }
+            while (!stop) {
+                stop = this->pointFinder->next();
             }
 
             if (ier == 1) {

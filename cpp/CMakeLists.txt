@@ -29,6 +29,7 @@ set(HEADER_FILES
   SgConserveInterp2D.h
   SgNodeInterp2D.h
   SgFindOverlappingCells2D.h
+  SgSideIterator.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
