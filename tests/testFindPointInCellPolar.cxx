@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     size_t icount = 0;
     double error = std::numeric_limits<double>::max();
 
-    printf("iter    old_position               new_position             error\n");
+    printf("iter    old_position             new_position               error\n");
     while (end == 0) {
 
         printf("%d   ", icount);
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
         assert(ier == 0);
 
         for (size_t i = 0; i < ndims; ++i) {
-            printf("%10.3f ", pos[i]);
+            printf("%10.5f ", pos[i]);
         }
         printf("    ");
 
