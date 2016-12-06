@@ -197,7 +197,7 @@ int next() {
 
     // update the error
     double posError = this->getError();
-    double eps = std::numeric_limits<double>::epsilon();
+    const double eps = std::numeric_limits<double>::epsilon();
     if (fabs(posError - this->oldError) < eps) {
         // we're not improving, fixed point?
         return -2;
@@ -337,6 +337,13 @@ void computeJacobianAndRHS() {
  */
 void truncateIndices() {
 
+    // Float indices are truncated when they fall outside the topological domain 
+    // (ie beyond the min/max dimensions). This can happen whenever one hits a 
+    // pole in which case the Jacobian is singular and the index increment infinite.
+    // Retreating by eps from the boundary of the index domain seems to help in this
+    // case.
+    const double eps = 1.234567890e-4;
+
     for (size_t i = 0; i < this->dims.size(); ++i) {
         // take into account periodicity 
         if (this->indexPeriodicity[i] != 0) {
@@ -346,9 +353,9 @@ void truncateIndices() {
         }
         // make sure the indices are within the domain
         this->dIndices[i] = (this->dIndices[i] < 0? 
-                             0: this->dIndices[i]);
+                             eps: this->dIndices[i]);
         this->dIndices[i] = (this->dIndices[i] > this->dims[i] - 1? 
-                             this->dims[i] - 1: this->dIndices[i]);
+                             this->dims[i] - 1 - eps: this->dIndices[i]);
     }
 }
 

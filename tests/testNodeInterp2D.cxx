@@ -201,14 +201,13 @@ bool testPolar2Rect() {
     const int dstDims[] = {11, 11};
     int dstNumPoints = dstDims[0] * dstDims[1];
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
-    // ensure the dst grid is insde the src grid
+    // ensure that dst grid is inside the src grid
     const double dstXmins[] = {-1./sqrt(2.), -1./sqrt(2.)};
     const double dstXmaxs[] = {1./sqrt(2.), 1./sqrt(2.)};
     createRectangularGrid(dstDims, dstXmins, dstXmaxs, dstCoords);
     std::vector<double> dstDataExact(dstNumPoints);
     std::vector<double> dstDataInterp(dstNumPoints);
     setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
-
 
     SgNodeInterp2D_type* interp = NULL;
     SgNodeInterp2D_new(&interp);
