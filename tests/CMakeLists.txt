@@ -48,6 +48,9 @@ target_link_libraries(testFindOverlappingCells2D_CXX sigrid)
 add_executable(testSideIterator_CXX testSideIterator.cxx)
 target_link_libraries(testSideIterator_CXX sigrid)
 
+add_executable(testNodeInterpRotatedPole testNodeInterpRotatedPole.cxx)
+target_link_libraries(testNodeInterpRotatedPole sigrid sgutils)
+
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
 add_test(testLinearSolveOverDetermined
@@ -77,4 +80,7 @@ add_test(testConserveInterp2DBig_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInter
 add_test(testConserveInterpDisk_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterpDisk_CXX)
 add_test(testFindOverlappingCells2D_CXX ${CMAKE_BINARY_DIR}/tests/testFindOverlappingCells2D_CXX)
 add_test(testSideIterator_CXX ${CMAKE_BINARY_DIR}/tests/testSideIterator_CXX)
+add_test(testNodeInterpRotatedPole_1
+         ${CMAKE_BINARY_DIR}/tests/testNodeInterpRotatedPole
+         --src_nj 41 --src_ni 81 --dst_nj 21 --dst_ni 41 --delta_lat 30.0 --delta_lon 20)
 
