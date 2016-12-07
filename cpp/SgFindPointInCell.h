@@ -52,6 +52,9 @@ struct SgFindPointInCell_type {
     // target point minus current position (initially)
     std::vector<double> rhs;
 
+    // history of the errors
+    std::vector<double> errorHistory;
+
     // old iteration error
     double oldError;
 
@@ -66,8 +69,12 @@ SgFindPointInCell_type(int nitermax, double tolpos) {
     this->slvr = NULL;
     this->iter = 0;
     this->oldError = std::numeric_limits<double>::max();
+    this->errorHistory.reserve(nitermax);
 }
 
+/**
+ * Destructor
+ */
 ~SgFindPointInCell_type() {
     if (this->slvr) delete this->slvr;
 }
@@ -197,11 +204,12 @@ int next() {
 
     // update the error
     double posError = this->getError();
+    this->errorHistory.push_back(posError);
     const double eps = std::numeric_limits<double>::epsilon();
-    if (fabs(posError - this->oldError) < eps) {
+    //if (fabs(posError - this->oldError) < eps) {
         // we're not improving, fixed point?
-        return -2;
-    }
+    //    return -2;
+    //}
 
     if (this->iter >= this->nitermax) {
         // reached max number of iterations
@@ -223,6 +231,16 @@ int next() {
  */
 std::vector<double> getIndices() const {
     return this->dIndices;
+}
+
+/**
+ * Get a pointer to the error history
+ * @param niter number of iterations so far (output)
+ * @param errorHistory pointer to the history of errors in physical space
+ */
+void getErrorHistory(int* niter, double* errorHistory[]) {
+    *niter = (int) this->errorHistory.size();
+    *errorHistory = &this->errorHistory.front();
 }
 
 /**

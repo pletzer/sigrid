@@ -7,8 +7,8 @@
 #include <iostream>
 
 extern "C"
-int SgNodeInterp2D_new(SgNodeInterp2D_type** self) {
- 	*self = new SgNodeInterp2D_type();
+int SgNodeInterp2D_new(SgNodeInterp2D_type** self, int nitermax, double tolpos) {
+ 	*self = new SgNodeInterp2D_type(nitermax, tolpos);
 	return 0;
 }
       

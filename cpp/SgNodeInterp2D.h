@@ -42,9 +42,7 @@ struct SgNodeInterp2D_type {
     /** 
      * Constructor
      */
-    SgNodeInterp2D_type() {
-        const int nitermax = 100;
-        const double tolpos = 1.e-8;
+    SgNodeInterp2D_type(int nitermax=100, double tolpos=1.e-8) {
         this->pointFinder = new SgFindPointInCell_type(nitermax, tolpos);
     }
 
@@ -293,7 +291,7 @@ private:
 extern "C" {
 #endif
 
-    int SgNodeInterp2D_new(SgNodeInterp2D_type** self);
+    int SgNodeInterp2D_new(SgNodeInterp2D_type** self, int nitermax, double tolpos);
                        
     int SgNodeInterp2D_del(SgNodeInterp2D_type** self);
 

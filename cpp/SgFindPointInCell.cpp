@@ -60,10 +60,17 @@ int SgFindPointInCell_next(SgFindPointInCell_type** self) {
 
 extern "C"
 int SgFindPointInCell_getIndices(SgFindPointInCell_type** self,
-                                  double dIndices[]) {
+                                 double dIndices[]) {
     std::vector<double> dInds = (*self)->getIndices();
     for (size_t i = 0; i < dInds.size(); ++i) {
         dIndices[i] = dInds[i];
     }
     return 0;
+}
+
+extern "C"
+int SgFindPointInCell_getErrorHistory(SgFindPointInCell_type** self,
+                                      int* niter, double** errorHistory) {
+  (*self)->getErrorHistory(niter, errorHistory);
+  return 0;
 }

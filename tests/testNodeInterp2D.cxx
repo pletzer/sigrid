@@ -63,9 +63,11 @@ bool testSimple() {
     std::vector<double> dstDataInterp(dstNumPoints);
     setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
 
+    const int nitermax = 100;
+    const double tolpos = 1.e-8;
 
     SgNodeInterp2D_type* interp = NULL;
-    SgNodeInterp2D_new(&interp);
+    SgNodeInterp2D_new(&interp, nitermax, tolpos);
     SgNodeInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgNodeInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgNodeInterp2D_computeWeights(&interp);
@@ -111,9 +113,11 @@ bool testRect2Rect() {
     std::vector<double> dstDataInterp(dstNumPoints);
     setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
 
+    const int nitermax = 100;
+    const double tolpos = 1.e-8;
 
     SgNodeInterp2D_type* interp = NULL;
-    SgNodeInterp2D_new(&interp);
+    SgNodeInterp2D_new(&interp, nitermax, tolpos);
     SgNodeInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgNodeInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgNodeInterp2D_computeWeights(&interp);
@@ -160,9 +164,11 @@ bool testRect2Polar() {
     std::vector<double> dstDataInterp(dstNumPoints);
     setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
 
+    const int nitermax = 100;
+    const double tolpos = 1.e-8;
 
     SgNodeInterp2D_type* interp = NULL;
-    SgNodeInterp2D_new(&interp);
+    SgNodeInterp2D_new(&interp, nitermax, tolpos);
     SgNodeInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgNodeInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgNodeInterp2D_computeWeights(&interp);
@@ -209,8 +215,11 @@ bool testPolar2Rect() {
     std::vector<double> dstDataInterp(dstNumPoints);
     setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
 
+    const int nitermax = 100;
+    const double tolpos = 1.e-8;
+
     SgNodeInterp2D_type* interp = NULL;
-    SgNodeInterp2D_new(&interp);
+    SgNodeInterp2D_new(&interp, nitermax, tolpos);
     SgNodeInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgNodeInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgNodeInterp2D_computeWeights(&interp);
