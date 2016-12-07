@@ -207,10 +207,17 @@ int next() {
     double posError = this->getError();
     this->errorHistory.push_back(posError);
     const double eps = std::numeric_limits<double>::epsilon();
-    //if (fabs(posError - this->oldError) < eps) {
+    if (posError > this->oldError + eps) {
         // we're not improving, fixed point?
-    //    return -2;
-    //}
+        // stop if the error has not improved in the last 3 iterations
+        size_t niter = this->errorHistory.size();
+        //if (niter >= 3) {
+        //    if (posError > this->errorHistory[niter - 3] + eps) {
+        //        // not improving
+        //        return -2;
+        //    }
+        //}
+    }
 
     if (this->iter >= this->nitermax) {
         // reached max number of iterations
