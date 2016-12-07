@@ -169,6 +169,7 @@ void reset(const double dIndices[], const double targetPoint[]) {
         this->targetPoint[i] = targetPoint[i];
     }
     this->iter = 0;
+    this->errorHistory.resize(0);
 }
 
 
