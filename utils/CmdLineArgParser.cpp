@@ -11,6 +11,7 @@
 CmdLineArgParser::CmdLineArgParser() {
     // always activate -h
     this->set("-h", false, "Print help.");
+    this->set("--help", false, "Print help.");
     this->footer = "\nReport bugs to alexander@gokliya.net\n";
 }
   
@@ -42,6 +43,14 @@ CmdLineArgParser::set(const std::string& name,
                       const std::string& defaultVal, 
                       const std::string& help) {
     this->stringArg[name] = defaultVal;
+    this->stringArgHelp[name] = help;
+}
+
+void 
+CmdLineArgParser::set(const std::string& name, 
+                      const char* defaultVal, 
+                      const std::string& help) {
+    this->stringArg[name] = std::string(defaultVal);
     this->stringArgHelp[name] = help;
 }
 
@@ -228,6 +237,17 @@ CmdLineArgParser::get<std::string>(const std::string& name) const {
         res = i->second;
     }
     return res;
+}
+
+template <>
+const char*
+CmdLineArgParser::get<const char*>(const std::string& name) const {
+    std::map<std::string, std::string>::const_iterator 
+      i = this->stringArg.find(name);
+    if (i != this->stringArg.end()) {
+        return i->second.c_str();
+    }
+    return "";
 }
 
 template <>

@@ -40,6 +40,9 @@ class CmdLineArgParser {
            const std::string& defaultVal, 
            const std::string& help);
   void set(const std::string& name, 
+           const char* defaultVal, 
+           const std::string& help);
+  void set(const std::string& name, 
            bool defaultVal, 
            const std::string& help);
   

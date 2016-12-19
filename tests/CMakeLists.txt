@@ -51,6 +51,9 @@ target_link_libraries(testSideIterator_CXX sigrid)
 add_executable(testNodeInterpRotatedPole testNodeInterpRotatedPole.cxx)
 target_link_libraries(testNodeInterpRotatedPole sigrid sgutils)
 
+add_executable(testCmdLineArgParser testCmdLineArgParser.cxx)
+target_link_libraries(testCmdLineArgParser sgutils)
+
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
 add_test(testLinearSolveOverDetermined
