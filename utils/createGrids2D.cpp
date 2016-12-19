@@ -1,9 +1,6 @@
-#include <cmath>
+#include "createGrids2D.h"
 
-#ifndef CREATE_GRIDS_H
-#define CREATE_GRIDS_H
-
-
+extern "C"
 void matrixDotMatrix(const double mat1[], const double mat2[], double matres[]) {
     size_t k = 0;
     for (size_t i = 0; i < 3; ++i) {
@@ -15,9 +12,9 @@ void matrixDotMatrix(const double mat1[], const double mat2[], double matres[]) 
             k++;
         }
     }
-
 }
 
+extern "C"
 void matrixDotVector(const double mat[], const double vec[], double vecres[]) {
     for (size_t i = 0; i < 3; ++i) {
         vecres[i] = 0.;
@@ -27,14 +24,7 @@ void matrixDotVector(const double mat[], const double vec[], double vecres[]) {
     }
 }
 
-
-/**
- * Create rectangular grid
- * @param nodeDims number of nodes in the two directions
- * @param xmins low corner point of the grid
- * @param xmaxs high corner point of the grid
- * @param coords coordinates (output)
- */
+extern "C"
 void createRectangularGrid(const int nodeDims[], 
                            const double xmins[],
                            const double xmaxs[], 
@@ -52,13 +42,7 @@ void createRectangularGrid(const int nodeDims[],
     }
 }
 
-/**
- * Create polar grid
- * @param nodeDims number of nodes in the two directions
- * @param center center of grid
- * @param radius radius
- * @param coords coordinates (output)
- */
+extern "C"
 void createPolarGrid(const int nodeDims[], 
                      const double center[],
                      double radius,
@@ -78,13 +62,7 @@ void createPolarGrid(const int nodeDims[],
     }
 }
 
-/** 
- * Create rotated pole grid
- * @param nodeDims number of nodes in the two directions
- * @param delta_lat pole displacement in latitude (deg)
- * @param delta_lon pole displacement in longitude (deg)
- * @param coords coordinates (output)
- */
+extern "C"
 void createRotatedPoleGrid(const int nodeDims[], 
                            double delta_lat, double delta_lon,
                            double** coords) {
@@ -134,8 +112,5 @@ void createRotatedPoleGrid(const int nodeDims[],
             k++;
         }
     }
-
 }
 
-
-#endif // CREATE_GRIDS_H

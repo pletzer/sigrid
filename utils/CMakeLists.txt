@@ -4,10 +4,12 @@ include_directories(
 
 set(LIB_FILES
   CmdLineArgParser.cpp
+  createGrids2D.cpp
 )
 
 set(HEADER_FILES
   CmdLineArgParser.h
+  createGrids2D.h
 )
 
 add_library(sgutils SHARED ${LIB_FILES})

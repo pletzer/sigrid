@@ -31,19 +31,19 @@ add_executable(testQuadOverlap_CXX testQuadOverlap.cxx)
 target_link_libraries(testQuadOverlap_CXX sigrid)
 
 add_executable(testConserveInterp2D_CXX testConserveInterp2D.cxx)
-target_link_libraries(testConserveInterp2D_CXX sigrid)
+target_link_libraries(testConserveInterp2D_CXX sigrid sgutils)
 
 add_executable(testNodeInterp2D_CXX testNodeInterp2D.cxx)
-target_link_libraries(testNodeInterp2D_CXX sigrid)
+target_link_libraries(testNodeInterp2D_CXX sigrid sgutils)
 
 add_executable(testConserveInterp2DBig_CXX testConserveInterp2DBig.cxx)
-target_link_libraries(testConserveInterp2DBig_CXX sigrid)
+target_link_libraries(testConserveInterp2DBig_CXX sigrid sgutils)
 
 add_executable(testConserveInterpDisk_CXX testConserveInterpDisk.cxx)
-target_link_libraries(testConserveInterpDisk_CXX sigrid)
+target_link_libraries(testConserveInterpDisk_CXX sigrid sgutils)
 
 add_executable(testFindOverlappingCells2D_CXX testFindOverlappingCells2D.cxx)
-target_link_libraries(testFindOverlappingCells2D_CXX sigrid)
+target_link_libraries(testFindOverlappingCells2D_CXX sigrid sgutils)
 
 add_executable(testSideIterator_CXX testSideIterator.cxx)
 target_link_libraries(testSideIterator_CXX sigrid)
