@@ -23,10 +23,21 @@ nodeDims = (c_int * 2)(args.nj, args.ni)
 delta_lat = c_double(args.delta_lat)
 delta_lon = c_double(args.delta_lon)
 ntot = args.nj * args.ni
-lats = (c_double * ntot)()
-lons = (c_double * ntot)()
-coords = (POINTER(c_double) * 2)(lats, lons)
+lats = numpy.zeros((ntot,), numpy.float64)
+lons = numpy.zeros((ntot,), numpy.float64)
+latsPtr = lats.ctypes.data_as(POINTER(c_double))
+lonsPtr = lons.ctypes.data_as(POINTER(c_double))
+coords = (POINTER(c_double) * 2)(latsPtr, lonsPtr)
 
 sg.createRotatedPoleGrid(nodeDims, delta_lat, delta_lon, coords)
 
+lats = lats.reshape(args.nj, args.ni)
+lons = lons.reshape(args.nj, args.ni)
+
+from matplotlib import pylab
+for j in range(args.nj):
+    pylab.plot(lons[j, :], lats[j, :], 'b-')
+for i in range(args.ni):
+    pylab.plot(lons[:, i], lats[:, i], 'r-')
+pylab.show()
 
