@@ -23,9 +23,10 @@ nodeDims = (c_int * 2)(args.nj, args.ni)
 delta_lat = c_double(args.delta_lat)
 delta_lon = c_double(args.delta_lon)
 ntot = args.nj * args.ni
-coords = numpy.zeros((2, ntot), numpy.float64)
+lats = (c_double * ntot)()
+lons = (c_double * ntot)()
+coords = (POINTER(c_double) * 2)(lats, lons)
 
-sg.createRotatedPoleGrid(nodeDims, delta_lat, delta_lon,
-                         coords.ctypes.data_as(POINTER(c_double)))
+sg.createRotatedPoleGrid(nodeDims, delta_lat, delta_lon, coords)
 
 
