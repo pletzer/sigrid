@@ -21,6 +21,9 @@ target_link_libraries(testFindPointInCellPolar_CXX sigrid sgutils)
 add_executable(testFindPointInCellPolarXY_CXX testFindPointInCellPolarXY.cxx)
 target_link_libraries(testFindPointInCellPolarXY_CXX sigrid)
 
+add_executable(testFindPointInCellRotatedPole testFindPointInCellRotatedPole.cxx)
+target_link_libraries(testFindPointInCellRotatedPole sigrid sgutils)
+
 add_executable(testQuadIntersect_CXX testQuadIntersect.cxx)
 target_link_libraries(testQuadIntersect_CXX sigrid)
 
