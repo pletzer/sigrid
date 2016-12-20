@@ -104,7 +104,7 @@ void createRotatedPoleGrid(const int nodeDims[],
         double sin_the = sin(the);
         double rho = cos_the;
         for (size_t i = 0; i < ni; ++i) {
-            double lon = 0.0 + 360.0 * i / double(ni - 1);
+            double lon = -180.0 + 360.0 * i / double(ni - 1);
             double lam = M_PI * lon / 180.0;
             double cos_lam = cos(lam);
             double sin_lam = sin(lam);

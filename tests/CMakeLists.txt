@@ -95,6 +95,9 @@ add_test(testNodeInterpRotatedPole_2
 add_test(testCreateRotatedPole_1
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testCreateRotatedPole.py
          --nj 11 --ni 21 --delta_lat 30.0 --delta_lon 20.0)
+add_test(testCreateRotatedPole_2
+         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testCreateRotatedPole.py
+         --nj 11 --ni 21 --delta_lat 0.0 --delta_lon 0.0)
 add_test(testCreatePolar_1
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testCreatePolar.py
          --nj 11 --ni 21 --radius 1.0)

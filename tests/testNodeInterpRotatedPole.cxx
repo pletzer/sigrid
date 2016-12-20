@@ -61,10 +61,9 @@ int main(int argc, char** argv) {
     const int srcDims[] = {prsr.get<int>("--src_nj"), prsr.get<int>("--src_ni")};
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
-    createRotatedPoleGrid(srcDims,
-                          prsr.get<double>("--delta_lat"),
-                          prsr.get<double>("--delta_lon"),
-                          srcCoords);
+    double delta_lat = prsr.get<double>("--delta_lat");
+    double delta_lon = prsr.get<double>("--delta_lon");
+    createRotatedPoleGrid(srcDims, delta_lat, delta_lon, srcCoords);
     std::vector<double> srcData(srcNumPoints);
     setLinearField(srcNumPoints, (const double**) srcCoords, &srcData[0]);
 
