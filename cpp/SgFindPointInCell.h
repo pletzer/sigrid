@@ -145,6 +145,22 @@ void setGrid(int ndims, const int dims[], const int periodicity[],
 }
 
 /**
+ * Get min domain corner 
+ * @return min coordinates
+ */
+ const double* getSrcDomainLo() const {
+    return &this->xmins.front();
+ }
+
+/**
+ * Get max domain corner 
+ * @return max coordinates
+ */
+ const double* getSrcDomainHi() const {
+    return &this->xmaxs.front();
+ }
+
+/**
  * Get the current position
  * @return position
  */
