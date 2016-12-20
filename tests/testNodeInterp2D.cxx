@@ -241,6 +241,54 @@ bool testPolar2Rect() {
     return true;
 }
 
+bool testRotatedPole2Rect(const int srcDims[],
+                          double delta_lat, double delta_lon,
+                          const int dstDims[]) {
+
+    // source grid
+    const int periodicity[] = {0, 1};
+    int srcNumPoints = srcDims[0] * srcDims[1];
+    double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
+    createRotatedPoleGrid(srcDims, delta_lat, delta_lon, srcCoords);
+    std::vector<double> srcData(srcNumPoints);
+    setLinearField(srcNumPoints, (const double**) srcCoords, &srcData[0]);
+
+    // destination grid
+    int dstNumPoints = dstDims[0] * dstDims[1];
+    double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
+    // ensure that dst grid is inside the src grid
+    const double dstXmins[] = {-90.0, -180.0};
+    const double dstXmaxs[] = {90.0, 180.0};
+    createRectangularGrid(dstDims, dstXmins, dstXmaxs, dstCoords);
+    std::vector<double> dstDataExact(dstNumPoints);
+    std::vector<double> dstDataInterp(dstNumPoints);
+    setLinearField(dstNumPoints, (const double**) dstCoords, &dstDataExact[0]);
+
+    const int nitermax = 100;
+    const double tolpos = 1.e-8;
+
+    SgNodeInterp2D_type* interp = NULL;
+    SgNodeInterp2D_new(&interp, nitermax, tolpos);
+    SgNodeInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
+    SgNodeInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
+    SgNodeInterp2D_computeWeights(&interp);
+    SgNodeInterp2D_apply(&interp, &srcData[0], &dstDataInterp[0]);
+    SgNodeInterp2D_del(&interp);
+
+    double absError = getInterpError(dstNumPoints, &dstDataInterp[0], &dstDataExact[0]);
+    std::cout << "testRotatedPole2Rect: abs interp error = " << absError << '\n';
+    if (absError > 3.e-2) {
+        return false;
+    }
+
+    // clean up
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+    }
+
+    return true;
+}
 
 int main(int argc, char** argv) {
 
@@ -248,6 +296,17 @@ int main(int argc, char** argv) {
     if (!testRect2Rect()) return 2;
     if (!testRect2Polar()) return 3;
     if (!testPolar2Rect()) return 4;
+
+    const int srcDims[] = {41, 81};
+    const int dstDims[] = {5, 9};
+    double delta_lat = 0.0;
+    double delta_lon = 0.0;
+    if (!testRotatedPole2Rect(srcDims, delta_lat, delta_lon, dstDims)) return 5;
+
+    delta_lat = 30.0;
+    delta_lon = 20.0;
+    if (!testRotatedPole2Rect(srcDims, delta_lat, delta_lon, dstDims)) return 6;
+
     std::cout << "SUCCESS\n";
     return 0;
 }

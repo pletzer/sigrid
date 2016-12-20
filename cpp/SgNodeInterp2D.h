@@ -217,13 +217,16 @@ private:
      *         -2 got stuck
      */
     int findTarget(const double targetPoint[], std::vector<double>& dIndices) {
-         // stop condition
+
+        // stop condition
         int stop = 0;
+
         // start search
         this->pointFinder->reset(&dIndices[0], targetPoint);
         while (!stop) {
             stop = this->pointFinder->next();
         }
+        
         if (stop > 0) {
             // OK
             return 0;
