@@ -19,13 +19,19 @@ struct SgFindPointInCell_type {
     // the curvilinear coordinate points as ndims flat arrays
     std::vector<std::vector<double> > coords;
 
+    // the min coordinate values of the src grid
+    std::vector<double> xmins;
+
+    // the max coordinate values of the src grid
+    std::vector<double> xmaxs;
+
     // used to get the flat index
     std::vector<size_t> prodDims;
 
     // used when iterating over cell nodes
     std::vector<size_t> nodeProdDims;
 
-    // periodicity length in index space
+    // periodicity length in index space, either 0 (no periodicity) or dims
     std::vector<double> indexPeriodicity;
 
     // the number of grid points for each dimension
@@ -99,6 +105,8 @@ void setGrid(int ndims, const int dims[], const int periodicity[],
     this->rhs.resize(ndims);
     this->dIndices.resize(ndims);
     this->targetPoint.resize(ndims);
+    this->xmins.resize(ndims, std::numeric_limits<double>::max());
+    this->xmaxs.resize(ndims, -std::numeric_limits<double>::max());
     // default is no periodicity
     this->indexPeriodicity.resize(ndims, 0.0);
     for (size_t i = 0; i < ndims; ++i) {
@@ -127,6 +135,8 @@ void setGrid(int ndims, const int dims[], const int periodicity[],
         this->coords[i].resize(ntot);
         for (int j = 0; j < ntot; ++j) {
             this->coords[i][j] = coords[i][j];
+            this->xmins[i] = (this->xmins[i] < coords[i][j]? this->xmins[i]: coords[i][j]);
+            this->xmaxs[i] = (this->xmaxs[i] > coords[i][j]? this->xmaxs[i]: coords[i][j]);
         }
     }
 
@@ -136,7 +146,7 @@ void setGrid(int ndims, const int dims[], const int periodicity[],
 
 /**
  * Get the current position
- * @return psoition
+ * @return position
  */
 std::vector<double> getPosition() {
     size_t ndims = this->dims.size();
@@ -179,8 +189,22 @@ void reset(const double dIndices[], const double targetPoint[]) {
  *         1 converged
  *         -1 hit max number of iterations
  *         -2 hit a fixed point?
+ *         -3 outside of domain
  */
 int next() {
+
+    size_t ndims = this->dims.size();
+    const double eps = std::numeric_limits<double>::epsilon();
+
+    // check if inside domain
+    bool inside = true;
+    for (size_t i = 0; i < ndims; ++i) {
+        inside &= this->targetPoint[i] >= this->xmins[i] - eps;
+        inside &= this->targetPoint[i] <= this->xmaxs[i] + eps;
+    }
+    if (!inside) {
+        return -3;
+    }
 
     this->computeJacobianAndRHS();
     this->slvr->setMatrix(&this->jacMatrix[0]);
@@ -189,8 +213,6 @@ int next() {
 
     double* sol;
     this->slvr->getSolution(&sol);
-
-    size_t ndims = this->dims.size();
 
     // update the indices
     for (size_t i = 0; i < ndims; ++i) {
@@ -206,7 +228,6 @@ int next() {
     // update the error
     double posError = this->getError();
     this->errorHistory.push_back(posError);
-    const double eps = std::numeric_limits<double>::epsilon();
     if (posError > this->oldError + eps) {
         // we're not improving, fixed point?
         // stop if the error has not improved in the last 3 iterations
