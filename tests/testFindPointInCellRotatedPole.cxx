@@ -13,12 +13,17 @@
 
 std::vector<double> getVecFromString(const std::string& expr) {
     std::vector<double> res;
-    size_t pos1 = 0;
-    size_t pos2 = expr.find(',', pos1);
-    while (pos2 != std::string::npos) {
-        res.push_back(atof(expr.substr(pos1, pos2 - pos1).c_str()));
-        pos1 = pos2 + 1;
-        pos2 = expr.find(',', pos1);
+    size_t posBeg = 0;
+    size_t posEnd;
+    bool go = true;
+    while (go) {
+        posEnd = expr.find(',', posBeg);
+        std::string sn = expr.substr(posBeg, posEnd - posBeg);
+        res.push_back(atof(sn.c_str()));
+        if (posEnd == std::string::npos) {
+            go = false;
+        }
+        posBeg = posEnd + 1;
     }
     return res;
 }
@@ -52,7 +57,8 @@ int main(int argc, char** argv) {
     const double tolpos = prsr.get<double>("--tolpos");
 
     // target point
-    std::vector<double> targetPoint = getVecFromString(prsr.get<std::string>("--target"));
+    std::string tg = prsr.get<std::string>("--target");
+    std::vector<double> targetPoint = getVecFromString(tg);
 
     // initial guess
     std::vector<double> dIndices(NDIMS_2D_TOPO);
@@ -77,7 +83,15 @@ int main(int argc, char** argv) {
 
     std::cout << "Result: indices              = " << dIndices[0] << ", " << dIndices[1] << '\n';
     std::cout << "        position             = " << position[0] << ", " << position[1] << '\n';
+    std::cout << "        target               = " << targetPoint[0] << ", " << targetPoint[1] << '\n';
     std::cout << "        error in coord space = " << error << '\n';
+
+    int niter;
+    double* errorHistory;
+    pointFinder.getErrorHistory(&niter, &errorHistory);
+    for (int i = 0; i < niter; ++i) {
+        std::cout << i << " error = " << errorHistory[i] << '\n';
+    }
 
     // clean up
     for (size_t j = 0; j < 2; ++j) {
