@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 
     SgNodeInterp2D_type* interp = NULL;
     SgNodeInterp2D_new(&interp, nitermax, tolpos);
-    const int periodicity[] = {0, 0}; // not periodic because we are in lat-lon space
+    const int periodicity[] = {0, 1};
     SgNodeInterp2D_setSrcGrid(&interp, srcDims, periodicity, (const double**) srcCoords);
     SgNodeInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgNodeInterp2D_computeWeights(&interp);
