@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
     // initialize search
     SgFindPointInCell_type pointFinder(nitermax, tolpos);
-    const int periodicity[] = {0, 0}; // no periodicity in lat-lon space
+    const int periodicity[] = {0, 1}; // no periodicity in lat-lon space
     pointFinder.setGrid(NDIMS_2D_PHYS, srcDims, periodicity, (const double**) srcCoords);
 
     // search
