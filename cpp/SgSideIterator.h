@@ -24,8 +24,13 @@ struct SgSideIterator_type {
         for (int i = numDims - 2; i >= 0; --i) {
             this->prodDims[i] = this->prodDims[i + 1]*3;
         }
+        
         this->index = 0;
-        this->numElems = std::pow(3, numDims);
+
+        this->numElems = 1;
+        for (size_t i = 0; i < numDims; ++i) {
+            this->numElems *= 3;
+        }
     }
 
     /**

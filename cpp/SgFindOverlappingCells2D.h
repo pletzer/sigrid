@@ -171,7 +171,7 @@ struct SgFindOverlappingCells2D_type {
      */
     void findSrcCellIndices() {
 
-        int ier = this->findFloatIndexBoxOfPolygon();
+        this->findFloatIndexBoxOfPolygon();
 
         // set the low/high of the index box
         int loInds[NDIMS_2D_TOPO];
