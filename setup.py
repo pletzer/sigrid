@@ -124,7 +124,7 @@ for d in dirs:
   for s in srcFiles:
     srcs.append(s)
 
-ext_modules = [Extension("sigrid", # name of the shared library
+ext_modules = [Extension("libsigrid", # name of the shared library
                           srcs,
                           define_macros=[('HAVE_LAPACK_UNDERSCORE', 1),],
                           include_dirs=incdirs,
