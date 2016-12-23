@@ -2,14 +2,13 @@
 
 extern "C"
 void matrixDotMatrix(const double mat1[], const double mat2[], double matres[]) {
-    size_t k = 0;
     for (size_t i = 0; i < 3; ++i) {
         for (size_t j = 0; j < 3; ++j) {
+            size_t k = i*3 + j;
             matres[k] = 0.;
             for (size_t el = 0; el < 3; ++el) {
                 matres[k] += mat1[i*3 + el] * mat2[el*3 + j];
             }
-            k++;
         }
     }
 }
@@ -76,32 +75,41 @@ void createRotatedPoleGrid(const int nodeDims[],
     double cos_bet = cos(beta);
     double sin_bet = sin(beta);
 
-    double rot_alp[] = {cos_alp, 0., sin_alp,
-                        0., 1., 0.,
-                        -sin_alp, 0., cos_alp};
+    // rotate in latitude
+    double rot_alp[] = {cos_alp,     0., sin_alp,
+                             0.,     1.,      0.,
+                       -sin_alp,     0., cos_alp};
+
+    // rotate in longitude
     double rot_bet[] = {cos_bet, sin_bet, 0.,
-                        -sin_bet, cos_bet, 0., 
-                         0., 0., 1.};
+                       -sin_bet, cos_bet, 0., 
+                             0.,      0., 1.};
 
-    double transfMatrix[9];
+    // total rotation
+    double transfMatrix[3*3];
 
-    matrixDotMatrix(rot_alp, rot_bet, transfMatrix);
+    matrixDotMatrix(rot_bet, rot_alp, transfMatrix);
 
-    double xyzPrime[] = {0., 0., 0.};
-    double xyz[] = {0., 0., 0.};
+    // coordinates before rotation
+    double xyzPrime[3];
+
+    // coordinates after rotation
+    double xyz[3];
 
     size_t k = 0;
     for (size_t j = 0; j < nj; ++j) {
-        double the = 2.0 * M_PI * j / (nj - 1);
+        double lat = -90.0 + 180.0 * j / double(nj - 1);
+        double the = M_PI * lat / 180.0;
         double cos_the = cos(the);
         double sin_the = sin(the);
         double rho = cos_the;
         for (size_t i = 0; i < ni; ++i) {
-            double lam = -180. + 360. * i / (ni - 1);
+            double lon = -180.0 + 360.0 * i / double(ni - 1);
+            double lam = M_PI * lon / 180.0;
             double cos_lam = cos(lam);
             double sin_lam = sin(lam);
 
-            xyzPrime[0] = rho * cos_lam; 
+            xyzPrime[0] = rho * cos_lam;
             xyzPrime[1] = rho * sin_lam;
             xyzPrime[2] = sin_the;
 

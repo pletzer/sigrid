@@ -173,6 +173,16 @@ struct SgNodeInterp2D_type {
                 this->weights.insert(p);
 
             }
+            else if (ier == -3) {
+              std::cerr << "WARNING: target point " << 
+                           targetPoint[0] << ", " << targetPoint[1] << " is outside domain\n";
+              const double* xmins = this->pointFinder->getSrcDomainLo();
+              const double* xmaxs = this->pointFinder->getSrcDomainHi();
+              std::cout << "         min domain corner is " << 
+                           xmins[0] << ", " << xmins[1] << '\n';
+              std::cout << "         max domain corner is " << 
+                           xmaxs[0] << ", " << xmaxs[1] << '\n';
+            }
             else {
                 // likely, dst point is outside the src domain
                 // try again by approaching the target from the side
@@ -193,9 +203,9 @@ struct SgNodeInterp2D_type {
                     std::cerr << "ERROR: failed to find the index point for " << 
                           targetPoint[0] << ", " << targetPoint[1] << '\n';
                     std::vector<double> pos = this->pointFinder->getPosition();
-                    std::cerr << "        best position so far is: " << pos[0] << ", " << pos[1] << '\n';
-                    std::cerr << "        error in phys space: " << this->pointFinder->getError() << '\n';
-                    std::cerr << "        error code: " << ier << '\n';
+                    std::cerr << "       best position so far is: " << pos[0] << ", " << pos[1] << '\n';
+                    std::cerr << "       error in phys space: " << this->pointFinder->getError() << '\n';
+                    std::cerr << "       error code: " << ier << '\n';
                 }
             }
         }
@@ -213,13 +223,16 @@ private:
      *         -2 got stuck
      */
     int findTarget(const double targetPoint[], std::vector<double>& dIndices) {
-         // stop condition
+
+        // stop condition
         int stop = 0;
+
         // start search
         this->pointFinder->reset(&dIndices[0], targetPoint);
         while (!stop) {
             stop = this->pointFinder->next();
         }
+        
         if (stop > 0) {
             // OK
             return 0;
