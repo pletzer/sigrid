@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     printf("iter    old_position             new_position               error\n");
     while (end == 0) {
 
-        printf("%d   ", icount);
+        printf("%lu   ", icount);
 
         ier = SgFindPointInCell_getPosition(&picf, oldPos);
         assert(ier == 0);

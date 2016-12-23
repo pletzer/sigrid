@@ -149,9 +149,6 @@ struct SgNodeInterp2D_type {
      */
     void computeWeights() {
 
-        // search error code
-        int ier;
-
         this->weights.clear();
 
         // start somewhere in the middle of the src grid
@@ -162,7 +159,6 @@ struct SgNodeInterp2D_type {
         for (size_t dstNodeIndex = 0; dstNodeIndex < this->dstNumPoints; ++dstNodeIndex) {
 
             // find the index position 
-            int stop = 0;
             const double* targetPoint = &this->dstGrdCoords[dstNodeIndex*NDIMS_2D_PHYS];
 
             // start search

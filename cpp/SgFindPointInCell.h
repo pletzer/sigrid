@@ -101,7 +101,7 @@ void setGrid(int ndims, const int dims[], const int periodicity[],
     this->targetPoint.resize(ndims);
     // default is no periodicity
     this->indexPeriodicity.resize(ndims, 0.0);
-    for (size_t i = 0; i < ndims; ++i) {
+    for (int i = 0; i < ndims; ++i) {
         if (periodicity[i] != 0) {
             this->indexPeriodicity[i] = (double) dims[i];
         }
@@ -211,12 +211,12 @@ int next() {
         // we're not improving, fixed point?
         // stop if the error has not improved in the last 3 iterations
         size_t niter = this->errorHistory.size();
-        //if (niter >= 3) {
-        //    if (posError > this->errorHistory[niter - 3] + eps) {
-        //        // not improving
-        //        return -2;
-        //    }
-        //}
+        if (niter >= 3) {
+            if (posError > this->errorHistory[niter - 3] + eps) {
+                // not improving
+                return -2;
+            }
+        }
     }
 
     if (this->iter >= this->nitermax) {
@@ -275,7 +275,7 @@ getSrcIndicesAndWeights(const std::vector<double>& dInds) const {
 
             // need to a full cell to the right of loCornerIndx
             loCornerIndx = (loCornerIndx >= 0? loCornerIndx: 0);
-            loCornerIndx = (loCornerIndx <= this->dims[i] - 2? loCornerIndx: this->dims[i] - 2);
+            loCornerIndx = (loCornerIndx <= (int) this->dims[i] - 2? loCornerIndx: this->dims[i] - 2);
 
             // index along this dimension
             int indx = loCornerIndx + (j / this->nodeProdDims[i] % 2);

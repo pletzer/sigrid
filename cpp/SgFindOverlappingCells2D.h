@@ -119,7 +119,7 @@ struct SgFindOverlappingCells2D_type {
         int totError = 0;
 
         // iterate over the polygon's points
-        for (int i = 0; i < this->numPolyPoints; ++i) {
+        for (size_t i = 0; i < this->numPolyPoints; ++i) {
 
             bool iterFlag = true;
 
