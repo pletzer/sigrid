@@ -3,6 +3,7 @@ import sys
 import sigrid
 import glob
 
+# set some package attributes
 # __version__ = 
 
 # open the shared library when importing this module
@@ -13,19 +14,16 @@ if sys.platform == 'win32':
     suffix = 'dll'
 
 # try opening the shared library. Depending on the python
-# version the library might be called libcf.cpython-35m-...so
+# version the library might be called libsigrid.cpython-35m-...so
 # keep on trying...
 libs = glob.glob(sigrid.__path__[0] + '/*sigrid*.' + suffix)
-success = False
+libsigrid = None
 for lib in libs:
     try:
-        print('trying to open {}'.format(lib))
-        lib = CDLL(lib)
-        success = True
+        libsigrid = CDLL(lib)
+        break
     except:
         pass
-    if success:
-        break
-if not success:
-    print('Unable to open shared library!')
+if not libsigrid:
+    print('Unable to open shared library libsigrid!')
 
