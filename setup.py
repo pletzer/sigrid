@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Python installation script
 #
@@ -19,17 +20,18 @@ def getVersion():
   version_minor = "NOT-FOUND"
   version_patch = "NOT-FOUND"
   for line in open('CMakeLists.txt').readlines():
-  	m = re.search(r'VERSION_MAJOR\s+\"?(\d+)\"?', line)
-  	if m:
-  		version_major = m.group(1)
-  	else:
-  		m2 = re.search(r'VERSION_MINOR\s+\"?(\d+)\"?', line)
-  		if m2:
-  			version_minor = m2.group(1)
-  		else:
-  			m3 = re.search(r'VERSION_PATCH\s+\"?(\d+)\"?', line)
-  			if m3:
-  				version_patch = m3.group(1)
+    m = re.search(r'VERSION_MAJOR\s+\"?(\d+)\"?', line)
+    if m:
+      version_major = m.group(1)
+    else:
+      m2 = re.search(r'VERSION_MINOR\s+\"?(\d+)\"?', line)
+      if m2:
+        version_minor = m2.group(1)
+      else:
+        m3 = re.search(r'VERSION_PATCH\s+\"?(\d+)\"?', line)
+        if m3:
+          version_patch = m3.group(1)
+
   return version_major + '.' + version_minor + '.' + version_patch
 
 def getValuesFromOption(opt, cmd):
@@ -124,7 +126,7 @@ for d in dirs:
   for s in srcFiles:
     srcs.append(s)
 
-ext_modules = [Extension("libsigrid", # name of the shared library
+ext_modules = [Extension("sigrid/libsigrid", # name of the shared library
                           srcs,
                           define_macros=[('HAVE_LAPACK_UNDERSCORE', 1),],
                           include_dirs=incdirs,
