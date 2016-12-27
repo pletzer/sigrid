@@ -35,7 +35,7 @@ class ConserveInterp2D:
 		                                                   ycoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
 		sigrid.so.SgConserveInterp2D_setDstGrid(ctypes.byref(self.handle), dims, coords)
-		self.dstData = numpy.zeros((n0, n1), numpy.float64)
+		self.dstData = numpy.zeros((n0 - 1, n1 - 1), numpy.float64)
 
 	def setSrcGrid(self, periodicity, xcoords, ycoords):
 		"""
