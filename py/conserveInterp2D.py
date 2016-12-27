@@ -40,7 +40,7 @@ class ConserveInterp2D:
 	def setSrcGrid(self, periodicity, xcoords, ycoords):
 		"""
 		Set source grid
-		@param periodicity array of True/False values, set to True if periodic
+		@param periodicity array of True (periodic)/False (not periodic) values
 		@param xcoords array of point coordinates
 		@param ycoords array of point coordinates 
 		"""
@@ -50,7 +50,7 @@ class ConserveInterp2D:
 		periods = (ctypes.c_int * NDIMS)(p0, p1)
 		coords = (ctypes.POINTER(ctypes.c_double) * NDIMS)(xcoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
 		                                                   ycoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
-		sigrid.so.SgConserveInterp2D_setSrcGrid(ctypes.byref(self.handle), dims, period, coords)
+		sigrid.so.SgConserveInterp2D_setSrcGrid(ctypes.byref(self.handle), dims, periods, coords)
 		self.hasSrcCoords = True
 
 	def apply(self, srcData):
@@ -73,9 +73,9 @@ class ConserveInterp2D:
 		"""
 		if not self.hasSrcCoords:
 			raise RuntimeError('ERROR: must call "setSrcGrid" prior to invoking "computeWeights"')
-		if not self.dstData:
+		if self.dstData is None:
 			raise RuntimeError('ERROR: must call "setDstGrid" prior to invoking "computeWeights"')
-		SgConserveInterp2D_computeWeights(ctypes.byref(self.handle))
+		sigrid.so.SgConserveInterp2D_computeWeights(ctypes.byref(self.handle))
 		self.hasInterpWeights = True
 
 
