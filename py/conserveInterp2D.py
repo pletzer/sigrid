@@ -31,8 +31,8 @@ class ConserveInterp2D:
 		"""
 		n0, n1 = xcoords.shape
 		dims = (ctypes.c_int * NDIMS)(n0, n1)
-		coords = (ctypes.POINTER(ctypes.double) * NDIMS)(xcoords.ctypes.data_as(ctypes.POINTER(types.c_double)),
-		                                                 ycoords.ctypes.data_as(ctypes.POINTER(types.c_double)))
+		coords = (ctypes.POINTER(ctypes.c_double) * NDIMS)(xcoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+		                                                   ycoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
 		sigrid.so.SgConserveInterp2D_setDstGrid(ctypes.byref(self.handle), dims, coords)
 		self.dstData = numpy.zeros((n0, n1), numpy.float64)
@@ -48,8 +48,8 @@ class ConserveInterp2D:
 		dims = (ctypes.c_int * NDIMS)(n0, n1)
 		p0, p1 = int(periodicity[0]), int(periodicity[1])
 		periods = (ctypes.c_int * NDIMS)(p0, p1)
-		coords = (ctypes.POINTER(ctypes.double) * NDIMS)(xcoords.ctypes.data_as(ctypes.POINTER(types.c_double)),
-		                                                 ycoords.ctypes.data_as(ctypes.POINTER(types.c_double)))
+		coords = (ctypes.POINTER(ctypes.c_double) * NDIMS)(xcoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+		                                                   ycoords.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 		sigrid.so.SgConserveInterp2D_setSrcGrid(ctypes.byref(self.handle), dims, period, coords)
 		self.hasSrcCoords = True
 
