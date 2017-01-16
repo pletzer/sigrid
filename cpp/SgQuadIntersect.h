@@ -175,7 +175,7 @@ struct SgQuadIntersect_type {
         double* xis;
         this->slvr->getSolution(&xis);
         // make sure the parametric coordinates are within the (0+, 1-) range
-        // no need to inclde the end points since they are already taken into 
+        // no need to include the end points since they are already taken into 
         // account when looking for nodes inside cell
         if (xis[0] > this->tol && xis[0] <= 1 - this->tol && 
             xis[1] > this->tol && xis[1] <= 1 - this->tol) {

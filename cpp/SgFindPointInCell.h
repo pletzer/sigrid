@@ -213,6 +213,7 @@ int next() {
     const double eps = std::numeric_limits<double>::epsilon();
 
     // check if inside domain
+    // THIS SHOULD BE MOVED TO THE reset METHOD!!!!!
     bool inside = true;
     for (size_t i = 0; i < ndims; ++i) {
         inside &= this->targetPoint[i] >= this->xmins[i] - eps;
