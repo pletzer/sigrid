@@ -4,7 +4,7 @@ import sigrid
 import glob
 
 # set some package attributes
-# __version__ = 
+__version__ =  '0.1.0'
 
 # what packages should be imported if the user says from sigrid import *
 #__all__ = ['conserveInterp2D']

@@ -182,6 +182,7 @@ struct SgConserveInterp2D_type {
 			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
 			double dstArea = dstTriangulator.getConvexHullArea();
 
+			// src index to fractional area
 			std::vector< std::pair<size_t, double> > indWght;
 
 			// get the src cells covered by this dst cell
