@@ -160,11 +160,12 @@ struct SgConserveInterp2D_type {
 	void computeWeights() {
 
 		int numIntersectPoints;
-		double* intersectPoints;
 		SgQuadIntersect_type intersector;
 		double dstQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
 		double srcQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
 		int offset[] = {0, 0};
+		size_t dstNodeInds[4];
+		size_t srcNodeInds[4];
 
 		size_t dstNodeIndxA, dstNodeIndxB, dstNodeIndxC, dstNodeIndxD;
 		size_t srcNodeIndxA, srcNodeIndxB, srcNodeIndxC, srcNodeIndxD;
@@ -173,13 +174,13 @@ struct SgConserveInterp2D_type {
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
 			offset[0] = 0; offset[1] = 0;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeIndxA, &dstQuadCoords[0*NDIMS_2D_PHYS]);
+			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[0], &dstQuadCoords[0*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 0;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeIndxB, &dstQuadCoords[1*NDIMS_2D_PHYS]);
+			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[1], &dstQuadCoords[1*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 1;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeIndxC, &dstQuadCoords[2*NDIMS_2D_PHYS]);
+			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[2], &dstQuadCoords[2*NDIMS_2D_PHYS]);
 			offset[0] = 0; offset[1] = 1;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeIndxD, &dstQuadCoords[3*NDIMS_2D_PHYS]);
+			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[3], &dstQuadCoords[3*NDIMS_2D_PHYS]);
 
 			// compute the dst cell area
 			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
@@ -203,13 +204,13 @@ struct SgConserveInterp2D_type {
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
 				offset[0] = 0; offset[1] = 0;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeIndxA, &srcQuadCoords[0*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 0;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeIndxB, &srcQuadCoords[1*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[1], &srcQuadCoords[1*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 1;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeIndxC, &srcQuadCoords[2*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[2], &srcQuadCoords[2*NDIMS_2D_PHYS]);
 				offset[0] = 0; offset[1] = 1;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeIndxD, &srcQuadCoords[3*NDIMS_2D_PHYS]);
+				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[3], &srcQuadCoords[3*NDIMS_2D_PHYS]);
 
 				intersector.reset();
 				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
@@ -230,7 +231,7 @@ struct SgConserveInterp2D_type {
             		size_t iB = (i + 1) % 4;
             		double* dstCoordA = &dstQuadCoords[iA*NDIMS_2D_PHYS];
             		double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
-            		
+
             		// iterate over the src cell edges
             		for (size_t j = 0; j < 4; ++j) {
                 		// the edges of the second quad
