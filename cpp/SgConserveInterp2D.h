@@ -220,10 +220,36 @@ struct SgConserveInterp2D_type {
 				}
 
 
-				intersector.collectIntersectPoints(&numIntersectPoints, &intersectPoints);
+				intersector.collectNodesInsideQuad(dstQuadCoords, srcQuadCoords);
+        		intersector.collectNodesInsideQuad(srcQuadCoords, dstQuadCoords);
+        
+        		// iterate over dst cell edges
+        		for (size_t i = 0; i < 4; ++i) {
+            		// the edge of the first quad
+            		size_t iA = i;
+            		size_t iB = (i + 1) % 4;
+            		double* dstCoordA = &dstQuadCoords[iA*NDIMS_2D_PHYS];
+            		double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
+            		
+            		// iterate over the src cell edges
+            		for (size_t j = 0; j < 4; ++j) {
+                		// the edges of the second quad
+                	size_t jA = j;
+                	size_t jB = (j + 1) % 4;
+                	double* srcCoordA = &srcQuadCoords[jA*NDIMS_2D_PHYS];
+                	double* srcCoordB = &srcQuadCoords[jB*NDIMS_2D_PHYS];
+                	intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
+                                                                    srcCoordA, srcCoordB);
+            		}
+        		}
+
+        		// ready to collect all the interesction points
+				const std::vector<double>& pts = intersector.getIntersectionPoints();
+
+				numIntersectPoints = pts.size() / NDIMS_2D_PHYS;
 				if (numIntersectPoints >= 3) {
 					// must be able to build at least one triangle
-					SgTriangulate_type triangulator(numIntersectPoints, intersectPoints);
+					SgTriangulate_type triangulator(numIntersectPoints, &pts[0]);
 					double area = triangulator.getConvexHullArea();
 					indWght.push_back(std::pair<size_t, double>(srcIndx, area/dstArea));
 				}
