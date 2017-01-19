@@ -166,11 +166,14 @@ struct SgQuadIntersect_type {
      * @param edgePoint1 end point of edge 1
      * @param edgePoint2 start point of edge 2
      * @param edgePoint2 end point of edge 2
+     * @param pt intersection point (if present)
+     * @return 1 if intersection, 0 otherwise
      */
-    void collectEdgeToEdgeIntersectionPoints(const double edge1Point0[],
-                                             const double edge1Point1[],
-                                             const double edge2Point0[],
-                                             const double edge2Point1[]) {
+    int collectEdgeToEdgeIntersectionPoints(const double edge1Point0[],
+                                            const double edge1Point1[],
+                                            const double edge2Point0[],
+                                            const double edge2Point1[],
+                                            double pt[]) {
         std::vector<double> mat(2 * 2);
         std::vector<double> rhs(2);
         // edge1Point0 + xi*(edge1Point1 - edge1Point0) = edge2Point0 + eta*(edge2Point1 - edge2Point0)
@@ -185,7 +188,7 @@ struct SgQuadIntersect_type {
         if (ier > 0) {
             // singular system, likely because the two edges are parallel 
             // not adding any point, even if the edges are degenerate
-            return;
+            return 0;
         }
         double* xis;
         this->slvr->getSolution(&xis);
@@ -196,10 +199,12 @@ struct SgQuadIntersect_type {
             xis[1] > this->tol && xis[1] <= 1 - this->tol) {
             // the two edges intersect
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                double p = edge1Point0[j] + xis[0]*(edge1Point1[j] - edge1Point0[j]);
-                this->intersectionPoints.push_back(p);
+                pt[j] = edge1Point0[j] + xis[0]*(edge1Point1[j] - edge1Point0[j]);
+                this->intersectionPoints.push_back(pt[j]);
             }
+            return 1;
         }
+        return 0;
     }
 
     void setQuadPoints(const double* quad1Coords, const double* quad2Coords) {
@@ -216,6 +221,7 @@ struct SgQuadIntersect_type {
     void collectIntersectPoints(int* numPoints, double** points) {
 
         *numPoints = 0;
+        double pt[NDIMS_2D_PHYS];
 
         // seems like the quads are at least partially overlapping 
         this->collectNodesInsideQuad((const double*)this->quad1Coords, 
@@ -237,7 +243,7 @@ struct SgQuadIntersect_type {
                 double* quad2CoordA = &this->quad2Coords[quad2IndxA*NDIMS_2D_PHYS];
                 double* quad2CoordB = &this->quad2Coords[quad2IndxB*NDIMS_2D_PHYS];
                 this->collectEdgeToEdgeIntersectionPoints(quad1CoordA, quad1CoordB,
-                                                          quad2CoordA, quad2CoordB);
+                                                          quad2CoordA, quad2CoordB, pt);
             }
         }
 

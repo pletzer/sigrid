@@ -160,6 +160,7 @@ struct SgConserveInterp2D_type {
 	void computeWeights() {
 
 		int numIntersectPoints;
+		std::vector<double> point(NDIMS_2D_PHYS); // edge to edge intersection point
 		SgQuadIntersect_type intersector;
 		double dstQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
 		double srcQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
@@ -219,30 +220,38 @@ struct SgConserveInterp2D_type {
 					// no chance
 					continue;
 				}
-
-
-				intersector.collectNodesInsideQuad(dstQuadCoords, srcQuadCoords);
-        		intersector.collectNodesInsideQuad(srcQuadCoords, dstQuadCoords);
         
         		// iterate over dst cell edges
         		for (size_t i = 0; i < 4; ++i) {
             		// the edge of the first quad
             		size_t iA = i;
             		size_t iB = (i + 1) % 4;
+            		size_t dstNodeA = dstNodeInds[iA];
+            		size_t dstNodeB = dstNodeInds[iB];
             		double* dstCoordA = &dstQuadCoords[iA*NDIMS_2D_PHYS];
             		double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
 
             		// iterate over the src cell edges
             		for (size_t j = 0; j < 4; ++j) {
                 		// the edges of the second quad
-                	size_t jA = j;
-                	size_t jB = (j + 1) % 4;
-                	double* srcCoordA = &srcQuadCoords[jA*NDIMS_2D_PHYS];
-                	double* srcCoordB = &srcQuadCoords[jB*NDIMS_2D_PHYS];
-                	intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
-                                                                    srcCoordA, srcCoordB);
+                		size_t jA = j;
+                		size_t jB = (j + 1) % 4;
+                		size_t srcNodeA = srcNodeInds[jA];
+                		size_t srcNodeB = srcNodeInds[jB];
+                		double* srcCoordA = &srcQuadCoords[jA*NDIMS_2D_PHYS];
+                		double* srcCoordB = &srcQuadCoords[jB*NDIMS_2D_PHYS];
+                		int ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
+                                                                                  srcCoordA, srcCoordB,
+                                                                                  &point[0]);
             		}
         		}
+
+        		// dst cell nodes inside src cell
+        		intersector.collectNodesInsideQuad(dstQuadCoords, srcQuadCoords);
+
+        		// src cell nodes inside dst cell
+        		intersector.collectNodesInsideQuad(srcQuadCoords, dstQuadCoords);
+
 
         		// ready to collect all the interesction points
 				const std::vector<double>& pts = intersector.getIntersectionPoints();
