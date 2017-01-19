@@ -11,6 +11,7 @@
 #include <limits>
 #include <algorithm>
 #include "SgLinearSolve.h"
+#include "SgTriangulate.h"
 #include "SgNdims.h"
  
 struct SgQuadIntersect_type {
@@ -119,7 +120,14 @@ struct SgQuadIntersect_type {
         // in case the point is right on the triangle's edges
         return xis[0] > -this->tol && xis[0] <= 1 + this->tol && 
                 xis[1] > -this->tol && xis[0] + xis[1] <= 1 + this->tol;
+    }
 
+    /**
+     * Get the intersection points gathered so far
+     * @return array
+     */
+    const std::vector<double>& getIntersectionPoints() const {
+        return this->intersectionPoints;
     }
 
     /**
@@ -152,6 +160,13 @@ struct SgQuadIntersect_type {
         }
     }
 
+    /**
+     * Collect edge to edge intersection points
+     * @param edgePoint1 start point of edge 1
+     * @param edgePoint1 end point of edge 1
+     * @param edgePoint2 start point of edge 2
+     * @param edgePoint2 end point of edge 2
+     */
     void collectEdgeToEdgeIntersectionPoints(const double edge1Point0[],
                                              const double edge1Point1[],
                                              const double edge2Point0[],
@@ -193,15 +208,14 @@ struct SgQuadIntersect_type {
     }
 
 
+    /**
+     * Collect all the interstion points
+     * @param numPoints number of points (output)
+     * @param points flat array of points (output)
+     */
     void collectIntersectPoints(int* numPoints, double** points) {
 
         *numPoints = 0;
-
-        // quickly check if there is any chance of overlap
-        if (!this->checkIfBoxesOverlap()) {
-            // no chance to have an overlap
-            return;
-        }
 
         // seems like the quads are at least partially overlapping 
         this->collectNodesInsideQuad((const double*)this->quad1Coords, 
