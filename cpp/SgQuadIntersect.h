@@ -123,6 +123,16 @@ struct SgQuadIntersect_type {
     }
 
     /**
+     * Add a point to the list of intersections
+     * @param point point
+     */
+    void addPoint(const std::vector<double>& point) {
+      for (size_t i = 0; i < NDIMS_2D_PHYS; ++i) {
+        this->intersectionPoints.push_back(point[i]);
+      }
+    }
+
+    /**
      * Get the intersection points gathered so far
      * @return array
      */
