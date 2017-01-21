@@ -141,6 +141,25 @@ struct SgQuadIntersect_type {
     }
 
     /**
+     * Is point inside the quad?
+     * @param point target coordinates
+     * @param quad 4 points as flat array
+     */
+    bool isPointInCell(const double* point, const double* quad) {
+      if (this->checkIfPointIsInsideTriangle(point, &quad[0*NDIMS_2D_PHYS],
+                                                    &quad[1*NDIMS_2D_PHYS],
+                                                    &quad[3*NDIMS_2D_PHYS])) {
+        return true;
+      }
+      if (this->checkIfPointIsInsideTriangle(point, &quad[2*NDIMS_2D_PHYS],
+                                                    &quad[3*NDIMS_2D_PHYS],
+                                                    &quad[1*NDIMS_2D_PHYS])) {
+        return true;
+      }
+      return false;
+    }
+
+    /**
      * Collect all the quad's nodes that are inside the other quad
      * @param nodes flat array of the 1st quad's coordinates
      * @param quad flat array of the 2nd quad's cooridnates
@@ -148,21 +167,7 @@ struct SgQuadIntersect_type {
     void collectNodesInsideQuad(const double* nodes, const double* quad) {
 
         for (size_t i = 0; i < 4; ++i) {
-
-            if (this->checkIfPointIsInsideTriangle(&nodes[i*NDIMS_2D_PHYS], 
-                                                   &quad[0*NDIMS_2D_PHYS],
-                                                   &quad[1*NDIMS_2D_PHYS],
-                                                   &quad[3*NDIMS_2D_PHYS])) {
-                // pt is in inside triangle 0, 1, 3 of quad
-                for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                    this->intersectionPoints.push_back(nodes[i*NDIMS_2D_PHYS + j]);
-                }
-            }
-            else if (this->checkIfPointIsInsideTriangle(&nodes[i*NDIMS_2D_PHYS], 
-                                                        &quad[2*NDIMS_2D_PHYS],
-                                                        &quad[3*NDIMS_2D_PHYS],
-                                                        &quad[1*NDIMS_2D_PHYS])) {
-                // pt is inside triangle 2, 3, 1 of quad
+            if (this->isPointInCell(&nodes[i*NDIMS_2D_PHYS], quad)) {
                 for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
                     this->intersectionPoints.push_back(nodes[i*NDIMS_2D_PHYS + j]);
                 }
