@@ -9,6 +9,31 @@
 #include <cmath>
 #include "SgOctreePoints.h"
 
+bool testCart(size_t numLevels, size_t nx, size_t ny) {
+
+    // number of dimensions
+    const size_t ndims = 2;
+
+    // grid
+    std::vector<double> coords;
+    coords.reserve(nx * ny * ndims);
+    for (size_t j = 0; j < ny; ++j) {
+        double y = 0.0 + j * 1.0/(double) (ny - 1);
+        for (size_t i = 0; i < nx; ++i) {
+            double x = 0.0 + i * 1.0/(double) (nx - 1);
+            coords.push_back(x);
+            coords.push_back(y);
+        }
+    }
+
+    SgOctreePoints_type octree(numLevels, ndims, coords);
+
+
+    return true;
+
+}
+
+
 bool testPolar(size_t numLevels, size_t nr, size_t nt) {
 
     // number of dimensions
@@ -17,7 +42,6 @@ bool testPolar(size_t numLevels, size_t nr, size_t nt) {
     // grid
     std::vector<double> coords;
     coords.reserve(nr * nt * ndims);
-    size_t k = 0;
     for (size_t i = 0; i < nr; ++i) {
         double r = 0. + (1. - 0.) * i / double(nr - 1);
         for (size_t j = 0; j < nt; ++j) {
@@ -26,7 +50,6 @@ bool testPolar(size_t numLevels, size_t nr, size_t nt) {
             coords.push_back(x);
             double y = r * sin(t);
             coords.push_back(y);
-            k++;
         }
     }
 
@@ -39,6 +62,7 @@ bool testPolar(size_t numLevels, size_t nr, size_t nt) {
 
 int main(int argc, char** argv) {
 
+    if (!testCart(0, 11, 11)) return 1;
     if (!testPolar(0, 5, 9)) return 1;
 
     return 0;
