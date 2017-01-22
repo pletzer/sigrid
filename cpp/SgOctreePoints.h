@@ -50,14 +50,17 @@ struct SgOctreePoints_type {
  */
 SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& points) {
 
+    this->ndims = ndims;
+    this->nlevs = numLevels;
+
     // find the low/high corner points
-    std::vector<double> xmins(ndims, std::numeric_limits<double>::max());
-    std::vector<double> xmaxs(ndims, -std::numeric_limits<double>::max());
+    this->xmins.resize(ndims, std::numeric_limits<double>::max());
+    this->xmaxs.resize(ndims, -std::numeric_limits<double>::max());
     for (size_t i = 0; i < points.size(); ++i) {
         size_t dim = i % ndims;
         double p = points[i];
-        xmins[dim] = (p < xmins[dim]? p: xmins[dim]);
-        xmaxs[dim] = (p > xmaxs[dim]? p: xmaxs[dim]);
+        this->xmins[dim] = (p < this->xmins[dim]? p: this->xmins[dim]);
+        this->xmaxs[dim] = (p > this->xmaxs[dim]? p: this->xmaxs[dim]);
     }
 
     // used to map the flat indices to index sets
@@ -70,8 +73,9 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
     std::vector<size_t> key(numLevels);
     for (size_t level = 0; level < numLevels; ++level) {
 
-        // iterate over the quadrants
+        // iterate over the 2^ndims quadrants
         for (size_t iBox = 0; iBox < std::pow(2, ndims); ++iBox) {
+
             key.push_back(iBox);
 
             // compute the box lo/hi corners in (0, 1) space
@@ -88,10 +92,11 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
             }
             // scale and translate
             for (size_t j = 0; j < ndims; ++j) {
-                xLo[j] *= (xmaxs[j] - xmins[j]);
-                xHi[j] *= (xmaxs[j] - xmins[j]);
-                xLo[j] += xmins[j];
-                xHi[j] += xmins[j];
+                double len = this->xmaxs[j] - this->xmins[j];
+                xLo[j] *= len;
+                xHi[j] *= len;
+                xLo[j] += this->xmins[j];
+                xHi[j] += this->xmins[j];
             }
 
             // add entry to the tree
@@ -106,11 +111,6 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
         std::vector<size_t> key = this->getKey(&points[i*ndims], this->nlevs);
         this->node2Key.insert(std::pair<size_t, std::vector<size_t> >(i, key));
     }
-
-    this->ndims = ndims;
-    this->nlevs = numLevels;
-    this->xmins = xmins;
-    this->xmaxs = xmaxs;
 }
 
 /**
