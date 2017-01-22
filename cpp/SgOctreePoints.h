@@ -104,7 +104,7 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
     size_t numPoints = points.size() / ndims;
     for (size_t i = 0; i < numPoints; ++i) {
         std::vector<size_t> key = this->getKey(&points[i*ndims], this->nlevs);
-        this->node2Key.insert(std::pair<size_t, std::vector<size_t> >::pair(i, key));
+        this->node2Key.insert(std::pair<size_t, std::vector<size_t> >(i, key));
     }
 
     this->ndims = ndims;

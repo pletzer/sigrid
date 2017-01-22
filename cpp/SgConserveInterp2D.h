@@ -254,13 +254,13 @@ struct SgConserveInterp2D_type {
 
             		dstNodeIndxSrcCellIndx[0] = dstNodeA;
             		dstNodeIndxSrcCellIndx[1] = srcIndx;
-            		////std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		////    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
-            		////if (it1 != cacheDstNodeInSrcCell.end()) {
-            		////	// we've already checked this
-            		////	intersector.addPoint(pA);
-            		////}
-            		////else {
+            		std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
+            		    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
+            		if (it1 != cacheDstNodeInSrcCell.end()) {
+            			// we've already checked this
+            			intersector.addPoint(pA);
+            		}
+            		else {
             			// first time
             			bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
             			if (ret) {
@@ -268,7 +268,7 @@ struct SgConserveInterp2D_type {
             				std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
             				cacheDstNodeInSrcCell.insert(p);
             			}
-            		////}
+            		}
             		
 
             		// iterate over the src cell edges and nodes
@@ -288,13 +288,13 @@ struct SgConserveInterp2D_type {
 
                 		dstCellIndxSrcNodeIndx[0] = dstIndx;
                 		dstCellIndxSrcNodeIndx[1] = srcNodeA;
-            			////std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		    ////	it2 = cacheSrcNodeInDstCell.find(dstCellIndxSrcNodeIndx);
-            			////if (it2 != cacheSrcNodeInDstCell.end()) {
-            			////	// we've already checked this
-            			////	intersector.addPoint(qA);
-            			////}
-            			////else {
+            			std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
+            		    	it2 = cacheSrcNodeInDstCell.find(dstCellIndxSrcNodeIndx);
+            			if (it2 != cacheSrcNodeInDstCell.end()) {
+            				// we've already checked this
+            				intersector.addPoint(qA);
+            			}
+            			else {
             				// first time
             				bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
             				if (ret) {
@@ -302,7 +302,7 @@ struct SgConserveInterp2D_type {
             					std::pair< std::vector<size_t>, std::vector<double> > p(dstCellIndxSrcNodeIndx, qA);
             					cacheSrcNodeInDstCell.insert(p);
             				}
-            			////}
+            			}
 
                 		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
 
@@ -311,15 +311,15 @@ struct SgConserveInterp2D_type {
                 			continue;
                 		}
 
-                		////std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
-                		////    it = cacheEdgeX.find(dstSrcEdges);
-                		////if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
-                		////	// we already know what the intersection point is
-                		////	intersector.addPoint(it->second);
-                		////}
-                		////else {
+                		std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
+                		    it = cacheEdgeX.find(dstSrcEdges);
+                		if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
+                			// we already know what the intersection point is
+                			intersector.addPoint(it->second);
+                		}
+                		else {
                 			// let's see if there is an intersection
-                			ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
+                			int ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
                                                                                       srcCoordA, srcCoordB,
                                                                                       &point[0]);
 
@@ -332,7 +332,7 @@ struct SgConserveInterp2D_type {
                 				std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
                 				cacheEdgeX.insert(p);
                 			}
-                		////}
+                		}
 
           			}
         		}
