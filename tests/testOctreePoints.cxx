@@ -28,6 +28,17 @@ bool testCart(size_t numLevels, size_t nx, size_t ny) {
 
     SgOctreePoints_type octree(numLevels, ndims, coords);
 
+    // check the box corners
+    {
+        std::vector<size_t> key(numLevels, 0);
+        const std::vector<double>& xmins = octree.getLo(key);
+        const std::vector<double>& xmaxs = octree.getHi(key);
+        assert(fabs(xmaxs[0] - 0.00) < 1.e-10);
+        assert(fabs(xmaxs[0] - 0.00) < 1.e-10);
+        assert(fabs(xmaxs[0] - 0.25) < 1.e-10);
+        assert(fabs(xmaxs[0] - 0.25) < 1.e-10);
+    }
+
 
     return true;
 
@@ -62,8 +73,8 @@ bool testPolar(size_t numLevels, size_t nr, size_t nt) {
 
 int main(int argc, char** argv) {
 
-    if (!testCart(0, 11, 11)) return 1;
-    if (!testPolar(0, 5, 9)) return 1;
+    if (!testCart(2, 11, 11)) return 1;
+    if (!testPolar(2, 5, 9)) return 1;
 
     return 0;
 }
