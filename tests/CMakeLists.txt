@@ -21,6 +21,9 @@ target_link_libraries(testFindPointInCellPolar_CXX sigrid sgutils)
 add_executable(testFindPointInCellPolarXY_CXX testFindPointInCellPolarXY.cxx)
 target_link_libraries(testFindPointInCellPolarXY_CXX sigrid)
 
+add_executable(testOctreePoints_CXX testOctreePoints.cxx)
+target_link_libraries(testOctreePoints_CXX sigrid)
+
 add_executable(testFindPointInCellRotatedPole testFindPointInCellRotatedPole.cxx)
 target_link_libraries(testFindPointInCellRotatedPole sigrid sgutils)
 
@@ -79,6 +82,7 @@ add_test(testFindPointInCellPolar_1
 	     ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolar_CXX 
 	     -t 1.e-10 -m 100 -p "0, 0.707107" -i "3,10" -nr 21 -nt 65)
 add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolarXY_CXX)
+add_test(testOctreePoints_CXX ${CMAKE_BINARY_DIR}/tests/testOctreePoints_CXX)
 add_test(testLinearSolve_CXX ${CMAKE_BINARY_DIR}/tests/testLinearSolve_CXX)
 add_test(testQuadIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadIntersect_CXX)
 add_test(testTriangulate_CXX ${CMAKE_BINARY_DIR}/tests/testTriangulate_CXX)
