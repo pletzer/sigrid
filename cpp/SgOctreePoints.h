@@ -45,8 +45,9 @@ struct SgOctreePoints_type {
 
 /**
  * Constructor
- * @param 
- * @param 
+ * @param numLevels number of levels
+ * @param ndims number of dimensions
+ * @param points flat array of points 
  */
 SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& points) {
 
@@ -69,41 +70,9 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
         this->prodDims[i] = prodDims[i + 1] * 2;
     }
 
-    // build the octree
-    std::vector<size_t> key(numLevels);
-    for (size_t level = 0; level < numLevels; ++level) {
-
-        // iterate over the 2^ndims quadrants
-        for (size_t iBox = 0; iBox < std::pow(2, ndims); ++iBox) {
-
-            key.push_back(iBox);
-
-            // compute the box lo/hi corners in (0, 1) space
-            std::vector<double> xLo(ndims, 0);
-            std::vector<double> xHi(ndims, 0);
-            for (size_t level2 = 0; level2 < numLevels; ++level2) {
-                double dx = 1.0 / std::pow(2, level2);
-                for (size_t j = 0; j < ndims; ++j) {
-                    // index of the index set
-                    size_t boxIndx = (key[level2] / this->prodDims[j] % 2);
-                    xLo[j] += boxIndx * dx;
-                    xHi[j] = xLo[j] + dx;
-                }
-            }
-            // scale and translate
-            for (size_t j = 0; j < ndims; ++j) {
-                double len = this->xmaxs[j] - this->xmins[j];
-                xLo[j] *= len;
-                xHi[j] *= len;
-                xLo[j] += this->xmins[j];
-                xHi[j] += this->xmins[j];
-            }
-
-            // add entry to the tree
-            SgOctreeElement elem(xLo, xHi);
-            this->octree.insert(std::pair< std::vector<size_t>, SgOctreeElement>(key, elem));
-        }
-    }
+    // recursively build the octree
+    std::vector<size_t> key;
+    this->refineOctree(key);
 
     // attach each point to a sub-box
     size_t numPoints = points.size() / ndims;
@@ -119,7 +88,11 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
 ~SgOctreePoints_type() {
 }
 
-
+/*
+ * Get the low corner of the partition
+ * @param key array of indices in the range 0.. 2^ndims - 1
+ * @return the low coordinate point of the partition
+ */
 const std::vector<double>& getLo(const std::vector<size_t>& key) const {
     std::map< std::vector<size_t>, SgOctreeElement >::const_iterator
         it = this->octree.find(key);
@@ -129,6 +102,11 @@ const std::vector<double>& getLo(const std::vector<size_t>& key) const {
     return this->xmins;
 }
 
+/*
+ * Get the high corner of the partition
+ * @param key array of indices in the range 0...2^ndims - 1
+ * @return the high coordinate point of the partition
+ */
 const std::vector<double>& getHi(const std::vector<size_t>& key) const {
     std::map< std::vector<size_t>, SgOctreeElement >::const_iterator
         it = this->octree.find(key);
@@ -138,6 +116,12 @@ const std::vector<double>& getHi(const std::vector<size_t>& key) const {
     return this->xmaxs;
 }
 
+/**
+ * Get the key associated with a point
+ * @param pt point
+ * @param lev level
+ * @return key, array of integers in the range 0...2^ndims - 1
+ */
 std::vector<size_t> getKey(const double* pt, size_t lev) {
     // normalize
     std::vector<double> x(pt, pt + this->ndims);
@@ -153,6 +137,65 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
         }   
     }
     return key;
+}
+
+/**
+ * Refine an existing partition
+ * @param key, array of integers in the range 0...2^ndims - 1
+ */
+void refineOctree(std::vector<size_t>& key) {
+    for (size_t iQ = 0; iQ < std::pow(2, this->ndims); ++iQ) {
+        std::vector<size_t> key2 = key;
+        std::vector<double> xLo, xHi;
+        this->computeLoHi(key, xLo, xHi);
+        this->octree.insert(std::pair<size_t, SgOctreeElement>(iQ, SgOctreeElement(xLo, xHi)));
+        if (key2.size() < this->nlevs) {
+            // recursively call this method
+            this->refineOctree(key2);
+        }
+        // done
+    }
+}
+
+/**
+ * Compute the box boundaries
+ * @param key, array of integers in the range 0...2^ndims - 1
+ * @param xLo low corner (output)
+ * @param xHi high corner (output)
+ */
+void computeLoHi(const std::vector<size_t>& key, std::vector<double>& xLo, std::vector<double>& xHi) {
+    xLo.resize(this->ndims, 0.0);
+    xHi.resize(this->ndims, 1.0);
+    double dx = 0.5;
+    for (size_t i = 0; i < key.size(); ++i) {
+        size_t iQuad = key[i];
+        std::vector<size_t> inds = this->getIndices(iQuad);
+        for (size_t j = 0; j < this->ndims; ++j) {
+            xLo[j] += inds[j] * dx;
+            xHi[j] = xLo[j] + dx;
+        }
+        dx /= 2.0;
+    }
+    // scale and translate
+    for (size_t j = 0; j < this->ndims; ++j) {
+        xLo[j] *= (this->xmaxs[j] - this->xmins[j]);
+        xHi[j] *= (this->xmaxs[j] - this->xmins[j]);
+        xLo[j] += this->xmins[j];
+        xHi[j] += this->xmins[j];
+    }
+}
+
+/**
+ * Get the index set of the partition
+ * @param indx falt index in the range 0...2^ndims - 1
+ * @return index set, array of zeros and ones
+ */
+std::vector<size_t> getIndices(size_t indx) {
+    std::vector<size_t> inds(this->ndims, 0);
+    for (size_t j = 0; j < this->ndims; ++j) {
+        inds[j] = (indx / this->prodDims[j]) % 2;
+    }
+    return inds;
 }
 
 };
