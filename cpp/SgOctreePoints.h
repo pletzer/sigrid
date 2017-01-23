@@ -143,12 +143,18 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
  * Refine an existing partition
  * @param key, array of integers in the range 0...2^ndims - 1
  */
-void refineOctree(std::vector<size_t>& key) {
+void refineOctree(const std::vector<size_t>& key) {
+    // iterate over the 2^ndims quadrants
     for (size_t iQ = 0; iQ < std::pow(2, this->ndims); ++iQ) {
+        // copy the key
         std::vector<size_t> key2 = key;
+        // append the quadrant index
+	key2.push_back(iQ);
+        // compute and fill in the low/high corner points
         std::vector<double> xLo, xHi;
-        this->computeLoHi(key, xLo, xHi);
-        this->octree.insert(std::pair<size_t, SgOctreeElement>(iQ, SgOctreeElement(xLo, xHi)));
+        this->computeLoHi(key2, xLo, xHi);
+        // add the quadrant
+        this->octree.insert(std::pair< std::vector<size_t>, SgOctreeElement>(key2, SgOctreeElement(xLo, xHi)));
         if (key2.size() < this->nlevs) {
             // recursively call this method
             this->refineOctree(key2);
