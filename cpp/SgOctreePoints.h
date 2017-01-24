@@ -135,8 +135,9 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
     for (size_t el = 0; el < lev; ++el) {
         double fact = std::pow(2, el + 1);
         for (size_t j = 0; j < this->ndims; ++j) {
-            size_t indx = (size_t) floor(x[j] * fact - xbase[j]);
-            xbase[j] += indx * fact;
+            size_t indx = (size_t) floor((x[j] - xbase[j])*fact);
+            xbase[j] += (double) indx / fact;
+            // flat index
             key[el] += this->prodDims[j] * indx;
         }   
     }

@@ -96,6 +96,13 @@ bool testCart(size_t numLevels, size_t nx, size_t ny) {
         assert(key[0] == 1);
         assert(key[1] == 2);
     }
+    {
+        const double pt[] = {0.4, 0.7};
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 3);
+        assert(key[0] == 1);
+        assert(key[1] == 2);
+        assert(key[2] == 3);
+    }
 
     return true;
 
