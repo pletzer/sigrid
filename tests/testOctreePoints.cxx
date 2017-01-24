@@ -69,6 +69,18 @@ bool testCart(size_t numLevels, size_t nx, size_t ny) {
         assert(fabs(xmaxs[1] - 0.50) < 1.e-10);
     }
 
+    // check the key obtained from point
+    {
+        const double pt[] = {0., 0.};
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 0);
+    }
+    {
+        const double pt[] = {0.6, 0.};
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 1);
+    }
+
     return true;
 
 }
