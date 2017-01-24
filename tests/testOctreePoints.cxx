@@ -38,6 +38,16 @@ bool testCart(size_t numLevels, size_t nx, size_t ny) {
         assert(fabs(xmaxs[0] - 0.25) < 1.e-10);
         assert(fabs(xmaxs[1] - 0.25) < 1.e-10);
     }
+    {
+        std::vector<size_t> key(numLevels, 0);
+        key[0] = 1; key[1] = 2;
+        const std::vector<double>& xmins = octree.getLo(key);
+        const std::vector<double>& xmaxs = octree.getHi(key);
+        assert(fabs(xmins[0] - 0.25) < 1.e-10);
+        assert(fabs(xmins[1] - 0.50) < 1.e-10);
+        assert(fabs(xmaxs[0] - 0.50) < 1.e-10);
+        assert(fabs(xmaxs[1] - 0.75) < 1.e-10);
+    }
 
 
     return true;
