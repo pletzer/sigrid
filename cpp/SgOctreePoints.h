@@ -131,10 +131,12 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
         x[j] = (pt[j] - this->xmins[j])/len;
     }
     std::vector<size_t> key(lev, 0);
+    std::vector<double> xbase(this->ndims, 0.0);
     for (size_t el = 0; el < lev; ++el) {
         double fact = std::pow(2, el + 1);
         for (size_t j = 0; j < this->ndims; ++j) {
-            size_t indx = (size_t) floor(x[j] * fact);
+            size_t indx = (size_t) floor(x[j] * fact - xbase[j]);
+            xbase[j] += indx * fact;
             key[el] += this->prodDims[j] * indx;
         }   
     }
