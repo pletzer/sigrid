@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+from ctypes import CDLL, c_double, c_int, c_void_p, byref, POINTER
+import numpy
+import argparse
+
+sg = CDLL("@CMAKE_BINARY_DIR@/utils/libsgutils@CMAKE_SHARED_LIBRARY_SUFFIX@")
+
+this = c_void_p()
+
+parser = argparse.ArgumentParser(description='Create rotated pole grid')
+parser.add_argument('--nj', type=int, dest='nj', default=11,
+                    help='Number of pseudo-latitudes')
+parser.add_argument('--ni', type=int, dest='ni', default=21,
+                    help='Number of pseudo-longitudes')
+parser.add_argument('--delta_lat', type=float, dest='delta_lat', default=30.,
+                    help='Latitude pole displacement in degrees')
+parser.add_argument('--delta_lon', type=float, dest='delta_lon', default=20.,
+                    help='Longitude pole displacement in degrees')
+args = parser.parse_args()
+
+nodeDims = (c_int * 2)(args.nj, args.ni)
+delta_lat = c_double(args.delta_lat)
+delta_lon = c_double(args.delta_lon)
+ntot = args.nj * args.ni
+lats = numpy.zeros((ntot,), numpy.float64)
+lons = numpy.zeros((ntot,), numpy.float64)
+latsPtr = lats.ctypes.data_as(POINTER(c_double))
+lonsPtr = lons.ctypes.data_as(POINTER(c_double))
+coords = (POINTER(c_double) * 2)(latsPtr, lonsPtr)
+
+sg.createRotatedPoleGrid(nodeDims, delta_lat, delta_lon, coords)
+
+lats = lats.reshape(args.nj, args.ni)
+lons = lons.reshape(args.nj, args.ni)
+
+from matplotlib import pylab
+for j in range(args.nj):
+    pylab.plot(lons[j, :], lats[j, :], 'b-')
+for i in range(args.ni):
+    pylab.plot(lons[:, i], lats[:, i], 'r-')
+pylab.show()
+

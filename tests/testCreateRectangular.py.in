@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+
+from ctypes import CDLL, c_double, c_int, c_void_p, byref, POINTER
+import numpy
+import argparse
+
+sg = CDLL("@CMAKE_BINARY_DIR@/utils/libsgutils@CMAKE_SHARED_LIBRARY_SUFFIX@")
+
+this = c_void_p()
+
+parser = argparse.ArgumentParser(description='Create rectangular grid')
+parser.add_argument('--nj', type=int, dest='nj', default=11,
+                    help='Number of pseudo-latitudes')
+parser.add_argument('--ni', type=int, dest='ni', default=21,
+                    help='Number of pseudo-longitudes')
+args = parser.parse_args()
+
+nodeDims = (c_int * 2)(args.nj, args.ni)
+ntot = args.nj * args.ni
+lats = numpy.zeros((ntot,), numpy.float64)
+lons = numpy.zeros((ntot,), numpy.float64)
+latsPtr = lats.ctypes.data_as(POINTER(c_double))
+lonsPtr = lons.ctypes.data_as(POINTER(c_double))
+coords = (POINTER(c_double) * 2)(latsPtr, lonsPtr)
+xmins = (c_double * 2)(-90.0, -180.0)
+xmaxs = (c_double * 2)(90.0, 180.0)
+
+sg.createRectangularGrid(nodeDims, xmins, xmaxs, coords)
+
+lats = lats.reshape(args.nj, args.ni)
+lons = lons.reshape(args.nj, args.ni)
+
+from matplotlib import pylab
+for j in range(args.nj):
+    pylab.plot(lons[j, :], lats[j, :], 'b-')
+for i in range(args.ni):
+    pylab.plot(lons[:, i], lats[:, i], 'r-')
+pylab.show()
+

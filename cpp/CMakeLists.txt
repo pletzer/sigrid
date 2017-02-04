@@ -1,15 +1,37 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  )
 
 set(LIB_FILES
   SgLinearSolve.cpp
   SgBoxIterator.cpp
   SgTetrahedron.cpp
+  SgTriangle.cpp
+  SgLine.cpp
+  SgFindPointInCell.cpp
+  SgQuadIntersect.cpp
+  SgTriangulate.cpp
+  SgConserveInterp2D.cpp
+  SgNodeInterp2D.cpp
+  SgFindOverlappingCells2D.cpp
+  SgOctreePoints.cpp
 )
 
 set(HEADER_FILES
   SgLinearSolve.h
   SgBoxIterator.h
   SgTetrahedron.h
+  SgTriangle.h
+  SgLine.h
+  SgNdims.h
+  SgFindPointInCell.h
+  SgQuadIntersect.h
+  SgTriangulate.h
+  SgConserveInterp2D.h
+  SgNodeInterp2D.h
+  SgFindOverlappingCells2D.h
+  SgSideIterator.h
+  SgOctreePoints.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})

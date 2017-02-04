@@ -6,9 +6,9 @@
 
 # Project information
 project(sigrid)
-set(VERSION_MAJOR “0”)
-set(VERSION_MINOR “1”)
-set(VERSION_PATCH "alpha")
+set(VERSION_MAJOR "0")
+set(VERSION_MINOR "1")
+set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 #set(DEBUG_CMAKE TRUE)
@@ -36,5 +36,6 @@ find_package(PythonInterp REQUIRED)
 enable_testing()
 
 add_subdirectory(cpp)
+add_subdirectory(utils)
 add_subdirectory(tests)
 
