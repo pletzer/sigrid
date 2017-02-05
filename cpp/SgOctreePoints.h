@@ -123,6 +123,9 @@ const std::vector<double>& getHi(const std::vector<size_t>& key) const {
  * @return key, array of integers in the range 0...2^ndims - 1
  */
 std::vector<size_t> getKey(const double* pt, size_t lev) {
+
+    const double eps = 10 * std::numeric_limits<double>::epsilon();
+
     // normalize
     std::vector<double> x(pt, pt + this->ndims);
     for (size_t j = 0; j < this->ndims; ++j) {
@@ -135,7 +138,7 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
     for (size_t el = 0; el < lev; ++el) {
         double fact = pow(2, el + 1);
         for (size_t j = 0; j < this->ndims; ++j) {
-            size_t indx = (size_t) floor((x[j] - xbase[j])*fact);
+            size_t indx = (size_t) std::max(0.0, floor((x[j] - xbase[j] - eps)*fact));
             xbase[j] += (double) indx / fact;
             // flat index
             key[el] += this->prodDims[j] * indx;
