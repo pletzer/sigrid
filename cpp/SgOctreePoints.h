@@ -154,7 +154,7 @@ void refineOctree(const std::vector<size_t>& key) {
         // copy the key
         std::vector<size_t> key2 = key;
         // append the quadrant index
-	key2.push_back(iQ);
+	    key2.push_back(iQ);
         // compute and fill in the low/high corner points
         std::vector<double> xLo, xHi;
         this->computeLoHi(key2, xLo, xHi);
@@ -198,7 +198,7 @@ void computeLoHi(const std::vector<size_t>& key, std::vector<double>& xLo, std::
 
 /**
  * Get the index set of the partition
- * @param indx falt index in the range 0...2^ndims - 1
+ * @param indx flat index in the range 0...2^ndims - 1
  * @return index set, array of zeros and ones
  */
 std::vector<size_t> getIndices(size_t indx) {
