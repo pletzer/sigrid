@@ -60,6 +60,16 @@ bool testSimple(size_t numLevels) {
         assert(key[0] == 1);
     }
     {
+        pt[0] = 0.99; pt[1] = 0.01;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 2);
+    }
+    {
+        pt[0] = 0.99; pt[1] = 0.0;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 2);
+    }
+    {
         pt[0] = 1.0; pt[1] = 0.0;
         std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
         assert(key[0] == 2);
