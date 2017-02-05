@@ -133,7 +133,7 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
     std::vector<size_t> key(lev, 0);
     std::vector<double> xbase(this->ndims, 0.0);
     for (size_t el = 0; el < lev; ++el) {
-        double fact = std::pow(2, el + 1);
+        double fact = pow(2, el + 1);
         for (size_t j = 0; j < this->ndims; ++j) {
             size_t indx = (size_t) floor((x[j] - xbase[j])*fact);
             xbase[j] += (double) indx / fact;
@@ -150,7 +150,7 @@ std::vector<size_t> getKey(const double* pt, size_t lev) {
  */
 void refineOctree(const std::vector<size_t>& key) {
     // iterate over the 2^ndims quadrants
-    for (size_t iQ = 0; iQ < std::pow(2, this->ndims); ++iQ) {
+    for (size_t iQ = 0; iQ < pow(2, this->ndims); ++iQ) {
         // copy the key
         std::vector<size_t> key2 = key;
         // append the quadrant index
