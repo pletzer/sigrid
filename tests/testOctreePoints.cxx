@@ -9,6 +9,77 @@
 #include <cmath>
 #include "SgOctreePoints.h"
 
+bool testSimple(size_t numLevels) {
+
+    // number of dimensions
+    const size_t ndims = 2;
+
+    // one cell
+    size_t nx = 2;
+    size_t ny = 2;
+
+    // grid
+    std::vector<double> coords;
+    coords.reserve(nx * ny * ndims);
+    for (size_t j = 0; j < ny; ++j) {
+        double y = 0.0 + j * 1.0/(double) (ny - 1);
+        for (size_t i = 0; i < nx; ++i) {
+            double x = 0.0 + i * 1.0/(double) (nx - 1);
+            coords.push_back(x);
+            coords.push_back(y);
+        }
+    }
+
+    SgOctreePoints_type octree(numLevels, ndims, coords);
+
+    // check getKey
+    double pt[] = {0., 0.};
+    {
+        pt[0] = 0.; pt[1] = 0.;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 0);
+    }
+    {
+        pt[0] = 0.1; pt[1] = 0.2;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 0);
+    }
+    {
+        pt[0] = 0.51; pt[1] = 0.2;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 2);
+    }
+    {
+        pt[0] = 0.51; pt[1] = 0.53;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 3);
+    }
+    {
+        pt[0] = 0.49; pt[1] = 0.53;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 1);
+    }
+    {
+        pt[0] = 1.0; pt[1] = 0.0;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 2);
+    }
+    {
+        pt[0] = 1.0; pt[1] = 1.0;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 3);
+    }
+    {
+        pt[0] = 0.0; pt[1] = 1.0;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        assert(key[0] == 1);
+    }
+
+    return true;
+
+}
+
+
 bool testCart(size_t numLevels, size_t nx, size_t ny) {
 
     // number of dimensions
@@ -144,6 +215,7 @@ bool testPolar(size_t numLevels, size_t nr, size_t nt) {
 
 int main(int argc, char** argv) {
 
+    if (!testSimple(1)) return 1;
     if (!testCart(2, 11, 11)) return 1;
     if (!testPolar(2, 5, 9)) return 1;
 
