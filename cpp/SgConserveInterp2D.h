@@ -244,6 +244,7 @@ struct SgConserveInterp2D_type {
 			std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 			dstCellIndxSrcNodeIndx[0] = dstIndx;
 
+			// fetch the dst cell quad coordinates
 			offset[0] = 0; offset[1] = 0;
 			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[0], &dstQuadCoords[0*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 0;
@@ -306,6 +307,7 @@ struct SgConserveInterp2D_type {
 				std::vector<size_t> dstNodeIndxSrcCellIndx(2);
 				std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 
+				// fetch the src cell quad coordinates
 				offset[0] = 0; offset[1] = 0;
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 0;
