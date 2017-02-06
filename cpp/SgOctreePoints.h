@@ -124,21 +124,19 @@ const std::vector<double>& getHi(const std::vector<size_t>& key) const {
  */
 std::vector<size_t> getKey(const double* pt, size_t lev) {
 
-    const double eps = 10 * std::numeric_limits<double>::epsilon();
-
     // normalize
     std::vector<double> x(pt, pt + this->ndims);
     for (size_t j = 0; j < this->ndims; ++j) {
         // xmaxs should be > xmins
         double len = this->xmaxs[j] - this->xmins[j];
-        x[j] = (pt[j] - this->xmins[j])/len;
+        x[j] = std::min(1., std::max(0., (pt[j] - this->xmins[j])/len));
     }
     std::vector<size_t> key(lev, 0);
     std::vector<double> xbase(this->ndims, 0.0);
     for (size_t el = 0; el < lev; ++el) {
         double fact = pow(2, el + 1);
         for (size_t j = 0; j < this->ndims; ++j) {
-            size_t indx = (size_t) std::max(0.0, floor((x[j] - xbase[j] - eps)*fact));
+            size_t indx = (size_t) std::min(1.0, std::max(0.0, floor((x[j] - xbase[j])*fact)));
             xbase[j] += (double) indx / fact;
             // flat index
             key[el] += this->prodDims[j] * indx;
