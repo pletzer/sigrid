@@ -85,6 +85,35 @@ bool testSimple(size_t numLevels) {
         assert(key[0] == 1);
     }
 
+    // 2 levels
+    {
+        pt[0] = 0.0; pt[1] = 0.0;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
+        assert(key[0] == 0);
+        assert(key[1] == 0);
+    }
+    {
+        // outside domain
+        pt[0] = 0.0; pt[1] = 1.1;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
+        assert(key[0] == 1);
+        assert(key[1] == 1);
+    }
+    {
+        // outside domain
+        pt[0] = -0.1; pt[1] = -0.05;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
+        assert(key[0] == 0);
+        assert(key[1] == 0);
+    }
+    {
+        // outside domain
+        pt[0] = -0.1; pt[1] = 0.26;
+        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
+        assert(key[0] == 0);
+        assert(key[1] == 1);
+    }
+
     return true;
 
 }
