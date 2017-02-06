@@ -86,7 +86,7 @@ bool testSrcInsideDst() {
     SgConserveInterp2D_reset(&interp);
     while (!end) {
         SgConserveInterp2D_get(&interp, &srcIndex, &dstIndex, &weight);
-        std::cout << "testPartialDstInsideSrc src index: " << srcIndex << " dst index: " 
+        std::cout << "testSrcInsideDst src index: " << srcIndex << " dst index: " 
                   << dstIndex << " weight: " << weight << '\n';
         totalWeight += weight;
         end = SgConserveInterp2D_next(&interp);
@@ -268,10 +268,15 @@ bool testPolar() {
 int main(int argc, char** argv) {
 
     if (!testSimple()) return 1;
+    std::cout << "testSimple PASSED\n";
     if (!testSrcInsideDst()) return 5;
+    std::cout << "testSrcInsideDst PASSED\n";
     if (!testSrc10By10()) return 2;
+    std::cout << "testSrc10By10 PASSED\n";
     if (!testSrc10By20Dst100By200()) return 3;
+    std::cout << "testSrc10By20Dst100By200 PASSED\n";
     if (!testPolar()) return 4;
+    std::cout << "testPolar PASSED\n";
 
     std::cout << "SUCCESS\n";
     return 0;

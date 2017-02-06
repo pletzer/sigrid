@@ -9,11 +9,14 @@
 #include "SgQuadIntersect.h"
 #include "SgTriangulate.h"
 #include "SgFindOverlappingCells2D.h"
+#include "SgOctreePoints.h"
 #include <vector>
 #include <algorithm>
 #include <map>
+#include <set>
 #include <cstdio> // size_t
 #include <cmath>
+
  
 struct SgConserveInterp2D_type {
 
@@ -47,12 +50,18 @@ struct SgConserveInterp2D_type {
     std::map<size_t, std::vector<std::pair<size_t, double> > >::const_iterator weightIt;
     std::vector<std::pair<size_t, double> >::const_iterator weightIt2;
 
+    SgOctreePoints_type* srcOctreePtr;
+    std::map<std::vector<size_t>, std::vector<size_t> > partition2SrcCellInds;
+    size_t numLevels;
+
     /** 
      * Constructor
      */
     SgConserveInterp2D_type() {
     	this->srcCover = new SgFindOverlappingCells2D_type;
     	this->reset();
+    	this->srcOctreePtr = 0;
+    	this->numLevels = 0;
     }
 
     /**
@@ -60,6 +69,7 @@ struct SgConserveInterp2D_type {
      */
     ~SgConserveInterp2D_type() {
     	delete this->srcCover;
+    	if (this->srcOctreePtr) delete this->srcOctreePtr;
     }
 
 	/**
@@ -132,6 +142,53 @@ struct SgConserveInterp2D_type {
   				k++;
   			}
   		}
+
+  		// octree classification
+  		int numSrcCellsPerPartition = 10; // ideal number of src cells per partition
+  		size_t minNumCells = std::min(this->srcNumCells, this->dstNumCells);
+  		this->numLevels = std::max(1, (int) floor(log((double) minNumCells/(double) numSrcCellsPerPartition)/log(2.)/2.));
+  		this->srcOctreePtr = new SgOctreePoints_type(this->numLevels, 2, this->srcGrdCoords);
+
+  		// iterate over the src grid cells and attach each cell to a partition. A cell belongs to an octree partition iff
+  		// at least on node belongs to the partition
+		double point[NDIMS_2D_PHYS];
+		int offset[] = {0, 0};
+		size_t srcNodeIndx;
+  		for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
+
+  			// quadtree partitions to which this src cell belongs to
+  			std::set< std::vector<size_t> > partitions;
+  			std::vector<size_t> part(this->numLevels);
+
+  			for (size_t j = 0; j < 4; ++j) {
+				offset[0] = j % 2;
+				offset[1] = j / 2;
+				this->getSrcQuadCoord(srcIndx, offset, &srcNodeIndx, point);
+				bool indomain = this->srcOctreePtr->getKey(point, this->numLevels, part);
+				// should always belong to the domain
+				partitions.insert(part);
+			}
+
+			// iterate over the partitions and build the partitions to src cell indices map
+			for (std::set< std::vector<size_t> >::const_iterator it = partitions.begin();
+				 it != partitions.end(); ++it) {
+
+				// do we have an entry for this partition?
+				std::map<std::vector<size_t>, std::vector<size_t> >::iterator it2 = this->partition2SrcCellInds.find(*it);
+				if (it2 != this->partition2SrcCellInds.end()) {
+					// yes, append the src cell index
+					it2->second.push_back(srcIndx);
+				}
+				else {
+					// new entry 
+					std::vector<size_t> v;
+					v.reserve(numSrcCellsPerPartition);
+					v.push_back(srcIndx);
+					this->partition2SrcCellInds.insert(std::pair< std::vector<size_t>, std::vector<size_t> >(*it, v));
+				}
+			}
+  		}
+
 	}
 
 	/** 
@@ -215,7 +272,36 @@ struct SgConserveInterp2D_type {
 			//	size_t srcIndx = srcUnderDstInds[i];
 
 			indWght.reserve(100);
-			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
+			////for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
+
+			// find the partitions of the dst cell with respect to the src grid
+			std::set<std::vector<size_t> > partitions;
+			std::vector<size_t> part(this->numLevels, 0);
+			for (size_t i = 0; i < 4; ++i) {
+				bool indomain = this->srcOctreePtr->getKey(&dstQuadCoords[i*NDIMS_2D_PHYS], this->numLevels, part);
+				// always add since dst cell may contain src grid
+				partitions.insert(part);
+			}
+
+			// collect all the src cells in the dst cell partitions
+			std::set<size_t> srcCells;
+			for (std::set< std::vector<size_t> >::const_iterator it = partitions.begin();
+				it != partitions.end(); ++it) {
+				const std::vector<size_t>& part = *it;
+				// all the src cells in this partition
+				std::map< std::vector<size_t>, std::vector<size_t> >::const_iterator it2 = this->partition2SrcCellInds.find(part);
+				if (it2 != this->partition2SrcCellInds.end()) {
+					// collect the src cell indices
+					for (size_t i = 0; i < it2->second.size(); ++i) {
+						srcCells.insert(it2->second[i]);
+					}
+				}
+			}
+
+			// iterate over the src cells
+			for (std::set<size_t>::const_iterator it = srcCells.begin(); it != srcCells.end(); ++it) {
+
+				size_t srcIndx = *it;
 
 				std::vector<size_t> dstNodeIndxSrcCellIndx(2);
 				std::vector<size_t> dstCellIndxSrcNodeIndx(2);
