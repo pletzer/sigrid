@@ -244,15 +244,12 @@ struct SgConserveInterp2D_type {
 			std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 			dstCellIndxSrcNodeIndx[0] = dstIndx;
 
-			// fetch the dst cell quad coordinates
-			offset[0] = 0; offset[1] = 0;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[0], &dstQuadCoords[0*NDIMS_2D_PHYS]);
-			offset[0] = 1; offset[1] = 0;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[1], &dstQuadCoords[1*NDIMS_2D_PHYS]);
-			offset[0] = 1; offset[1] = 1;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[2], &dstQuadCoords[2*NDIMS_2D_PHYS]);
-			offset[0] = 0; offset[1] = 1;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[3], &dstQuadCoords[3*NDIMS_2D_PHYS]);
+			// fetch the dst cell quad coordinates, counterclockwise
+			for (size_t k = 0; k < 4; ++k) {
+				offset[1] = k / 2;
+				offset[0] = (k + 1) / 2 % 2;
+				this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[k], &dstQuadCoords[k*NDIMS_2D_PHYS]);
+			}
 
 			// compute the dst cell area
 			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
@@ -282,6 +279,8 @@ struct SgConserveInterp2D_type {
 				bool indomain = this->srcOctreePtr->getKey(&dstQuadCoords[i*NDIMS_2D_PHYS], this->numLevels, part);
 				// always add since dst cell may contain src grid
 				partitions.insert(part);
+				// MIGHT NEED TO ADD MORE PARTITIONS WHEN THE DST CELL >> SRC CELL!!! (MIGHT NEED TO ADD 
+				// ALL THE PARTITIONS INBETWEEN NODES)
 			}
 
 			// collect all the src cells in the dst cell partitions
@@ -308,14 +307,11 @@ struct SgConserveInterp2D_type {
 				std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 
 				// fetch the src cell quad coordinates
-				offset[0] = 0; offset[1] = 0;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
-				offset[0] = 1; offset[1] = 0;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[1], &srcQuadCoords[1*NDIMS_2D_PHYS]);
-				offset[0] = 1; offset[1] = 1;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[2], &srcQuadCoords[2*NDIMS_2D_PHYS]);
-				offset[0] = 0; offset[1] = 1;
-				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[3], &srcQuadCoords[3*NDIMS_2D_PHYS]);
+				for (size_t k = 0; k < 4; ++k) {
+					offset[1] = k / 2;
+					offset[0] = (k + 1) / 2 % 2;
+					this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[k], &srcQuadCoords[k*NDIMS_2D_PHYS]);
+				}
 
 				intersector.reset();
 				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
