@@ -160,17 +160,8 @@ struct SgConserveInterp2D_type {
 	 */
 	void computeWeights() {
 
-		// cache the edge to edge intersections
-		std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> > cacheEdgeX;
-
 		// cache edges that are known not to intersect
 		std::set< std::pair< std::vector<size_t>, std::vector<size_t> > > cacheEdgeNoX;
-
-		// cache the dst node in src cell points
-		std::map< std::vector<size_t>, std::vector<double> > cacheDstNodeInSrcCell;
-
-		// cache the src node in dst cell points
-		std::map< std::vector<size_t>, std::vector<double> > cacheSrcNodeInDstCell;
 
 		int numIntersectPoints;
 		std::vector<double> point(NDIMS_2D_PHYS); // edge to edge intersection point
