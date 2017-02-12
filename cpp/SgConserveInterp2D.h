@@ -311,13 +311,14 @@ struct SgConserveInterp2D_type {
                 		//	continue;
                 		//}
 
-                		std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
-                		    it = cacheEdgeX.find(dstSrcEdges);
-                		if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
-                			// we already know what the intersection point is
-                			intersector.addPoint(it->second);
-                		}
-                		else {
+                		//std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
+                		//    it = cacheEdgeX.find(dstSrcEdges);
+                		//if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
+                		//	// we already know what the intersection point is
+                		//	intersector.addPoint(it->second);
+                		//}
+                		//else {
+                		{
                 			// let's see if there is an intersection
                 			int ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
                                                                                       srcCoordA, srcCoordB,
