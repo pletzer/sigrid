@@ -203,17 +203,6 @@ struct SgConserveInterp2D_type {
 			// src index to fractional area
 			std::vector< std::pair<size_t, double> > indWght;
 
-			// get the src cells covered by this dst cell
-			//this->srcCover->setPolygonPoints(4, &dstQuadCoords[0]);
-			//this->srcCover->findSrcCellIndices();
-			//std::vector<int> srcUnderDstInds = this->srcCover->getSrcCellIndices();
-			//indWght.reserve(srcUnderDstInds.size());
-
-			// iterate over the covered src cells
-			//for (size_t i = 0; i < srcUnderDstInds.size(); ++i) {
-
-			//	size_t srcIndx = srcUnderDstInds[i];
-
 			indWght.reserve(100);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
@@ -254,22 +243,10 @@ struct SgConserveInterp2D_type {
 
             		dstNodeIndxSrcCellIndx[0] = dstNodeA;
             		dstNodeIndxSrcCellIndx[1] = srcIndx;
-            		//std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		//    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
-            		//if (it1 != cacheDstNodeInSrcCell.end()) {
-            		//	// we've already checked this
-            		//	intersector.addPoint(pA);
-            		//}
-            		//else {
-            		//	// first time
-            			bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
-            			if (ret) {
-            				intersector.addPoint(pA);
-            				//std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
-            				//cacheDstNodeInSrcCell.insert(p);
-            			}
-            		//}
-            		
+            		bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
+            		if (ret) {
+            			intersector.addPoint(pA);
+            		}            		
 
             		// iterate over the src cell edges and nodes
             		for (size_t j = 0; j < 4; ++j) {
