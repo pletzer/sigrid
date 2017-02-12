@@ -306,10 +306,10 @@ struct SgConserveInterp2D_type {
 
                 		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
 
-                		if (cacheEdgeNoX.find(dstSrcEdges) != cacheEdgeNoX.end()) {
-                			// we already know there is no intersection, move on
-                			continue;
-                		}
+                		//if (cacheEdgeNoX.find(dstSrcEdges) != cacheEdgeNoX.end()) {
+                		//	// we already know there is no intersection, move on
+                		//	continue;
+                		//}
 
                 		std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
                 		    it = cacheEdgeX.find(dstSrcEdges);
