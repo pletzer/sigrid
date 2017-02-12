@@ -161,7 +161,7 @@ struct SgConserveInterp2D_type {
 	void computeWeights() {
 
 		// cache edges that are known not to intersect
-		std::set< std::pair< std::vector<size_t>, std::vector<size_t> > > cacheEdgeNoX;
+		//std::set< std::pair< std::vector<size_t>, std::vector<size_t> > > cacheEdgeNoX;
 
 		int numIntersectPoints;
 		std::vector<double> point(NDIMS_2D_PHYS); // edge to edge intersection point
@@ -218,10 +218,6 @@ struct SgConserveInterp2D_type {
             		size_t iB = (i + 1) % 4;
             		size_t dstNodeA = dstNodeInds[iA];
             		size_t dstNodeB = dstNodeInds[iB];
-            		std::vector<size_t> dstE(2); 
-            		dstE[0] = dstNodeA; 
-            		dstE[1] = dstNodeB;
-            		std::sort(dstE.begin(), dstE.end());
             		double* dstCoordA = &dstQuadCoords[iA*NDIMS_2D_PHYS];
             		double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
             		std::vector<double> pA(dstCoordA, dstCoordA + NDIMS_2D_PHYS);
@@ -251,17 +247,15 @@ struct SgConserveInterp2D_type {
             				intersector.addPoint(qA);
             			}
 
-                		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
-
                 		// let's see if there is an intersection
                 		int numInter = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
                                                                                       srcCoordA, srcCoordB,
                                                                                       &point[0]);
 
-                		if (numInter == 0) {
+                		//if (numInter == 0) {
                 			// no intersection
-                			cacheEdgeNoX.insert(dstSrcEdges);
-                		}
+                			//cacheEdgeNoX.insert(dstSrcEdges);
+                		//}
 
           			}
         		}
