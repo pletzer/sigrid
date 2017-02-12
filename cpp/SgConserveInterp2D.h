@@ -144,9 +144,9 @@ struct SgConserveInterp2D_type {
   		}
 
   		// octree classification
-  		int numSrcCellsPerPartition = 10; // ideal number of src cells per partition
+  		int numCellsPerPartition = 100; // ideal number of cells per partition
   		size_t minNumCells = std::min(this->srcNumCells, this->dstNumCells);
-  		this->numLevels = std::max(1, (int) floor(log((double) minNumCells/(double) numSrcCellsPerPartition)/log(2.)/2.));
+  		this->numLevels = std::max(1, (int) floor(log((double) minNumCells/(double) numCellsPerPartition)/log(2.)/2.));
   		this->srcOctreePtr = new SgOctreePoints_type(this->numLevels, 2, this->srcGrdCoords);
 
   		// iterate over the src grid cells and attach each cell to a partition. A cell belongs to an octree partition iff
@@ -182,7 +182,7 @@ struct SgConserveInterp2D_type {
 				else {
 					// new entry 
 					std::vector<size_t> v;
-					v.reserve(numSrcCellsPerPartition);
+					v.reserve(numCellsPerPartition);
 					v.push_back(srcIndx);
 					this->partition2SrcCellInds.insert(std::pair< std::vector<size_t>, std::vector<size_t> >(*it, v));
 				}
