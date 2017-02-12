@@ -337,13 +337,6 @@ struct SgConserveInterp2D_type {
           			}
         		}
 
-        		// dst cell nodes inside src cell
-        		//intersector.collectNodesInsideQuad(dstQuadCoords, srcQuadCoords);
-
-        		// src cell nodes inside dst cell
-        		//intersector.collectNodesInsideQuad(srcQuadCoords, dstQuadCoords);
-
-
         		// ready to collect all the interesction points
 				const std::vector<double>& pts = intersector.getIntersectionPoints();
 
