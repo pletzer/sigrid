@@ -175,9 +175,6 @@ struct SgConserveInterp2D_type {
 		// iterate over the dst cells
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
-			std::vector<size_t> dstCellIndxSrcNodeIndx(2);
-			dstCellIndxSrcNodeIndx[0] = dstIndx;
-
 			offset[0] = 0; offset[1] = 0;
 			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[0], &dstQuadCoords[0*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 0;
@@ -196,9 +193,6 @@ struct SgConserveInterp2D_type {
 
 			indWght.reserve(100);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
-
-				std::vector<size_t> dstNodeIndxSrcCellIndx(2);
-				std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 
 				offset[0] = 0; offset[1] = 0;
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
@@ -232,8 +226,6 @@ struct SgConserveInterp2D_type {
             		double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
             		std::vector<double> pA(dstCoordA, dstCoordA + NDIMS_2D_PHYS);
 
-            		dstNodeIndxSrcCellIndx[0] = dstNodeA;
-            		dstNodeIndxSrcCellIndx[1] = srcIndx;
             		bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
             		if (ret) {
             			intersector.addPoint(pA);
@@ -253,9 +245,6 @@ struct SgConserveInterp2D_type {
             			double* srcCoordA = &srcQuadCoords[jA*NDIMS_2D_PHYS];
             			double* srcCoordB = &srcQuadCoords[jB*NDIMS_2D_PHYS];
                 		std::vector<double> qA(srcCoordA, srcCoordA + NDIMS_2D_PHYS);
-
-                		dstCellIndxSrcNodeIndx[0] = dstIndx;
-                		dstCellIndxSrcNodeIndx[1] = srcNodeA;
 
             			bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
             			if (ret) {
