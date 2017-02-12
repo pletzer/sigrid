@@ -254,21 +254,21 @@ struct SgConserveInterp2D_type {
 
             		dstNodeIndxSrcCellIndx[0] = dstNodeA;
             		dstNodeIndxSrcCellIndx[1] = srcIndx;
-            		std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
-            		if (it1 != cacheDstNodeInSrcCell.end()) {
-            			// we've already checked this
-            			intersector.addPoint(pA);
-            		}
-            		else {
-            			// first time
+            		//std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
+            		//    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
+            		//if (it1 != cacheDstNodeInSrcCell.end()) {
+            		//	// we've already checked this
+            		//	intersector.addPoint(pA);
+            		//}
+            		//else {
+            		//	// first time
             			bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
             			if (ret) {
             				intersector.addPoint(pA);
-            				std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
-            				cacheDstNodeInSrcCell.insert(p);
+            				//std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
+            				//cacheDstNodeInSrcCell.insert(p);
             			}
-            		}
+            		//}
             		
 
             		// iterate over the src cell edges and nodes
