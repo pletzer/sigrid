@@ -288,36 +288,14 @@ struct SgConserveInterp2D_type {
 
                 		dstCellIndxSrcNodeIndx[0] = dstIndx;
                 		dstCellIndxSrcNodeIndx[1] = srcNodeA;
-            			//std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		    //	it2 = cacheSrcNodeInDstCell.find(dstCellIndxSrcNodeIndx);
-            			//if (it2 != cacheSrcNodeInDstCell.end()) {
-            			//	// we've already checked this
-            			//	intersector.addPoint(qA);
-            			//}
-            			//else {
-            				// first time
-            				bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
-            				if (ret) {
-            					intersector.addPoint(qA);
-            					//std::pair< std::vector<size_t>, std::vector<double> > p(dstCellIndxSrcNodeIndx, qA);
-            					//cacheSrcNodeInDstCell.insert(p);
-            				}
-            			//}
+
+            			bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
+            			if (ret) {
+            				intersector.addPoint(qA);
+            			}
 
                 		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
 
-                		//if (cacheEdgeNoX.find(dstSrcEdges) != cacheEdgeNoX.end()) {
-                		//	// we already know there is no intersection, move on
-                		//	continue;
-                		//}
-
-                		//std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
-                		//    it = cacheEdgeX.find(dstSrcEdges);
-                		//if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
-                		//	// we already know what the intersection point is
-                		//	intersector.addPoint(it->second);
-                		//}
-                		//else {
                 		{
                 			// let's see if there is an intersection
                 			int ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
@@ -328,11 +306,6 @@ struct SgConserveInterp2D_type {
                 				// no intersection
                 				cacheEdgeNoX.insert(dstSrcEdges);
                 			}
-                			//else if (ret == 1) {
-                				// intersection, cache result for subsequent use
-                				//std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
-                				//cacheEdgeX.insert(p);
-                			//}
                 		}
 
           			}
