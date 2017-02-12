@@ -329,8 +329,8 @@ struct SgConserveInterp2D_type {
                 			}
                 			else if (ret == 1) {
                 				// intersection, cache result for subsequent use
-                				std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
-                				cacheEdgeX.insert(p);
+                				//std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
+                				//cacheEdgeX.insert(p);
                 			}
                 		}
 
