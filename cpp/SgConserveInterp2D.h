@@ -264,16 +264,14 @@ struct SgConserveInterp2D_type {
 
                 		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
 
-                		{
-                			// let's see if there is an intersection
-                			int ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
+                		// let's see if there is an intersection
+                		int numInter = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
                                                                                       srcCoordA, srcCoordB,
                                                                                       &point[0]);
 
-                			if (ret == 0) {
-                				// no intersection
-                				cacheEdgeNoX.insert(dstSrcEdges);
-                			}
+                		if (numInter == 0) {
+                			// no intersection
+                			cacheEdgeNoX.insert(dstSrcEdges);
                 		}
 
           			}
