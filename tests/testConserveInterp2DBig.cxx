@@ -22,7 +22,7 @@ bool testPolar() {
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
 
     // destination grid
-    const int dstDims[] = {11, 41};
+    const int dstDims[] = {51, 101};
     const double center[] = {0., 0.};
     const double radius = 1.0;
     int dstNumPoints = dstDims[0] * dstDims[1];
