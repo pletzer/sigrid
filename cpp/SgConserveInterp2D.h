@@ -132,6 +132,28 @@ struct SgConserveInterp2D_type {
   				k++;
   			}
   		}
+
+  		// cache the cell corner points
+		double srcQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
+  		std::vector<double> minMax(NDIMS_2D_PHYS * 2);
+  		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+  			minMax[2*0 + j] = std::numeric_limits<double>::infinity();
+  			minMax[2*1 + j] = - std::numeric_limits<double>::infinity();
+  		}
+  		this->srcCorners.resize(this->srcNumCells, minMax);
+  		std::vector<double> pt(NDIMS_2D_PHYS);
+  		std::vector<size_t> srcNodeInds(NDIMS_2D_TOPO);
+  		for (size_t cellIndx = 0; cellIndx < this->srcNumCells; ++cellIndx) {
+  			for (size_t k = 0; k < 4; ++k) {
+  				offset[0] = k % 2;
+  				offset[1] = k / 2;
+  				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[k], &pt[0]);
+  				for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+  					this->srcCorners[2*0 + j] = std::min(this->srcCorners[2*0 + j], pt[j]);
+  				}
+  			}
+  		}
+
 	}
 
 	/** 
@@ -154,6 +176,24 @@ struct SgConserveInterp2D_type {
 		}
 	}
 
+	/**
+	 * Check if the cells appear to overlap
+	 * @param cellIndx1 index of cell 1
+	 * @param cellIndx2 index of cell 2
+	 * @return true if the cells seem to overlap
+	 */
+	bool checkIfBoxesOverlap(size_t dstIndx, size_t srcIndx) {
+        bool overlap = true;
+        // xmin, ymin, xmax, ymax
+        const std::vector<double>& dstMinMax = this->dstCorners[dstIndx];
+        const std::vector<double>& srcMinMax = this->srcCorners[srcIndx];
+        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        	double minOfMax = std::min(dstMinMax[2*1 + j], srcMinMax[2*1 + j]);
+        	double maxOfMin = std::max(dstMinMax[2*0 + j], srcMinMax[2*0 + j]);
+        	overlap &= minOfMax >= maxOfMin;
+        }
+        return overlap;
+	}
 
 	/** 
 	 * Compute the interpolation weights
@@ -203,19 +243,13 @@ struct SgConserveInterp2D_type {
 			// src index to fractional area
 			std::vector< std::pair<size_t, double> > indWght;
 
-			// get the src cells covered by this dst cell
-			//this->srcCover->setPolygonPoints(4, &dstQuadCoords[0]);
-			//this->srcCover->findSrcCellIndices();
-			//std::vector<int> srcUnderDstInds = this->srcCover->getSrcCellIndices();
-			//indWght.reserve(srcUnderDstInds.size());
-
-			// iterate over the covered src cells
-			//for (size_t i = 0; i < srcUnderDstInds.size(); ++i) {
-
-			//	size_t srcIndx = srcUnderDstInds[i];
-
 			indWght.reserve(100);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
+
+				if(!this->checkIfBoxesOverlap(dstIndx, srcIndx)) {
+					// no chance
+					continue;
+				}
 
 				std::vector<size_t> dstNodeIndxSrcCellIndx(2);
 				std::vector<size_t> dstCellIndxSrcNodeIndx(2);
@@ -231,11 +265,6 @@ struct SgConserveInterp2D_type {
 
 				intersector.reset();
 				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
-
-				if(!intersector.checkIfBoxesOverlap()) {
-					// no chance
-					continue;
-				}
         
         		// iterate over dst cell edges and nodes
         		for (size_t i = 0; i < 4; ++i) {
