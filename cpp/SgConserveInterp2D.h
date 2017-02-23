@@ -180,12 +180,11 @@ struct SgConserveInterp2D_type {
 		int offset[] = {0, 0};
 		size_t dstNodeInds[4];
 		size_t srcNodeInds[4];
+		std::vector<size_t> dstCellIndxSrcNodeIndx(2);
+		std::vector<size_t> dstNodeIndxSrcCellIndx(2);
 
 		// iterate over the dst cells
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
-
-			std::vector<size_t> dstCellIndxSrcNodeIndx(2);
-			dstCellIndxSrcNodeIndx[0] = dstIndx;
 
 			offset[0] = 0; offset[1] = 0;
 			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[0], &dstQuadCoords[0*NDIMS_2D_PHYS]);
@@ -203,22 +202,9 @@ struct SgConserveInterp2D_type {
 			// src index to fractional area
 			std::vector< std::pair<size_t, double> > indWght;
 
-			// get the src cells covered by this dst cell
-			//this->srcCover->setPolygonPoints(4, &dstQuadCoords[0]);
-			//this->srcCover->findSrcCellIndices();
-			//std::vector<int> srcUnderDstInds = this->srcCover->getSrcCellIndices();
-			//indWght.reserve(srcUnderDstInds.size());
-
-			// iterate over the covered src cells
-			//for (size_t i = 0; i < srcUnderDstInds.size(); ++i) {
-
-			//	size_t srcIndx = srcUnderDstInds[i];
-
 			indWght.reserve(100);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
-				std::vector<size_t> dstNodeIndxSrcCellIndx(2);
-				std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 
 				offset[0] = 0; offset[1] = 0;
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
