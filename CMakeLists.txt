@@ -22,6 +22,9 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS_PROFILE "-g -pg -O2")
   set(CMAKE_C_FLAGS_PROFILE "-g -pg -O2")
+  #set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+  #set(BUILD_SHARED_LIBRARIES OFF)
+  #set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif()
 
 ###################################################
