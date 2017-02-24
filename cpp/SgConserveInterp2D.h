@@ -164,7 +164,7 @@ struct SgConserveInterp2D_type {
 				offset[0] = j % 2;
 				offset[1] = j / 2;
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeIndx, point);
-				bool indomain = this->srcOctreePtr->getKey(point, this->numLevels, part);
+				//bool indomain = this->srcOctreePtr->getKey(point, this->numLevels, part);
 				// should always belong to the domain
 				partitions.insert(part);
 			}
