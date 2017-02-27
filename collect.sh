@@ -10,7 +10,7 @@ args=
 #gprof2dot=gprof2dot.py
 gprof2dot=/projects/nesi99999/ANTS-regridding/local/bin/gprof2dot.py
 ## directory for doing the build (can already exist)
-build_dir=build
+build_dir=build-vtune
 
 ## check argument
 if (( $# < 1 ))
@@ -33,8 +33,8 @@ ml purge
 ml CMake foss/2015a VTune
 
 ## build the code
-mkdir -p build
-cd build
+mkdir -p $build_dir
+cd $build_dir
 CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO ..
 make
 
