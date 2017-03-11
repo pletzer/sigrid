@@ -237,7 +237,6 @@ struct SgQuadIntersect_type {
         *numPoints = 0;
         double pt[NDIMS_2D_PHYS];
 
-        // seems like the quads are at least partially overlapping 
         this->collectNodesInsideQuad((const double*)this->quad1Coords, 
                                      (const double*)this->quad2Coords);
         this->collectNodesInsideQuad((const double*)this->quad2Coords,

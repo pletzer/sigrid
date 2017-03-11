@@ -23,7 +23,7 @@ struct SgQuadLineIntersect_type {
     double* quadCoords;
     double* lineCoords;
 
-    // the collection of intersection points as a flat array
+    // intersection points as a flat array (array of zero, one or two elements)
     std::vector<double> intersectionPoints;
 
     // a tolerance to determine whether a two edges intersect
@@ -34,9 +34,11 @@ struct SgQuadLineIntersect_type {
     double mat[2 * 2];
     double rhs[2];
 
-    // the QuadLine corner points
+    // the quad corner points
     double quadMin[NDIMS_2D_PHYS];
     double quadMax[NDIMS_2D_PHYS];
+
+    // the straight line corner points
     double lineMin[NDIMS_2D_PHYS];
     double lineMax[NDIMS_2D_PHYS];
 
@@ -59,7 +61,7 @@ struct SgQuadLineIntersect_type {
     }
 
     /**
-     * Check if the boxes containg the two QuadLines overlap
+     * Check if the boxes containg the quad and line overlap
      * @return true if they overlap, false otherwise
      */
     bool checkIfOverlap() {
@@ -127,9 +129,9 @@ struct SgQuadLineIntersect_type {
     }
 
     /**
-     * Is point inside the Quad?
+     * Is point inside quad?
      * @param point target coordinates
-     * @param QuadLine 4 points as flat array
+     * @param quad 4 vertex points as flat array
      */
     bool isPointInQuad(const double* point, const double* quad) {
       if (this->checkIfPointIsInsideTriangle(point, &quad[0*NDIMS_2D_PHYS],
@@ -242,17 +244,9 @@ struct SgQuadLineIntersect_type {
         *numPoints = 0;
         double pt[NDIMS_2D_PHYS];
 
-        // seems like the quad and the line are at least partially overlapping
-
         // add the starting line point if inside the quad
         if (this->isPointInQuad(&this->lineCoords[0*NDIMS_2D_PHYS], this->quadCoords)) {
           std::vector<double> pt(&this->lineCoords[0*NDIMS_2D_PHYS], &this->lineCoords[0*NDIMS_2D_PHYS] + 2);
-          this->addPoint(pt);
-        }
-
-        // add the ending line point if inside the quad
-        if (this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
-          std::vector<double> pt(&this->lineCoords[1*NDIMS_2D_PHYS], &this->lineCoords[1*NDIMS_2D_PHYS] + 2);
           this->addPoint(pt);
         }
 
@@ -267,6 +261,12 @@ struct SgQuadLineIntersect_type {
             double* lineCoordB = &this->lineCoords[1*NDIMS_2D_PHYS];
             this->collectEdgeToLineIntersectionPoints(quadCoordA, quadCoordB,
                                                       lineCoordA, lineCoordB, pt);
+        }
+
+        // add the ending line point if inside the quad
+        if (this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
+          std::vector<double> pt(&this->lineCoords[1*NDIMS_2D_PHYS], &this->lineCoords[1*NDIMS_2D_PHYS] + 2);
+          this->addPoint(pt);
         }
 
         // set the return values
