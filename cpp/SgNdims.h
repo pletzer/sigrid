@@ -11,4 +11,9 @@
 #define NDIMS_2D_TOPO 2
 #define NDIMS_2D_PHYS 2
 
+// 1D
+#define NDIMS_1D_TOPO 1
+#define NDIMS_1D_PHYS 1
+
+
 #endif // SG_NDIMS_H

@@ -87,7 +87,8 @@ bool testOneIntersection() {
 
     std::cout << "testOneIntersection: num intersection points = " << numPoints << '\n';
 
-    if (numPoints != 1) {
+    // two points, including the end point of the line that is inside the quad
+    if (numPoints != 2) {
         // error
         return false;
     }

@@ -1,9 +1,9 @@
 /**
- * A class that computes the interpolation weights for a cell centered field
+ * A class that computes the interpolation weights for a face centered field in 2D
  */
  
-#ifndef SG_CONSERVE_INTERP_2D_H
-#define SG_CONSERVE_INTERP_2D_H
+#ifndef SG_FLOW_INTERP_2D_H
+#define SG_FLOW_INTERP_2D_H
  
 #include "SgNdims.h"
 #include "SgQuadIntersect.h"
@@ -15,7 +15,7 @@
 #include <cstdio> // size_t
 #include <cmath>
  
-struct SgConserveInterp2D_type {
+struct SgFlowInterp2D_type {
 
 	// the source grid
 	int srcNodeDims[NDIMS_2D_TOPO];
@@ -28,10 +28,10 @@ struct SgConserveInterp2D_type {
 	size_t srcNumCells;
 
 	// the destination grid 
-	int dstNodeDims[NDIMS_2D_TOPO];
-	int dstCellDims[NDIMS_2D_TOPO];
-	int dstCellDimProd[NDIMS_2D_TOPO];
-	int dstNodeDimProd[NDIMS_2D_TOPO];
+	int dstNodeDims[NDIMS_1D_TOPO];
+	int dstCellDims[NDIMS_1D_TOPO];
+	int dstCellDimProd[NDIMS_1D_TOPO];
+	int dstNodeDimProd[NDIMS_1D_TOPO];
 	std::vector<double> dstGrdCoords; // flat array (node, components)
 	size_t dstNumPoints;
 	size_t dstNumCells;
@@ -47,26 +47,26 @@ struct SgConserveInterp2D_type {
     /** 
      * Constructor
      */
-    SgConserveInterp2D_type() {
+    SgFlowInterp2D_type() {
     	this->reset();
     }
 
     /**
      * Destructor
      */
-    ~SgConserveInterp2D_type() {
+    ~SgFlowInterp2D_type() {
     }
 
 	/**
-	 * Set the destination grid 
-	 * @param dims number of nodes in each direction
+	 * Set the destination 1D grid 
+	 * @param dims number of nodes in each in the single direction
 	 * @param coords coordinates (component, node)
 	 */
 	void setDstGrid(const int dims[], const double** coords) {
 
 		this->dstNumPoints = 1;
 		this->dstNumCells = 1;
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+		for (size_t j = 0; j < NDIMS_1D_TOPO; ++j) {
 			this->dstNodeDims[j] = dims[j];
 			this->dstCellDims[j] = dims[j] - 1;
 			this->dstNumPoints *= dims[j];
@@ -74,7 +74,7 @@ struct SgConserveInterp2D_type {
 		}
 		this->dstCellDimProd[NDIMS_2D_TOPO - 1] = 1;
 		this->dstNodeDimProd[NDIMS_2D_TOPO - 1] = 1;
-		for (int j = NDIMS_2D_TOPO - 2; j >= 0; --j) {
+		for (int j = NDIMS_1D_TOPO - 2; j >= 0; --j) {
     		// last index varies fastest
     		this->dstCellDimProd[j] = this->dstCellDimProd[j + 1] * this->dstCellDims[j + 1];
     		this->dstNodeDimProd[j] = this->dstNodeDimProd[j + 1] * this->dstNodeDims[j + 1];
@@ -166,13 +166,13 @@ struct SgConserveInterp2D_type {
 		std::map< std::vector<size_t>, std::vector<double> > cacheSrcNodeInDstCell;
 
 		int numIntersectPoints;
-		std::vector<double> point(NDIMS_2D_PHYS); // edge to edge intersection point
-		SgQuadIntersect_type intersector;
-		double dstQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
+		std::vector<double> point(NDIMS_2D_PHYS); // segement to edge intersection point
+		SgQuad2LineIntersect_type intersector;
+		double dstLineCoords[NDIMS_2D_PHYS*2]; // two nodes
 		double srcQuadCoords[NDIMS_2D_PHYS*4]; // four nodes
 		int offset[] = {0, 0};
-		size_t dstNodeInds[4];
-		size_t srcNodeInds[4];
+		size_t dstNodeInds[2]; // 2 nodes
+		size_t srcNodeInds[4]; // 4 nodes
 		std::vector<size_t> dstCellIndxSrcNodeIndx(2);
 		std::vector<size_t> dstNodeIndxSrcCellIndx(2);
 
@@ -180,24 +180,25 @@ struct SgConserveInterp2D_type {
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
 			offset[0] = 0; offset[1] = 0;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[0], &dstQuadCoords[0*NDIMS_2D_PHYS]);
+			this->getDstLineCoord(dstIndx, offset, &dstNodeInds[0], &dstLineCoords[0*NDIMS_2D_PHYS]);
 			offset[0] = 1; offset[1] = 0;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[1], &dstQuadCoords[1*NDIMS_2D_PHYS]);
-			offset[0] = 1; offset[1] = 1;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[2], &dstQuadCoords[2*NDIMS_2D_PHYS]);
-			offset[0] = 0; offset[1] = 1;
-			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[3], &dstQuadCoords[3*NDIMS_2D_PHYS]);
+			this->getDstQuadCoord(dstIndx, offset, &dstNodeInds[1], &dstLineCoords[1*NDIMS_2D_PHYS]);
 
-			// compute the dst cell area
-			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
-			double dstArea = dstTriangulator.getConvexHullArea();
+			intersector.setLinePoints(dstLineCoords)
+
+			// compute the dst cell length
+			double dstLength = 0;
+			for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+				double d = dstLineCoords[1*NDIMS_2D_PHYS + j] - dstLineCoords[0*NDIMS_2D_PHYS + j];
+				dstLength += d*d;
+			}
+			dstLength = sqrt(dstLength);
 
 			// src index to fractional area
 			std::vector< std::pair<size_t, double> > indWght;
 
-			indWght.reserve(100);
+			indWght.reserve(20);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
-
 
 				offset[0] = 0; offset[1] = 0;
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
@@ -209,126 +210,112 @@ struct SgConserveInterp2D_type {
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[3], &srcQuadCoords[3*NDIMS_2D_PHYS]);
 
 				intersector.reset();
-				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
+				intersector.setQuadPoints(srcQuadCoords);
 
-				if(!intersector.checkIfBoxesOverlap()) {
+				if(!intersector.checkIfOverlap()) {
 					// no chance
 					continue;
 				}
-        
-        		// iterate over dst cell edges and nodes
-        		for (size_t i = 0; i < 4; ++i) {
-            		// the edge of the first quad
-            		size_t iA = i;
-            		size_t iB = (i + 1) % 4;
-            		size_t dstNodeA = dstNodeInds[iA];
-            		size_t dstNodeB = dstNodeInds[iB];
-            		std::vector<size_t> dstE(2); 
-            		dstE[0] = dstNodeA; 
-            		dstE[1] = dstNodeB;
-            		std::sort(dstE.begin(), dstE.end());
-            		double* dstCoordA = &dstQuadCoords[iA*NDIMS_2D_PHYS];
-            		double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
-            		std::vector<double> pA(dstCoordA, dstCoordA + NDIMS_2D_PHYS);
 
-            		dstNodeIndxSrcCellIndx[0] = dstNodeA;
-            		dstNodeIndxSrcCellIndx[1] = srcIndx;
-            		std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
-            		if (it1 != cacheDstNodeInSrcCell.end()) {
-            			// we've already checked this
+            	size_t dstNodeA = dstNodeInds[0];
+            	size_t dstNodeB = dstNodeInds[1];
+                std::vector<size_t> dstE(2); 
+            	dstE[0] = dstNodeA; 
+            	dstE[1] = dstNodeB;
+            	double* dstCoordA = &dstQuadCoords[iA*NDIMS_2D_PHYS];
+            	double* dstCoordB = &dstQuadCoords[iB*NDIMS_2D_PHYS];
+            	std::vector<double> pA(dstCoordA, dstCoordA + NDIMS_2D_PHYS);
+
+            	dstNodeIndxSrcCellIndx[0] = dstNodeA;
+            	dstNodeIndxSrcCellIndx[1] = srcIndx;
+            	std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
+            		it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
+            	if (it1 != cacheDstNodeInSrcCell.end()) {
+            		// we've already checked this
+            		intersector.addPoint(pA);
+            	}
+            	else {
+            		// first time
+            		bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
+            		if (ret) {
             			intersector.addPoint(pA);
+            			std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
+            			cacheDstNodeInSrcCell.insert(p);
             		}
-            		else {
-            			// first time
-            			bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
-            			if (ret) {
-            				intersector.addPoint(pA);
-            				std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
-            				cacheDstNodeInSrcCell.insert(p);
-            			}
-            		}
+            	}
             		
+            	// iterate over the src cell edges
+            	for (size_t j = 0; j < 4; ++j) {
+                	// the edges of the quad
+                	size_t jA = j;
+                	size_t jB = (j + 1) % 4;
+                	size_t srcNodeA = srcNodeInds[jA];
+                	size_t srcNodeB = srcNodeInds[jB];
+                	std::vector<size_t> srcE(2); 
+                	srcE[0] = srcNodeA; 
+                	srcE[1] = srcNodeB;
+                	std::sort(srcE.begin(), srcE.end());
+            		double* srcCoordA = &srcQuadCoords[jA*NDIMS_2D_PHYS];
+            		double* srcCoordB = &srcQuadCoords[jB*NDIMS_2D_PHYS];
+                	std::vector<double> qA(srcCoordA, srcCoordA + NDIMS_2D_PHYS);
 
-            		// iterate over the src cell edges and nodes
-            		for (size_t j = 0; j < 4; ++j) {
-                		// the edges of the second quad
-                		size_t jA = j;
-                		size_t jB = (j + 1) % 4;
-                		size_t srcNodeA = srcNodeInds[jA];
-                		size_t srcNodeB = srcNodeInds[jB];
-                		std::vector<size_t> srcE(2); 
-                		srcE[0] = srcNodeA; 
-                		srcE[1] = srcNodeB;
-                		std::sort(srcE.begin(), srcE.end());
-            			double* srcCoordA = &srcQuadCoords[jA*NDIMS_2D_PHYS];
-            			double* srcCoordB = &srcQuadCoords[jB*NDIMS_2D_PHYS];
-                		std::vector<double> qA(srcCoordA, srcCoordA + NDIMS_2D_PHYS);
-
-                		dstCellIndxSrcNodeIndx[0] = dstIndx;
-                		dstCellIndxSrcNodeIndx[1] = srcNodeA;
-            			std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		    	it2 = cacheSrcNodeInDstCell.find(dstCellIndxSrcNodeIndx);
-            			if (it2 != cacheSrcNodeInDstCell.end()) {
-            				// we've already checked this
+                	dstCellIndxSrcNodeIndx[0] = dstIndx;
+                	dstCellIndxSrcNodeIndx[1] = srcNodeA;
+            		std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
+            		    it2 = cacheSrcNodeInDstCell.find(dstCellIndxSrcNodeIndx);
+            		if (it2 != cacheSrcNodeInDstCell.end()) {
+            			// we've already checked this
+            			intersector.addPoint(qA);
+            		}
+            	    else {
+            			// first time
+            			bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
+            			if (ret) {
             				intersector.addPoint(qA);
+            				std::pair< std::vector<size_t>, std::vector<double> > p(dstCellIndxSrcNodeIndx, qA);
+            				cacheSrcNodeInDstCell.insert(p);
             			}
-            			else {
-            				// first time
-            				bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
-            				if (ret) {
-            					intersector.addPoint(qA);
-            					std::pair< std::vector<size_t>, std::vector<double> > p(dstCellIndxSrcNodeIndx, qA);
-            					cacheSrcNodeInDstCell.insert(p);
-            				}
-            			}
+            		}
 
-                		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
+                	std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
 
-                		if (cacheEdgeNoX.find(dstSrcEdges) != cacheEdgeNoX.end()) {
-                			// we already know there is no intersection, move on
-                			continue;
+                	if (cacheEdgeNoX.find(dstSrcEdges) != cacheEdgeNoX.end()) {
+                		// we already know there is no intersection, move on
+                		continue;
+                	}
+
+                	std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
+                		it = cacheEdgeX.find(dstSrcEdges);
+                	if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
+                		// we already know what the intersection point is
+                		intersector.addPoint(it->second);
+                	}
+                	else {
+                		// let's see if there is an intersection
+                		int ret = intersector.collectIntersectionPoints(dstCoordA, dstCoordB,
+                                                                        srcCoordA, srcCoordB,
+                                                                                   &point[0]);
+
+                		if (ret == 0) {
+                			// no intersection
+                			cacheEdgeNoX.insert(dstSrcEdges);
                 		}
-
-                		std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
-                		    it = cacheEdgeX.find(dstSrcEdges);
-                		if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
-                			// we already know what the intersection point is
-                			intersector.addPoint(it->second);
+                		else if (ret == 1) {
+                			// intersection, cache result for subsequent use
+                			std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
+                			cacheEdgeX.insert(p);
                 		}
-                		else {
-                			// let's see if there is an intersection
-                			int ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
-                                                                                      srcCoordA, srcCoordB,
-                                                                                      &point[0]);
+                	}
 
-                			if (ret == 0) {
-                				// no intersection
-                				cacheEdgeNoX.insert(dstSrcEdges);
-                			}
-                			else if (ret == 1) {
-                				// intersection, cache result for subsequent use
-                				std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
-                				cacheEdgeX.insert(p);
-                			}
-                		}
-
-          			}
         		}
-
-        		// dst cell nodes inside src cell
-        		//intersector.collectNodesInsideQuad(dstQuadCoords, srcQuadCoords);
-
-        		// src cell nodes inside dst cell
-        		//intersector.collectNodesInsideQuad(srcQuadCoords, dstQuadCoords);
-
 
         		// ready to collect all the interesction points
 				const std::vector<double>& pts = intersector.getIntersectionPoints();
 
+				////// TO DO
 				numIntersectPoints = pts.size() / NDIMS_2D_PHYS;
-				if (numIntersectPoints >= 3) {
-					// must be able to build at least one triangle
+				if (numIntersectPoints >= 2) {
+					// must be able to build at least one line
 					SgTriangulate_type triangulator(numIntersectPoints, &pts[0]);
 					double area = triangulator.getConvexHullArea();
 					indWght.push_back(std::pair<size_t, double>(srcIndx, area/dstArea));
@@ -449,28 +436,28 @@ private:
 extern "C" {
 #endif
 
-    int SgConserveInterp2D_new(SgConserveInterp2D_type** self);
+    int SgFlowInterp2D_new(SgFlowInterp2D_type** self);
                        
-    int SgConserveInterp2D_del(SgConserveInterp2D_type** self);
+    int SgFlowInterp2D_del(SgFlowInterp2D_type** self);
 
-    int SgConserveInterp2D_setDstGrid(SgConserveInterp2D_type** self, 
+    int SgFlowInterp2D_setDstGrid(SgFlowInterp2D_type** self, 
  	                                  const int dims[], const double** coords);
 
-    int SgConserveInterp2D_setSrcGrid(SgConserveInterp2D_type** self, 
+    int SgFlowInterp2D_setSrcGrid(SgFlowInterp2D_type** self, 
  	                                  const int dims[], 
  	                                  const int periodicity[],
  	                                  const double** coords);
 
-    int SgConserveInterp2D_computeWeights(SgConserveInterp2D_type** self);
+    int SgFlowInterp2D_computeWeights(SgFlowInterp2D_type** self);
 
-    int SgConserveInterp2D_apply(SgConserveInterp2D_type** self,
+    int SgFlowInterp2D_apply(SgFlowInterp2D_type** self,
  	                             const double srcData[], double dstData[]);
 
-    int SgConserveInterp2D_reset(SgConserveInterp2D_type** self);
+    int SgFlowInterp2D_reset(SgFlowInterp2D_type** self);
 
-    int SgConserveInterp2D_next(SgConserveInterp2D_type** self);
+    int SgFlowInterp2D_next(SgFlowInterp2D_type** self);
 
-    int SgConserveInterp2D_get(SgConserveInterp2D_type** self,
+    int SgFlowInterp2D_get(SgFlowInterp2D_type** self,
  	                           int* srcIndx, int* dstIndx, double* weight);
 
 #ifdef __cplusplus
@@ -478,4 +465,4 @@ extern "C" {
 #endif
 
 
-#endif // SG_CONSERVE_INTERP_2D_H
+#endif // SG_FLOW_INTERP_2D_H
