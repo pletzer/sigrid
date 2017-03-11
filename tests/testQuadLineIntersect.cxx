@@ -24,7 +24,7 @@ bool testNoOverlap() {
     SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
     int numPoints;
     double* points = NULL;
-    SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
     std::cout << "testNoOverlap: num intersection points = " << numPoints << '\n';
@@ -53,7 +53,7 @@ bool testLineIsInsideQuad() {
     SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
     int numPoints;
     double* points = NULL;
-    SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
     std::cout << "testLineIsInsideQuad: num intersection points = " << numPoints << '\n';
@@ -82,7 +82,7 @@ bool testOneIntersection() {
     SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
     int numPoints;
     double* points = NULL;
-    SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
     std::cout << "testOneIntersection: num intersection points = " << numPoints << '\n';
@@ -112,7 +112,7 @@ bool testTwoIntersections() {
     SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
     int numPoints;
     double* points = NULL;
-    SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
     std::cout << "testTwoIntersections: num intersection points = " << numPoints << '\n';

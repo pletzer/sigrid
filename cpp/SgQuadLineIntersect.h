@@ -293,8 +293,8 @@ int SgQuadLineIntersect_setQuadPoints(SgQuadLineIntersect_type** self,
 int SgQuadLineIntersect_setLinePoints(SgQuadLineIntersect_type** self, 
                                       const double* linePoints);
 
-int SgQuadLineIntersect_getIntersectPoints(SgQuadLineIntersect_type** self, 
-                                       int *numPoints, double** points);
+int SgQuadLineIntersect_collectIntersectPoints(SgQuadLineIntersect_type** self, 
+                                               int *numPoints, double** points);
 
 #ifdef __cplusplus
 }

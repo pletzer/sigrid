@@ -37,8 +37,8 @@ int SgQuadLineIntersect_setLinePoints(SgQuadLineIntersect_type** self,
 }
 
 extern "C"
-int SgQuadLineIntersect_getIntersectPoints(SgQuadLineIntersect_type** self,
- 	                                       int* numPoints, double** points) {
+int SgQuadLineIntersect_collectIntersectPoints(SgQuadLineIntersect_type** self,
+ 	                                           int* numPoints, double** points) {
 	(*self)->collectIntersectPoints(numPoints, points);
  	return 0;
 }
