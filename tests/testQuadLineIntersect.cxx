@@ -154,6 +154,80 @@ bool testParallelSegment() {
     return true;
 }
 
+bool testLineOnEdge() {
+
+    double quadCoords[] = {0., 0.,
+                           1., 0.,
+                           1., 1.,
+                           0., 1.};
+
+    double lineCoords[] = {0.0, 0.0,
+                           0.0, 1.0};
+
+    SgQuadLineIntersect_type* qis = NULL;
+    SgQuadLineIntersect_new(&qis);
+    SgQuadLineIntersect_setQuadPoints(&qis, quadCoords);
+    SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
+    int numPoints;
+    double* points = NULL;
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_del(&qis);
+
+    std::cout << "testLineOnEdge: num intersection points = " << numPoints << '\n';
+
+    if (numPoints != 2) {
+        // error
+        return false;
+    }
+
+    for (int i = 0; i < numPoints; ++i) {
+        std::cout << "point " << i << ": ";
+        for (size_t j = 0; j < 2; ++j) {
+            std::cout << points[2*i + j] << ", ";
+        }
+        std::cout << '\n';
+    }
+    // OK
+    return true;
+}
+
+bool testSmallLineOnEdge() {
+
+    double quadCoords[] = {0., 0.,
+                           1., 0.,
+                           1., 1.,
+                           0., 1.};
+
+    double lineCoords[] = {0.0, 0.4,
+                           0.0, 0.6};
+
+    SgQuadLineIntersect_type* qis = NULL;
+    SgQuadLineIntersect_new(&qis);
+    SgQuadLineIntersect_setQuadPoints(&qis, quadCoords);
+    SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
+    int numPoints;
+    double* points = NULL;
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_del(&qis);
+
+    std::cout << "testSmallLineOnEdge: num intersection points = " << numPoints << '\n';
+
+    if (numPoints != 2) {
+        // error
+        return false;
+    }
+
+    for (int i = 0; i < numPoints; ++i) {
+        std::cout << "point " << i << ": ";
+        for (size_t j = 0; j < 2; ++j) {
+            std::cout << points[2*i + j] << ", ";
+        }
+        std::cout << '\n';
+    }
+    // OK
+    return true;
+}
+
 
 int main(int argc, char** argv) {
 
@@ -162,6 +236,8 @@ int main(int argc, char** argv) {
     if (!testOneIntersection()) return 3;
     if (!testTwoIntersections()) return 4;
     if (!testParallelSegment()) return 5;
+    if (!testLineOnEdge()) return 6;
+    if (!testSmallLineOnEdge()) return 7;
 
     std::cout << "SUCCESS\n";
     return 0;
