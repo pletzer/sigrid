@@ -1,9 +1,9 @@
 /**
- * A class that finds all intersection points between two quads
+ * A class that finds all intersection points between a QuadLine and a line
  */
  
-#ifndef SG_QUAD_INTERSECT_H
-#define SG_QUAD_INTERSECT_H
+#ifndef SG_QUAD_LINE_INTERSECT_H
+#define SG_QUAD_LINE_INTERSECT_H
  
 #include <vector>
 #include <cstdio> // size_t
@@ -14,14 +14,14 @@
 #include "SgTriangulate.h"
 #include "SgNdims.h"
  
-struct SgQuadIntersect_type {
+struct SgQuadLineIntersect_type {
 
     // linear solver
     SgLinearSolve_type* slvr;
 
     // flat array (node, component) of the nodal coordinates
-    double* quad1Coords;
-    double* quad2Coords;
+    double* quadCoords;
+    double* lineCoords;
 
     // the collection of intersection points as a flat array
     std::vector<double> intersectionPoints;
@@ -34,24 +34,24 @@ struct SgQuadIntersect_type {
     double mat[2 * 2];
     double rhs[2];
 
-    // the quad corner points
-    double quad1Min[2];
-    double quad1Max[2];
-    double quad2Min[2];
-    double quad2Max[2];
+    // the QuadLine corner points
+    double quadMin[NDIMS_2D_PHYS];
+    double quadMax[NDIMS_2D_PHYS];
+    double lineMin[NDIMS_2D_PHYS];
+    double lineMax[NDIMS_2D_PHYS];
 
     /**
      * Constructor
      */
-     SgQuadIntersect_type() {
+     SgQuadLineIntersect_type() {
 
         // tolerance for floating point comparisons
         this->tol = 1.e-12;
 
         this->slvr = new SgLinearSolve_type(2, 2);
 
-        this->quad1Coords = NULL;
-        this->quad2Coords = NULL;
+        this->quadCoords = NULL;
+        this->lineCoords = NULL;
     }
 
     void reset() {
@@ -59,33 +59,18 @@ struct SgQuadIntersect_type {
     }
 
     /**
-     * Check if the boxes containg the two quads overlap
+     * Check if the boxes containg the two QuadLines overlap
      * @return true if they overlap, false otherwise
      */
-    bool checkIfBoxesOverlap() {
+    bool checkIfOverlap() {
 
-        // initialize the box min/max coordinates
-        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            this->quad1Min[j] = std::numeric_limits<double>::infinity();
-            this->quad2Min[j] = std::numeric_limits<double>::infinity();
-            this->quad1Max[j] = -std::numeric_limits<double>::infinity();
-            this->quad2Max[j] = -std::numeric_limits<double>::infinity();
-            for (size_t k = 0; k < 4; ++k) { // 4 nodes
-                size_t i = NDIMS_2D_PHYS*k + j;
-                this->quad1Min[j] = std::min(this->quad1Coords[i], this->quad1Min[j]);
-                this->quad2Min[j] = std::min(this->quad2Coords[i], this->quad2Min[j]);
-                this->quad1Max[j] = std::max(this->quad1Coords[i], this->quad1Max[j]);
-                this->quad2Max[j] = std::max(this->quad2Coords[i], this->quad2Max[j]);                
-            }
-        }
-
-        // overlap is when the min of the high corner points is higher than the max
-        // of the low corner points
-        bool overlap = true;
-        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            overlap &= std::min(quad1Max[j], quad2Max[j]) >= std::max(quad1Min[j], quad2Min[j]);
-        }
-        return overlap;
+      // overlap is when the min of the high corner points is higher than the max
+      // of the low corner points
+      bool overlap = true;
+      for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        overlap &= std::min(this->quadMax[j], this->lineMax[j]) >= std::max(this->quadMin[j], this->lineMin[j]);
+      }
+      return overlap;
     }
 
     /**
@@ -97,9 +82,9 @@ struct SgQuadIntersect_type {
      * @return true if the point in the triangle or on its boundary
      */
     bool checkIfPointIsInsideTriangle(const double* pt, 
-                                       const double* node0,
-                                       const double* node1,
-                                       const double* node2) {
+                                      const double* node0,
+                                      const double* node1,
+                                      const double* node2) {
 
         // x0 + xi*(x1 - x0) + eta*(x2 - x0) = pt
         for (size_t i = 0; i < 2; ++i) {
@@ -142,11 +127,11 @@ struct SgQuadIntersect_type {
     }
 
     /**
-     * Is point inside the quad?
+     * Is point inside the Quad?
      * @param point target coordinates
-     * @param quad 4 points as flat array
+     * @param QuadLine 4 points as flat array
      */
-    bool isPointInCell(const double* point, const double* quad) {
+    bool isPointInQuad(const double* point, const double* quad) {
       if (this->checkIfPointIsInsideTriangle(point, &quad[0*NDIMS_2D_PHYS],
                                                     &quad[1*NDIMS_2D_PHYS],
                                                     &quad[3*NDIMS_2D_PHYS])) {
@@ -161,23 +146,7 @@ struct SgQuadIntersect_type {
     }
 
     /**
-     * Collect all the quad's nodes that are inside the other quad
-     * @param nodes flat array of the 1st quad's coordinates
-     * @param quad flat array of the 2nd quad's cooridnates
-     */
-    void collectNodesInsideQuad(const double* nodes, const double* quad) {
-
-        for (size_t i = 0; i < 4; ++i) {
-            if (this->isPointInCell(&nodes[i*NDIMS_2D_PHYS], quad)) {
-                for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                    this->intersectionPoints.push_back(nodes[i*NDIMS_2D_PHYS + j]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Collect edge to edge intersection points
+     * Collect edge to line intersection points
      * @param edgePoint1 start point of edge 1
      * @param edgePoint1 end point of edge 1
      * @param edgePoint2 start point of edge 2
@@ -185,16 +154,16 @@ struct SgQuadIntersect_type {
      * @param pt intersection point (if present)
      * @return 1 if intersection, 0 otherwise
      */
-    int collectEdgeToEdgeIntersectionPoints(const double edge1Point0[],
-                                            const double edge1Point1[],
-                                            const double edge2Point0[],
-                                            const double edge2Point1[],
+    int collectEdgeToLineIntersectionPoints(const double edgePoint0[],
+                                            const double edgePoint1[],
+                                            const double linePoint0[],
+                                            const double linePoint1[],
                                             double pt[]) {
-        // edge1Point0 + xi*(edge1Point1 - edge1Point0) = edge2Point0 + eta*(edge2Point1 - edge2Point0)
+        // edgePoint0 + xi*(edgePoint1 - edgePoint0) = linePoint0 + eta*(linePoint1 - linePoint0)
         for (size_t i = 0; i < 2; ++i) {
-            this->rhs[i] = edge2Point0[i] - edge1Point0[i];
-            this->mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
-            this->mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
+            this->rhs[i] = linePoint0[i] - edgePoint0[i];
+            this->mat[2*i + 0] = edgePoint1[i] - edgePoint0[i];
+            this->mat[2*i + 1] = linePoint0[i] - linePoint1[i];
         }
         this->slvr->setMatrix(this->mat);
         this->slvr->setRightHandSide(this->rhs);
@@ -213,7 +182,7 @@ struct SgQuadIntersect_type {
             xis[1] > this->tol && xis[1] <= 1 - this->tol) {
             // the two edges intersect
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                pt[j] = edge1Point0[j] + xis[0]*(edge1Point1[j] - edge1Point0[j]);
+                pt[j] = edgePoint0[j] + xis[0]*(edgePoint1[j] - edgePoint0[j]);
                 this->intersectionPoints.push_back(pt[j]);
             }
             return 1;
@@ -221,11 +190,47 @@ struct SgQuadIntersect_type {
         return 0;
     }
 
-    void setQuadPoints(const double* quad1Coords, const double* quad2Coords) {
-        this->quad1Coords = (double*) quad1Coords;
-        this->quad2Coords = (double*) quad2Coords;
+    /**
+     * Set the quad's coordinates
+     * @param quadCoords quad coordinates
+     */
+    void setQuadPoints(const double* quadCoords) {
+
+      this->quadCoords = (double*)quadCoords;
+
+      // compute the corner points
+      // initialize the box min/max coordinates
+      for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        this->quadMin[j] = std::numeric_limits<double>::infinity();
+        this->quadMax[j] = -std::numeric_limits<double>::infinity();
+        for (size_t k = 0; k < 4; ++k) { // 4 nodes
+          size_t i = NDIMS_2D_PHYS*k + j;
+          this->quadMin[j] = std::min(this->quadCoords[i], this->quadMin[j]);
+          this->quadMax[j] = std::max(this->quadCoords[i], this->quadMax[j]);
+        }
+      }
     }
 
+    /**
+     * Set the line's coordinates
+     * @param lineCoords line coordinates
+     */
+    void setLinePoints(const double* lineCoords) {
+
+      this->lineCoords = (double*) lineCoords;
+
+      // compute the corner points
+      // initialize the box min/max coordinates
+      for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        this->lineMin[j] = std::numeric_limits<double>::infinity();
+        this->lineMax[j] = -std::numeric_limits<double>::infinity();
+        for (size_t k = 0; k < 4; ++k) { // 4 nodes
+          size_t i = NDIMS_2D_PHYS*k + j;
+          this->lineMin[j] = std::min(this->lineCoords[i], this->lineMin[j]);
+          this->lineMax[j] = std::max(this->lineCoords[i], this->lineMax[j]);
+        }
+      }
+    }
 
     /**
      * Collect all the intersection points
@@ -237,28 +242,18 @@ struct SgQuadIntersect_type {
         *numPoints = 0;
         double pt[NDIMS_2D_PHYS];
 
-        // seems like the quads are at least partially overlapping 
-        this->collectNodesInsideQuad((const double*)this->quad1Coords, 
-                                     (const double*)this->quad2Coords);
-        this->collectNodesInsideQuad((const double*)this->quad2Coords,
-                                     (const double*)this->quad1Coords);
+        // seems like the quad and the line are at least partially overlapping,
         // iterate over edges
         for (size_t i = 0; i < 4; ++i) {
-            // the edge of one of the first quad
-            size_t quad1IndxA = i;
-            size_t quad1IndxB = (i + 1) % 4;
-            double* quad1CoordA = &this->quad1Coords[quad1IndxA*NDIMS_2D_PHYS];
-            double* quad1CoordB = &this->quad1Coords[quad1IndxB*NDIMS_2D_PHYS];
-            // iterate over the other quad's edges
-            for (size_t j = 0; j < 4; ++j) {
-                // the edges of the second quad
-                size_t quad2IndxA = j;
-                size_t quad2IndxB = (j + 1) % 4;
-                double* quad2CoordA = &this->quad2Coords[quad2IndxA*NDIMS_2D_PHYS];
-                double* quad2CoordB = &this->quad2Coords[quad2IndxB*NDIMS_2D_PHYS];
-                this->collectEdgeToEdgeIntersectionPoints(quad1CoordA, quad1CoordB,
-                                                          quad2CoordA, quad2CoordB, pt);
-            }
+            // the edge of one of the first QuadLine
+            size_t quadIndxA = i;
+            size_t quadIndxB = (i + 1) % 4;
+            double* quadCoordA = &this->quadCoords[quadIndxA*NDIMS_2D_PHYS];
+            double* quadCoordB = &this->quadCoords[quadIndxB*NDIMS_2D_PHYS];
+            double* lineCoordA = &this->lineCoords[0*NDIMS_2D_PHYS];
+            double* lineCoordB = &this->lineCoords[1*NDIMS_2D_PHYS];
+            this->collectEdgeToLineIntersectionPoints(quadCoordA, quadCoordB,
+                                                      lineCoordA, lineCoordB, pt);
         }
 
         // set the return values
@@ -275,18 +270,21 @@ struct SgQuadIntersect_type {
 extern "C" {
 #endif
 
-int SgQuadIntersect_new(SgQuadIntersect_type** self);
+int SgQuadLineIntersect_new(SgQuadLineIntersect_type** self);
                        
-int SgQuadIntersect_del(SgQuadIntersect_type** self);
+int SgQuadLineIntersect_del(SgQuadLineIntersect_type** self);
 
-int SgQuadIntersect_setQuadPoints(SgQuadIntersect_type** self, 
-                                  const double* quad1Points, const double* quad2Points);
+int SgQuadLineIntersect_setQuadPoints(SgQuadLineIntersect_type** self, 
+                                      const double* quadPoints);
 
-int SgQuadIntersect_getIntersectPoints(SgQuadIntersect_type** self, 
+int SgQuadLineIntersect_setLinePoints(SgQuadLineIntersect_type** self, 
+                                      const double* linePoints);
+
+int SgQuadLineIntersect_getIntersectPoints(SgQuadLineIntersect_type** self, 
                                        int *numPoints, double** points);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // SG_QUAD_INTERSECT_H
+#endif // SG_QUAD_LINE_INTERSECT_H

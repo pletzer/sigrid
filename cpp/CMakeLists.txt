@@ -10,6 +10,7 @@ set(LIB_FILES
   SgLine.cpp
   SgFindPointInCell.cpp
   SgQuadIntersect.cpp
+  SgQuadLineIntersect.cpp
   SgTriangulate.cpp
   SgConserveInterp2D.cpp
   SgNodeInterp2D.cpp
@@ -26,6 +27,7 @@ set(HEADER_FILES
   SgNdims.h
   SgFindPointInCell.h
   SgQuadIntersect.h
+  SgQuadLineIntersect.h
   SgTriangulate.h
   SgConserveInterp2D.h
   SgNodeInterp2D.h

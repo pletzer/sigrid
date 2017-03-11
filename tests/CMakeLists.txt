@@ -28,8 +28,8 @@ target_link_libraries(testOctreePoints_CXX sigrid)
 add_executable(testFindPointInCellRotatedPole testFindPointInCellRotatedPole.cxx)
 target_link_libraries(testFindPointInCellRotatedPole sigrid sgutils)
 
-add_executable(testQuadIntersect_CXX testQuadIntersect.cxx)
-target_link_libraries(testQuadIntersect_CXX sigrid)
+add_executable(testQuadLineIntersect_CXX testQuadLineIntersect.cxx)
+target_link_libraries(testQuadLineIntersect_CXX sigrid)
 
 add_executable(testLinearSolve_CXX testLinearSolve.cxx)
 target_link_libraries(testLinearSolve_CXX sigrid)
@@ -88,6 +88,7 @@ add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointI
 add_test(testOctreePoints_CXX ${CMAKE_BINARY_DIR}/tests/testOctreePoints_CXX)
 add_test(testLinearSolve_CXX ${CMAKE_BINARY_DIR}/tests/testLinearSolve_CXX)
 add_test(testQuadIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadIntersect_CXX)
+add_test(testQuadLineIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadLineIntersect_CXX)
 add_test(testTriangulate_CXX ${CMAKE_BINARY_DIR}/tests/testTriangulate_CXX)
 add_test(testQuadOverlap_CXX ${CMAKE_BINARY_DIR}/tests/testQuadOverlap_CXX)
 add_test(testConserveInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterp2D_CXX)
