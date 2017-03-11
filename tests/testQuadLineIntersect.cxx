@@ -125,6 +125,35 @@ bool testTwoIntersections() {
     return true;
 }
 
+bool testParallelSegment() {
+
+    double quadCoords[] = {0., 0.,
+                           1., 0.,
+                           1., 1.,
+                           0., 1.};
+
+    double lineCoords[] = {-0.2, 0.0,
+                           -0.2, 1.1};
+
+    SgQuadLineIntersect_type* qis = NULL;
+    SgQuadLineIntersect_new(&qis);
+    SgQuadLineIntersect_setQuadPoints(&qis, quadCoords);
+    SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
+    int numPoints;
+    double* points = NULL;
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_del(&qis);
+
+    std::cout << "testParallelSegment: num intersection points = " << numPoints << '\n';
+
+    if (numPoints != 0) {
+        // error
+        return false;
+    }
+    // OK
+    return true;
+}
+
 
 int main(int argc, char** argv) {
 
@@ -132,6 +161,7 @@ int main(int argc, char** argv) {
     if (!testLineIsInsideQuad()) return 2;
     if (!testOneIntersection()) return 3;
     if (!testTwoIntersections()) return 4;
+    if (!testParallelSegment()) return 5;
 
     std::cout << "SUCCESS\n";
     return 0;
