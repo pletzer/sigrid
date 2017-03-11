@@ -56,7 +56,7 @@ bool testLineIsInsideQuad() {
     SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
-    std::cout << "test testLineIsInsideQuad: num intersection points = " << numPoints << '\n';
+    std::cout << "testLineIsInsideQuad: num intersection points = " << numPoints << '\n';
 
     if (numPoints != 2) {
         // error
@@ -85,7 +85,7 @@ bool testOneIntersection() {
     SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
-    std::cout << "test testOneIntersection: num intersection points = " << numPoints << '\n';
+    std::cout << "testOneIntersection: num intersection points = " << numPoints << '\n';
 
     if (numPoints != 1) {
         // error
@@ -114,7 +114,7 @@ bool testTwoIntersections() {
     SgQuadLineIntersect_getIntersectPoints(&qis, &numPoints, &points);
     SgQuadLineIntersect_del(&qis);
 
-    std::cout << "test testTwoIntersections: num intersection points = " << numPoints << '\n';
+    std::cout << "testTwoIntersections: num intersection points = " << numPoints << '\n';
 
     if (numPoints != 2) {
         // error

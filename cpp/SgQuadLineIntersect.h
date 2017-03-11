@@ -242,7 +242,20 @@ struct SgQuadLineIntersect_type {
         *numPoints = 0;
         double pt[NDIMS_2D_PHYS];
 
-        // seems like the quad and the line are at least partially overlapping,
+        // seems like the quad and the line are at least partially overlapping
+
+        // add the starting line point if inside the quad
+        if (this->isPointInQuad(&this->lineCoords[0*NDIMS_2D_PHYS], this->quadCoords)) {
+          std::vector<double> pt(&this->lineCoords[0*NDIMS_2D_PHYS], &this->lineCoords[0*NDIMS_2D_PHYS] + 2);
+          this->addPoint(pt);
+        }
+
+        // add the ending line point if inside the quad
+        if (this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
+          std::vector<double> pt(&this->lineCoords[1*NDIMS_2D_PHYS], &this->lineCoords[1*NDIMS_2D_PHYS] + 2);
+          this->addPoint(pt);
+        }
+
         // iterate over edges
         for (size_t i = 0; i < 4; ++i) {
             // the edge of one of the first QuadLine
