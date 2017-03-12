@@ -43,6 +43,9 @@ target_link_libraries(testQuadOverlap_CXX sigrid)
 add_executable(testConserveInterp2D_CXX testConserveInterp2D.cxx)
 target_link_libraries(testConserveInterp2D_CXX sigrid sgutils)
 
+add_executable(testFlowInterp2D_CXX testFlowInterp2D.cxx)
+target_link_libraries(testFlowInterp2D_CXX sigrid sgutils)
+
 add_executable(testNodeInterp2D_CXX testNodeInterp2D.cxx)
 target_link_libraries(testNodeInterp2D_CXX sigrid sgutils)
 
@@ -92,6 +95,7 @@ add_test(testQuadLineIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadLineInterse
 add_test(testTriangulate_CXX ${CMAKE_BINARY_DIR}/tests/testTriangulate_CXX)
 add_test(testQuadOverlap_CXX ${CMAKE_BINARY_DIR}/tests/testQuadOverlap_CXX)
 add_test(testConserveInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterp2D_CXX)
+add_test(testFlowInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testFlowInterp2D_CXX)
 add_test(testNodeInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testNodeInterp2D_CXX)
 add_test(testConserveInterp2DBig1 ${CMAKE_BINARY_DIR}/tests/testConserveInterp2DBig_CXX 
         --src_nj 101 --src_ni 201 --dst_nj 21 --dst_ni 41)
