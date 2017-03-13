@@ -127,8 +127,6 @@ struct SgFlowInterp2D_type {
 			it != this->weights.end(); ++it) {
 			size_t dstIndx = it->first;
 			dstData[dstIndx] = 0;
-			double* pa;
-			double* pb;
 			for (size_t i = 0; i < it->second.size(); ++i) {
 				size_t srcIndx = it->second[i].first;
 				double wght = it->second[i].second[index];
@@ -164,7 +162,7 @@ struct SgFlowInterp2D_type {
 			// iterate over the src quads
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
-				// get the quad's vertices
+				// get the src quad's vertices
 				offset[0] = 0; offset[1] = 0;
 				this->getSrcQuadCoord(srcIndx, offset, &srcNodeInds[0], &srcQuadCoords[0*NDIMS_2D_PHYS]);
 				offset[0] = 1; offset[1] = 0;
