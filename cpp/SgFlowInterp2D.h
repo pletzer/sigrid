@@ -24,7 +24,6 @@ struct SgFlowInterp2D_type {
 	std::vector<double> srcGrdCoords; // flat array (node, components)
 	size_t srcNumPoints;
 	size_t srcNumCells;
-	size_t srcNumEdges[NDIMS_2D_TOPO];
 
 	// the destination grid 
 	int dstNodeDims[NDIMS_1D_TOPO];
@@ -94,6 +93,11 @@ struct SgFlowInterp2D_type {
 
 		this->srcNumPoints = dims[0] * dims[1];
 		this->srcNumCells = (dims[0] - 1) * (dims[1] - 1);
+
+		this->srcNodeDims[0] = dims[0];
+		this->srcNodeDims[1] = dims[1];
+		this->srcCellDims[0] = dims[0] - 1;
+		this->srcCellDims[1] = dims[1] - 1;
 
 		this->srcCellDimProd[1] = 1;
 		this->srcCellDimProd[0] = (dims[1] - 1);
