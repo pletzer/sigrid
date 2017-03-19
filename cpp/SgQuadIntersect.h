@@ -30,6 +30,16 @@ struct SgQuadIntersect_type {
     // or a point is within a triangle
     double tol;
 
+    // for finding intersections of edges
+    double mat[2 * 2];
+    double rhs[2];
+
+    // the quad corner points
+    double quad1Min[2];
+    double quad1Max[2];
+    double quad2Min[2];
+    double quad2Max[2];
+
     /**
      * Constructor
      */
@@ -55,24 +65,17 @@ struct SgQuadIntersect_type {
     bool checkIfBoxesOverlap() {
 
         // initialize the box min/max coordinates
-        std::vector<double> quad1Min(2, std::numeric_limits<double>::infinity());
-        std::vector<double> quad1Max(2, -std::numeric_limits<double>::infinity());
-        std::vector<double> quad2Min(2, std::numeric_limits<double>::infinity());
-        std::vector<double> quad2Max(2, -std::numeric_limits<double>::infinity());
-
-         // find each quad's box corner points
-        for (size_t i = 0; i < 4; ++i) { // 4 nodes
-            for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {  // 2 dims
-
-                size_t k = i*NDIMS_2D_PHYS + j;
-
-                // quad 1
-                quad1Min[j] = std::min(this->quad1Coords[k], quad1Min[j]);
-                quad1Max[j] = std::max(this->quad1Coords[k], quad1Max[j]);
-
-                // quad 2
-                quad2Min[j] = std::min(this->quad2Coords[k], quad2Min[j]);
-                quad2Max[j] = std::max(this->quad2Coords[k], quad2Max[j]);
+        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+            this->quad1Min[j] = std::numeric_limits<double>::infinity();
+            this->quad2Min[j] = std::numeric_limits<double>::infinity();
+            this->quad1Max[j] = -std::numeric_limits<double>::infinity();
+            this->quad2Max[j] = -std::numeric_limits<double>::infinity();
+            for (size_t k = 0; k < 4; ++k) { // 4 nodes
+                size_t i = NDIMS_2D_PHYS*k + j;
+                this->quad1Min[j] = std::min(this->quad1Coords[i], this->quad1Min[j]);
+                this->quad2Min[j] = std::min(this->quad2Coords[i], this->quad2Min[j]);
+                this->quad1Max[j] = std::max(this->quad1Coords[i], this->quad1Max[j]);
+                this->quad2Max[j] = std::max(this->quad2Coords[i], this->quad2Max[j]);                
             }
         }
 
@@ -98,16 +101,14 @@ struct SgQuadIntersect_type {
                                        const double* node1,
                                        const double* node2) {
 
-        std::vector<double> mat(2 * 2);
-        std::vector<double> rhs(2);
         // x0 + xi*(x1 - x0) + eta*(x2 - x0) = pt
         for (size_t i = 0; i < 2; ++i) {
-            rhs[i] = pt[i] - node0[i];
-            mat[2*i + 0] = node1[i] - node0[i];
-            mat[2*i + 1] = node2[i] - node0[i];
+            this->rhs[i] = pt[i] - node0[i];
+            this->mat[2*i + 0] = node1[i] - node0[i];
+            this->mat[2*i + 1] = node2[i] - node0[i];
         }
-        this->slvr->setMatrix(&mat[0]);
-        this->slvr->setRightHandSide(&rhs[0]);
+        this->slvr->setMatrix(this->mat);
+        this->slvr->setRightHandSide(this->rhs);
         int ier = this->slvr->solve();
         if (ier > 0) {
             // singular system, likely degenerate triangle
@@ -189,16 +190,14 @@ struct SgQuadIntersect_type {
                                             const double edge2Point0[],
                                             const double edge2Point1[],
                                             double pt[]) {
-        std::vector<double> mat(2 * 2);
-        std::vector<double> rhs(2);
         // edge1Point0 + xi*(edge1Point1 - edge1Point0) = edge2Point0 + eta*(edge2Point1 - edge2Point0)
         for (size_t i = 0; i < 2; ++i) {
-            rhs[i] = edge2Point0[i] - edge1Point0[i];
-            mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
-            mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
+            this->rhs[i] = edge2Point0[i] - edge1Point0[i];
+            this->mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
+            this->mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
         }
-        this->slvr->setMatrix(&mat[0]);
-        this->slvr->setRightHandSide(&rhs[0]);
+        this->slvr->setMatrix(this->mat);
+        this->slvr->setRightHandSide(this->rhs);
         int ier = this->slvr->solve();
         if (ier > 0) {
             // singular system, likely because the two edges are parallel 

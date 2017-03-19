@@ -8,24 +8,26 @@
 #include <iostream>
 #include "SgConserveInterp2D.h"
 #include "createGrids2D.h"
-#include "CmdLineArgParser.h"
 
-bool testPolar(const int srcDims[], const int dstDims[]) {
+
+bool testPolar() {
 
     // source grid
-    const double srcXmins[] = {-1., -1.};
-    const double srcXmaxs[] = {1., 1.};
-    const int periodicity[] = {0, 1};
+    const int srcDims[] = {11, 41};
+    const double center[] = {0., 0.};
+    const double radius = sqrt(2.0);
     int srcNumPoints = srcDims[0] * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
-    createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
+    createPolarGrid(srcDims, center, radius, srcCoords);    
 
     // destination grid
-    const double center[] = {0., 0.};
-    const double radius = 1.0;
+    const int dstDims[] = {101, 201}; // number of nodes
+    const double dstXmins[] = {-1., -1.};
+    const double dstXmaxs[] = {1., 1.};
+    const int periodicity[] = {0, 1};
     int dstNumPoints = dstDims[0] * dstDims[1];
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
-    createPolarGrid(dstDims, center, radius, dstCoords);    
+    createRectangularGrid(dstDims, dstXmins, dstXmaxs, dstCoords);
 
     SgConserveInterp2D_type* interp = NULL;
     SgConserveInterp2D_new(&interp);
@@ -83,27 +85,7 @@ bool testPolar(const int srcDims[], const int dstDims[]) {
 
 int main(int argc, char** argv) {
 
-    CmdLineArgParser prsr;
-    prsr.set("--src_nj", 101, "Number of source grid latitudes");
-    prsr.set("--src_ni", 201, "Number of source grid longitudes");
-    prsr.set("--dst_nj", 21, "Number of destination grid latitudes");
-    prsr.set("--dst_ni", 21, "Number of destination grid longitudes");
-    prsr.parse(argc, argv);
-
-    if (prsr.get<bool>("-h") || prsr.get<bool>("--help")) {
-        prsr.help();
-        return 1;
-    }
-
-    int src_nj = prsr.get<int>("--src_nj");
-    int src_ni = prsr.get<int>("--src_ni");
-    int dst_nj = prsr.get<int>("--dst_nj");
-    int dst_ni = prsr.get<int>("--dst_ni");
-
-    int srcNodeDims[] = {src_nj, src_ni};
-    int dstNodeDims[] = {dst_nj, dst_ni};
-
-    if (!testPolar(srcNodeDims, dstNodeDims)) return 1;
+    if (!testPolar()) return 1;
 
     std::cout << "SUCCESS\n";
     return 0;

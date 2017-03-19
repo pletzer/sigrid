@@ -94,24 +94,34 @@ def findLibrary(dirs, name):
   return ''
 
 # Get LAPACK and BLAS. If not set then search common locations
-dirs = ('/usr/local/lib', '/usr/lib', '/usr/lib64')
-lapack_libraries = os.environ.get('LAPACK_LIBRARIES', findLibrary(dirs, 'lapack'
-))
-blas_libraries = os.environ.get('BLAS_LIBRARIES', findLibrary(dirs, 'blas'))
+dirs = (os.path.dirname(sys.executable) + '/../lib', '/usr/local/lib', '/usr/lib', '/usr/lib64')
+blas_libraries = []
+# prefer MKL
+USE_MKL = True
+lapack_libraries = findLibrary(dirs, 'mkl_core')
+if not lapack_libraries:
+  USE_MKL = False
+  lapack_libraries = os.environ.get('LAPACK_LIBRARIES', findLibrary(dirs, 'lapack'))
+  blas_libraries = os.environ.get('BLAS_LIBRARIES', findLibrary(dirs, 'blas'))
+  if not blas_libraries:
+    print('ERROR: could not find blas -- set environment variable BLAS_LIBRARIES and rerun')
+    sys.exit(2)
+else:
+  print('INFO: using MKL libraries')
 
 if not lapack_libraries:
   print('ERROR: could not find lapack -- set environment variable LAPACK_LIBRARIES and rerun')
   sys.exit(1)
 
-if not blas_libraries:
-  print('ERROR: could not find blas -- set environment variable BLAS_LIBRARIES and rerun')
-  sys.exit(2)
-
 lapack_dir, lapack_lib = breakLibraryPath(lapack_libraries)
-blas_dir, blas_lib = breakLibraryPath(blas_libraries)
-
-libdirs = [lapack_dir, blas_dir]
-libs = [lapack_lib, blas_lib]
+libdirs = [lapack_dir]
+libs = [lapack_lib]
+if USE_MKL:
+  libs += ['mkl_sequential', 'mkl_rt']
+if blas_libraries:
+  blas_dir, blas_lib = breakLibraryPath(blas_libraries)
+  libdirs += [blas_dir]
+  libs += [blas_lib]
 
 # list all the directories that contain source file to be compiled 
 # into a shared library
