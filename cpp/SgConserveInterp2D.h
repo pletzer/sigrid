@@ -159,12 +159,6 @@ struct SgConserveInterp2D_type {
 		// cache edges that are known not to intersect
 		std::set< std::pair< std::vector<size_t>, std::vector<size_t> > > cacheEdgeNoX;
 
-		// cache the dst node in src cell points
-		std::map< std::vector<size_t>, std::vector<double> > cacheDstNodeInSrcCell;
-
-		// cache the src node in dst cell points
-		std::map< std::vector<size_t>, std::vector<double> > cacheSrcNodeInDstCell;
-
 		int numIntersectPoints;
 		std::vector<double> point(NDIMS_2D_PHYS); // edge to edge intersection point
 		SgQuadIntersect_type intersector;
@@ -221,21 +215,11 @@ struct SgConserveInterp2D_type {
 
             		dstNodeIndxSrcCellIndx[0] = dstNodeA;
             		dstNodeIndxSrcCellIndx[1] = srcIndx;
-            		//std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		//    it1 = cacheDstNodeInSrcCell.find(dstNodeIndxSrcCellIndx);
-            		//if (it1 != cacheDstNodeInSrcCell.end()) {
-            		//	// we've already checked this
-            		//	intersector.addPoint(pA);
-            		//}
-            		//else {
-            			// first time
-            			bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
-            			if (ret) {
-            				intersector.addPoint(pA);
-            				//std::pair< std::vector<size_t>, std::vector<double> > p(dstNodeIndxSrcCellIndx, pA);
-            				//cacheDstNodeInSrcCell.insert(p);
-            			}
-            		//}
+
+            		bool ret = intersector.isPointInCell(dstCoordA, srcQuadCoords);
+            		if (ret) {
+            			intersector.addPoint(pA);
+            		}
             		
 
             		// iterate over the src cell edges and nodes
@@ -255,52 +239,28 @@ struct SgConserveInterp2D_type {
 
                 		dstCellIndxSrcNodeIndx[0] = dstIndx;
                 		dstCellIndxSrcNodeIndx[1] = srcNodeA;
-            			//std::map< std::vector<size_t>, std::vector<double> >::const_iterator 
-            		    //	it2 = cacheSrcNodeInDstCell.find(dstCellIndxSrcNodeIndx);
-            			//if (it2 != cacheSrcNodeInDstCell.end()) {
-            				// we've already checked this
-            			//	intersector.addPoint(qA);
-            			//}
-            			//else {
-            				// first time
-            				bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
-            				if (ret) {
-            					intersector.addPoint(qA);
-            					//std::pair< std::vector<size_t>, std::vector<double> > p(dstCellIndxSrcNodeIndx, qA);
-            					//cacheSrcNodeInDstCell.insert(p);
-            				}
-            			//}
+
+            			bool ret = intersector.isPointInCell(srcCoordA, dstQuadCoords);
+            			if (ret) {
+            				intersector.addPoint(qA);
+            			}
 
                 		std::pair< std::vector<size_t>, std::vector<size_t> > dstSrcEdges(dstE, srcE);
 
-                		//if (cacheEdgeNoX.find(dstSrcEdges) != cacheEdgeNoX.end()) {
-                		//	// we already know there is no intersection, move on
-                		//	continue;
-                		//}
+                		// let's see if there is an intersection
+                		int numX = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
+                                                                              srcCoordA, srcCoordB,
+                                                                              &point[0]);
 
-                		///std::map< std::pair< std::vector<size_t>, std::vector<size_t> >, std::vector<double> >::const_iterator 
-                		///    it = cacheEdgeX.find(dstSrcEdges);
-                		///if (cacheEdgeX.find(dstSrcEdges) != cacheEdgeX.end()) {
-                		///	// we already know what the intersection point is
-                		///	intersector.addPoint(it->second);
-                		///}
-                		///else {
-                			// let's see if there is an intersection
-                			ret = intersector.collectEdgeToEdgeIntersectionPoints(dstCoordA, dstCoordB,
-                                                                                      srcCoordA, srcCoordB,
-                                                                                      &point[0]);
-
-                			if (ret == 0) {
-                				// no intersection
-                				cacheEdgeNoX.insert(dstSrcEdges);
-                			}
-                			else if (ret == 1) {
-                				// intersection, cache result for subsequent use
-                				std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
-                				cacheEdgeX.insert(p);
-                			}
-                		///}
-
+                		if (numX == 0) {
+                			// no intersection
+                			cacheEdgeNoX.insert(dstSrcEdges);
+                		}
+                		else if (numX == 1) {
+                			// intersection, cache result for subsequent use
+                			std::pair< std::pair<std::vector<size_t>, std::vector<size_t> >, std::vector<double> > p(dstSrcEdges, point);
+                			cacheEdgeX.insert(p);
+                		}
           			}
         		}
 
