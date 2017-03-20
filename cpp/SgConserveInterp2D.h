@@ -225,14 +225,7 @@ struct SgConserveInterp2D_type {
 		// iterate over the dst cells
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
-<<<<<<< HEAD
 			this->getDstQuadCoord(dstIndx, offset, dstNodeInds, dstQuadCoords);
-=======
-			// get the dst cell nodes
-			for (size_t j = 0; j < 4; ++j) {
-				this->getDstQuadCoord(dstIndx, &offsets[j*2], &dstNodeInds[j], &dstQuadCoords[j*NDIMS_2D_PHYS]);
-			}
->>>>>>> 6954b5a385f3cfd48c536f404a0308a17012cc79
 
 			// compute the dst cell area
 			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
