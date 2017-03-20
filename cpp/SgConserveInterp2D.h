@@ -182,9 +182,7 @@ struct SgConserveInterp2D_type {
 		// iterate over the dst cells
 		for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
-			for (size_t i = 0; i < 4; ++i) {
-				this->getDstQuadCoord(dstIndx, &offset[i*NDIMS_2D_TOPO], &dstNodeInds[i], &dstQuadCoords[i*NDIMS_2D_PHYS]);
-		    }
+			this->getDstQuadCoord(dstIndx, offset, dstNodeInds, dstQuadCoords);
 
 			// compute the dst cell area
 			SgTriangulate_type dstTriangulator(4, dstQuadCoords);
@@ -196,9 +194,7 @@ struct SgConserveInterp2D_type {
 			indWght.reserve(100);
 			for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
-				for (size_t i = 0; i < 4; ++i) {
-					this->getSrcQuadCoord(srcIndx, &offset[i*NDIMS_2D_PHYS], &srcNodeInds[i], &srcQuadCoords[i*NDIMS_2D_PHYS]);
-				}
+				this->getSrcQuadCoord(srcIndx, offset, srcNodeInds, srcQuadCoords);
 
 				intersector.reset();
 				intersector.setQuadPoints(dstQuadCoords, srcQuadCoords);
@@ -382,58 +378,69 @@ private:
     /** 
 	 * Extract the destination cell coordinates from the grid
 	 * @param indx cell flat index
-	 * @param offset displacement from the above node
-	 * @param nodeIndx grid node index (output)
-	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
+	 * @param offset list of displacements from the above node, one per node, going counterclockwise
+	 * @param nodeIndx array of size 4 for the grid node indices (output)
+	 * @param coords array of size 4*NDIMS_2D_PHYS to be filled in 
 	 */
-	void getDstQuadCoord(size_t indx, const int offset[], size_t* nodeIndx, double coords[]) const {
+	void getDstQuadCoord(size_t indx, const int offset[], size_t nodeIndx[], double coords[]) const {
 
-		// compute the index set of the cell and add the offset
 		size_t cellIndsOffset[NDIMS_2D_TOPO];
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-    		cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
-    		cellIndsOffset[j] += offset[j];
-  		}
 
-  		// compute the low-corner flat index of the node coorresponding to this cell
-  		*nodeIndx = 0;
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-			*nodeIndx += this->dstNodeDimProd[j] * cellIndsOffset[j];
-		}
+		// iterate over the quad's nodes
+		for (size_t i = 0; i < 4; ++i) {
 
-		// fill in the node's coordinates
-		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-			coords[j] = this->dstGrdCoords[*nodeIndx * NDIMS_2D_PHYS + j];
+			// compute the index set of the cell and add the offset
+			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+    			cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
+    			cellIndsOffset[j] += offset[i*NDIMS_2D_TOPO + j];
+  			}
+
+  			// compute the low-corner flat index of the node coorresponding to this cell
+  			nodeIndx[i] = 0;
+			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+				nodeIndx[i] += this->dstNodeDimProd[j] * cellIndsOffset[j];
+			}
+
+			// fill in the node's coordinates
+			for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+				coords[i*NDIMS_2D_PHYS + j] = this->dstGrdCoords[nodeIndx[i]*NDIMS_2D_PHYS + j];
+			}
 		}
 	}
 
-	/** 
+    /** 
 	 * Extract the source cell coordinates from the grid
-	 * @param indx nodal flat index
-	 * @param offset displacement from the above node
-	 * @param nodeIndx grid node index (output)
-	 * @param coords array of size NDIMS_2D_PHYS to be filled in 
+	 * @param indx cell flat index
+	 * @param offset list of displacements from the above node, one per node, going counterclockwise
+	 * @param nodeIndx array of size 4 for the grid node indices (output)
+	 * @param coords array of size 4*NDIMS_2D_PHYS to be filled in 
 	 */
-	void getSrcQuadCoord(size_t indx, const int offset[], size_t* nodeIndx, double coords[]) const {
+	void getSrcQuadCoord(size_t indx, const int offset[], size_t nodeIndx[], double coords[]) const {
 
-		// compute the index set of the cell and add the offset
 		size_t cellIndsOffset[NDIMS_2D_TOPO];
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-    		cellIndsOffset[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
-    		cellIndsOffset[j] += offset[j];
-  		}
 
-  		// compute the low-corner flat index of the node coorresponding to this cell
-  		*nodeIndx = 0;
-		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-			*nodeIndx += this->srcNodeDimProd[j] * cellIndsOffset[j];
-		}
+		// iterate over the quad's nodes
+		for (size_t i = 0; i < 4; ++i) {
 
-		// fill in the node's coordinates
-		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-			coords[j] = this->srcGrdCoords[*nodeIndx * NDIMS_2D_PHYS + j];
+			// compute the index set of the cell and add the offset
+			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+    			cellIndsOffset[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
+    			cellIndsOffset[j] += offset[i*NDIMS_2D_TOPO + j];
+  			}
+
+  			// compute the low-corner flat index of the node coorresponding to this cell
+  			nodeIndx[i] = 0;
+			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+				nodeIndx[i] += this->srcNodeDimProd[j] * cellIndsOffset[j];
+			}
+
+			// fill in the node's coordinates
+			for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+				coords[i*NDIMS_2D_PHYS + j] = this->srcGrdCoords[nodeIndx[i]*NDIMS_2D_PHYS + j];
+			}
 		}
 	}
+
 
 };
  
