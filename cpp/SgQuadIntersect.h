@@ -34,12 +34,6 @@ struct SgQuadIntersect_type {
     double mat[2 * 2];
     double rhs[2];
 
-    // the quad corner points
-    double quad1Min[2];
-    double quad1Max[2];
-    double quad2Min[2];
-    double quad2Max[2];
-
     /**
      * Constructor
      */
@@ -62,30 +56,26 @@ struct SgQuadIntersect_type {
      * Check if the boxes containg the two quads overlap
      * @return true if they overlap, false otherwise
      */
-    bool checkIfBoxesOverlap() {
+    inline bool checkIfBoxesOverlap() {
 
-        // initialize the box min/max coordinates
-        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            this->quad1Min[j] = std::numeric_limits<double>::infinity();
-            this->quad2Min[j] = std::numeric_limits<double>::infinity();
-            this->quad1Max[j] = -std::numeric_limits<double>::infinity();
-            this->quad2Max[j] = -std::numeric_limits<double>::infinity();
-            for (size_t k = 0; k < 4; ++k) { // 4 nodes
-                size_t i = NDIMS_2D_PHYS*k + j;
-                this->quad1Min[j] = std::min(this->quad1Coords[i], this->quad1Min[j]);
-                this->quad2Min[j] = std::min(this->quad2Coords[i], this->quad2Min[j]);
-                this->quad1Max[j] = std::max(this->quad1Coords[i], this->quad1Max[j]);
-                this->quad2Max[j] = std::max(this->quad2Coords[i], this->quad2Max[j]);                
-            }
+      bool overlap = true;
+      for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        double quad1Min = +std::numeric_limits<double>::infinity();
+        double quad2Min = +std::numeric_limits<double>::infinity();
+        double quad1Max = -std::numeric_limits<double>::infinity();
+        double quad2Max = -std::numeric_limits<double>::infinity();
+        for (size_t i = 0; i < 4; ++i) { // 4 nodes
+          size_t k = i*NDIMS_2D_PHYS + j;
+          quad1Min = std::min(this->quad1Coords[k], quad1Min);
+          quad2Min = std::min(this->quad2Coords[k], quad2Min);
+          quad1Max = std::max(this->quad1Coords[k], quad1Max);
+          quad2Max = std::max(this->quad2Coords[k], quad2Max);  
         }
-
         // overlap is when the min of the high corner points is higher than the max
         // of the low corner points
-        bool overlap = true;
-        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            overlap &= std::min(quad1Max[j], quad2Max[j]) >= std::max(quad1Min[j], quad2Min[j]);
-        }
-        return overlap;
+        overlap &= std::min(quad1Max, quad2Max) >= std::max(quad1Min, quad2Min);
+      }
+      return overlap;
     }
 
     /**
