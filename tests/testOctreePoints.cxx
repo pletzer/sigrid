@@ -13,6 +13,7 @@ bool testSimple(size_t numLevels) {
 
     // number of dimensions
     const size_t ndims = 2;
+    std::vector<size_t> key(ndims);
 
     // one cell
     size_t nx = 2;
@@ -35,87 +36,108 @@ bool testSimple(size_t numLevels) {
     // check getKey
     double pt[] = {0., 0.};
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.; pt[1] = 0.;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 0);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.1; pt[1] = 0.2;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 0);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.51; pt[1] = 0.2;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 2);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.51; pt[1] = 0.53;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 3);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.49; pt[1] = 0.53;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 1);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.99; pt[1] = 0.01;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 2);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.99; pt[1] = 0.0;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 2);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 1.0; pt[1] = 0.0;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 2);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 1.0; pt[1] = 1.0;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 3);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         pt[0] = 0.0; pt[1] = 1.0;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 1);
+        assert(indomain);
     }
 
     // 2 levels
     {
+        std::vector<size_t> key(2, 0);
         pt[0] = 0.0; pt[1] = 0.0;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
+        bool indomain = octree.getKey(pt, (size_t) 2, key);
         assert(key[0] == 0);
         assert(key[1] == 0);
+        assert(indomain);
     }
     {
         // outside domain
+        std::vector<size_t> key(2, 0);
         pt[0] = 0.0; pt[1] = 1.1;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
-        assert(key[0] == 1);
-        assert(key[1] == 1);
+        bool indomain = octree.getKey(pt, (size_t) 2, key);
+        assert(!indomain);
     }
     {
         // outside domain
+        std::vector<size_t> key(2, 0);
         pt[0] = -0.1; pt[1] = -0.05;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
-        assert(key[0] == 0);
-        assert(key[1] == 0);
+        bool indomain = octree.getKey(pt, (size_t) 2, key);
+        assert(!indomain);
     }
     {
         // outside domain
+        std::vector<size_t> key(2, 0);
         pt[0] = -0.1; pt[1] = 0.26;
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
-        assert(key[0] == 0);
-        assert(key[1] == 1);
+        bool indomain = octree.getKey(pt, (size_t) 2, key);
+        assert(!indomain);
     }
 
     return true;
-
 }
 
 
@@ -181,44 +203,58 @@ bool testCart(size_t numLevels, size_t nx, size_t ny) {
 
     // check the key obtained from point
     {
+        std::vector<size_t> key(1, 0);
         const double pt[] = {0., 0.};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 0);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         const double pt[] = {0.6, 0.};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 2);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         const double pt[] = {0.6, 0.7};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 3);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(1, 0);
         const double pt[] = {0.4, 0.7};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 1);
+        bool indomain = octree.getKey(pt, (size_t) 1, key);
         assert(key[0] == 1);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(2, 0);
         const double pt[] = {0.4, 0.7};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 2);
+        bool indomain = octree.getKey(pt, (size_t) 2, key);
         assert(key[0] == 1);
         assert(key[1] == 2);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(3, 0);
         const double pt[] = {0.4, 0.7};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 3);
+        bool indomain = octree.getKey(pt, (size_t) 3, key);
         assert(key[0] == 1);
         assert(key[1] == 2);
         assert(key[2] == 3);
+        assert(indomain);
     }
     {
+        std::vector<size_t> key(3, 0);
         const double pt[] = {0.99, 0.01};
-        std::vector<size_t> key = octree.getKey(pt, (size_t) 3);
+        bool indomain = octree.getKey(pt, (size_t) 3, key);
         assert(key[0] == 2);
         assert(key[1] == 2);
         assert(key[2] == 2);
+        assert(indomain);
     }
 
     return true;

@@ -76,8 +76,9 @@ SgOctreePoints_type(size_t numLevels, size_t ndims, const std::vector<double>& p
 
     // attach each point to a sub-box
     size_t numPoints = points.size() / ndims;
+    key.resize(numLevels, 0);
     for (size_t i = 0; i < numPoints; ++i) {
-        std::vector<size_t> key = this->getKey(&points[i*ndims], this->nlevs);
+        this->getKey(&points[i*ndims], this->nlevs, key);
         this->node2Key.insert(std::pair<size_t, std::vector<size_t> >(i, key));
     }
 }
@@ -120,29 +121,39 @@ const std::vector<double>& getHi(const std::vector<size_t>& key) const {
  * Get the key associated with a point
  * @param pt point
  * @param lev level
- * @return key, array of integers in the range 0...2^ndims - 1
+ * @param key, array of integers in the range 0...2^ndims - 1
+ * @return true if key is valid, ie pt is in domain
  */
-std::vector<size_t> getKey(const double* pt, size_t lev) {
+bool getKey(const double* pt, size_t lev, std::vector<size_t>& key) {
+
+    bool res = true;
+    const double eps = 10 * std::numeric_limits<double>::epsilon();
 
     // normalize
     std::vector<double> x(pt, pt + this->ndims);
     for (size_t j = 0; j < this->ndims; ++j) {
         // xmaxs should be > xmins
         double len = this->xmaxs[j] - this->xmins[j];
-        x[j] = std::min(1., std::max(0., (pt[j] - this->xmins[j])/len));
+        x[j] = (pt[j] - this->xmins[j])/len;
+        res &= x[j] > -eps;
+        res &= x[j] <= 1.0 + eps;
     }
-    std::vector<size_t> key(lev, 0);
-    std::vector<double> xbase(this->ndims, 0.0);
+
+    key.assign(lev, 0);
+    std::vector<size_t> ibase(this->ndims, 0);
     for (size_t el = 0; el < lev; ++el) {
         double fact = pow(2, el + 1);
         for (size_t j = 0; j < this->ndims; ++j) {
-            size_t indx = (size_t) std::min(1.0, std::max(0.0, floor((x[j] - xbase[j])*fact)));
-            xbase[j] += (double) indx / fact;
+            double ifloor = floor(x[j]*fact - (double) ibase[j]);
+            // indx must be either 0 or 1
+            size_t indx = (size_t) std::min(1.0, std::max(0.0, ifloor));
+            ibase[j] += indx;
             // flat index
             key[el] += this->prodDims[j] * indx;
         }   
     }
-    return key;
+
+    return res;
 }
 
 /**
