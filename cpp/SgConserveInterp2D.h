@@ -384,21 +384,18 @@ private:
 	 */
 	void getDstQuadCoord(size_t indx, const int offset[], size_t nodeIndx[], double coords[]) const {
 
-		size_t cellIndsOffset[NDIMS_2D_TOPO];
+		size_t cellInds[NDIMS_2D_TOPO];
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+    		cellInds[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
+  		}
 
 		// iterate over the quad's nodes
 		for (size_t i = 0; i < 4; ++i) {
 
-			// compute the index set of the cell and add the offset
-			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-    			cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
-    			cellIndsOffset[j] += offset[i*NDIMS_2D_TOPO + j];
-  			}
-
   			// compute the low-corner flat index of the node coorresponding to this cell
   			nodeIndx[i] = 0;
 			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-				nodeIndx[i] += this->dstNodeDimProd[j] * cellIndsOffset[j];
+				nodeIndx[i] += this->dstNodeDimProd[j]*(cellInds[j] + offset[i*NDIMS_2D_TOPO + j]);
 			}
 
 			// fill in the node's coordinates
@@ -417,21 +414,18 @@ private:
 	 */
 	void getSrcQuadCoord(size_t indx, const int offset[], size_t nodeIndx[], double coords[]) const {
 
-		size_t cellIndsOffset[NDIMS_2D_TOPO];
+		size_t cellInds[NDIMS_2D_TOPO];
+		for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
+    		cellInds[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
+  		}
 
 		// iterate over the quad's nodes
 		for (size_t i = 0; i < 4; ++i) {
 
-			// compute the index set of the cell and add the offset
-			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-    			cellIndsOffset[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
-    			cellIndsOffset[j] += offset[i*NDIMS_2D_TOPO + j];
-  			}
-
   			// compute the low-corner flat index of the node coorresponding to this cell
   			nodeIndx[i] = 0;
 			for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-				nodeIndx[i] += this->srcNodeDimProd[j] * cellIndsOffset[j];
+				nodeIndx[i] += this->srcNodeDimProd[j]*(cellInds[j] + offset[i*NDIMS_2D_TOPO + j]);
 			}
 
 			// fill in the node's coordinates
