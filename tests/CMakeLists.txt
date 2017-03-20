@@ -28,8 +28,8 @@ target_link_libraries(testOctreePoints_CXX sigrid)
 add_executable(testFindPointInCellRotatedPole testFindPointInCellRotatedPole.cxx)
 target_link_libraries(testFindPointInCellRotatedPole sigrid sgutils)
 
-add_executable(testQuadIntersect_CXX testQuadIntersect.cxx)
-target_link_libraries(testQuadIntersect_CXX sigrid)
+add_executable(testQuadLineIntersect_CXX testQuadLineIntersect.cxx)
+target_link_libraries(testQuadLineIntersect_CXX sigrid)
 
 add_executable(testLinearSolve_CXX testLinearSolve.cxx)
 target_link_libraries(testLinearSolve_CXX sigrid)
@@ -42,6 +42,9 @@ target_link_libraries(testQuadOverlap_CXX sigrid)
 
 add_executable(testConserveInterp2D_CXX testConserveInterp2D.cxx)
 target_link_libraries(testConserveInterp2D_CXX sigrid sgutils)
+
+add_executable(testFlowInterp2D_CXX testFlowInterp2D.cxx)
+target_link_libraries(testFlowInterp2D_CXX sigrid sgutils)
 
 add_executable(testNodeInterp2D_CXX testNodeInterp2D.cxx)
 target_link_libraries(testNodeInterp2D_CXX sigrid sgutils)
@@ -88,11 +91,18 @@ add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointI
 add_test(testOctreePoints_CXX ${CMAKE_BINARY_DIR}/tests/testOctreePoints_CXX)
 add_test(testLinearSolve_CXX ${CMAKE_BINARY_DIR}/tests/testLinearSolve_CXX)
 add_test(testQuadIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadIntersect_CXX)
+add_test(testQuadLineIntersect_CXX ${CMAKE_BINARY_DIR}/tests/testQuadLineIntersect_CXX)
 add_test(testTriangulate_CXX ${CMAKE_BINARY_DIR}/tests/testTriangulate_CXX)
 add_test(testQuadOverlap_CXX ${CMAKE_BINARY_DIR}/tests/testQuadOverlap_CXX)
 add_test(testConserveInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterp2D_CXX)
+add_test(testFlowInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testFlowInterp2D_CXX)
 add_test(testNodeInterp2D_CXX ${CMAKE_BINARY_DIR}/tests/testNodeInterp2D_CXX)
-add_test(testConserveInterp2DBig_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterp2DBig_CXX)
+add_test(testConserveInterp2DBig1 ${CMAKE_BINARY_DIR}/tests/testConserveInterp2DBig_CXX 
+        --src_nj 101 --src_ni 201 --dst_nj 21 --dst_ni 41)
+add_test(testConserveInterp2DBig2 ${CMAKE_BINARY_DIR}/tests/testConserveInterp2DBig_CXX 
+        --src_nj 101 --src_ni 201 --dst_nj 41 --dst_ni 81)
+add_test(testConserveInterp2DBig3 ${CMAKE_BINARY_DIR}/tests/testConserveInterp2DBig_CXX 
+        --src_nj 101 --src_ni 201 --dst_nj 81 --dst_ni 161)
 add_test(testConserveInterpDisk_CXX ${CMAKE_BINARY_DIR}/tests/testConserveInterpDisk_CXX)
 add_test(testFindOverlappingCells2D_CXX ${CMAKE_BINARY_DIR}/tests/testFindOverlappingCells2D_CXX)
 add_test(testSideIterator_CXX ${CMAKE_BINARY_DIR}/tests/testSideIterator_CXX)

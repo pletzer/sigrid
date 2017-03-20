@@ -10,8 +10,10 @@ set(LIB_FILES
   SgLine.cpp
   SgFindPointInCell.cpp
   SgQuadIntersect.cpp
+  SgQuadLineIntersect.cpp
   SgTriangulate.cpp
   SgConserveInterp2D.cpp
+  SgFlowInterp2D.cpp
   SgNodeInterp2D.cpp
   SgFindOverlappingCells2D.cpp
   SgOctreePoints.cpp
@@ -26,8 +28,10 @@ set(HEADER_FILES
   SgNdims.h
   SgFindPointInCell.h
   SgQuadIntersect.h
+  SgQuadLineIntersect.h
   SgTriangulate.h
   SgConserveInterp2D.h
+  SgFlowInterp2D.h
   SgNodeInterp2D.h
   SgFindOverlappingCells2D.h
   SgSideIterator.h

@@ -30,6 +30,10 @@ struct SgQuadIntersect_type {
     // or a point is within a triangle
     double tol;
 
+    // for finding intersections of edges
+    double mat[2 * 2];
+    double rhs[2];
+
     /**
      * Constructor
      */
@@ -52,37 +56,26 @@ struct SgQuadIntersect_type {
      * Check if the boxes containg the two quads overlap
      * @return true if they overlap, false otherwise
      */
-    bool checkIfBoxesOverlap() {
+    inline bool checkIfBoxesOverlap() {
 
-        // initialize the box min/max coordinates
-        std::vector<double> quad1Min(2, std::numeric_limits<double>::infinity());
-        std::vector<double> quad1Max(2, -std::numeric_limits<double>::infinity());
-        std::vector<double> quad2Min(2, std::numeric_limits<double>::infinity());
-        std::vector<double> quad2Max(2, -std::numeric_limits<double>::infinity());
-
-         // find each quad's box corner points
+      bool overlap = true;
+      for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+        double quad1Min = +std::numeric_limits<double>::infinity();
+        double quad2Min = +std::numeric_limits<double>::infinity();
+        double quad1Max = -std::numeric_limits<double>::infinity();
+        double quad2Max = -std::numeric_limits<double>::infinity();
         for (size_t i = 0; i < 4; ++i) { // 4 nodes
-            for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {  // 2 dims
-
-                size_t k = i*NDIMS_2D_PHYS + j;
-
-                // quad 1
-                quad1Min[j] = std::min(this->quad1Coords[k], quad1Min[j]);
-                quad1Max[j] = std::max(this->quad1Coords[k], quad1Max[j]);
-
-                // quad 2
-                quad2Min[j] = std::min(this->quad2Coords[k], quad2Min[j]);
-                quad2Max[j] = std::max(this->quad2Coords[k], quad2Max[j]);
-            }
+          size_t k = i*NDIMS_2D_PHYS + j;
+          quad1Min = std::min(this->quad1Coords[k], quad1Min);
+          quad2Min = std::min(this->quad2Coords[k], quad2Min);
+          quad1Max = std::max(this->quad1Coords[k], quad1Max);
+          quad2Max = std::max(this->quad2Coords[k], quad2Max);  
         }
-
         // overlap is when the min of the high corner points is higher than the max
         // of the low corner points
-        bool overlap = true;
-        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            overlap &= std::min(quad1Max[j], quad2Max[j]) >= std::max(quad1Min[j], quad2Min[j]);
-        }
-        return overlap;
+        overlap &= std::min(quad1Max, quad2Max) >= std::max(quad1Min, quad2Min);
+      }
+      return overlap;
     }
 
     /**
@@ -98,16 +91,14 @@ struct SgQuadIntersect_type {
                                        const double* node1,
                                        const double* node2) {
 
-        std::vector<double> mat(2 * 2);
-        std::vector<double> rhs(2);
         // x0 + xi*(x1 - x0) + eta*(x2 - x0) = pt
         for (size_t i = 0; i < 2; ++i) {
-            rhs[i] = pt[i] - node0[i];
-            mat[2*i + 0] = node1[i] - node0[i];
-            mat[2*i + 1] = node2[i] - node0[i];
+            this->rhs[i] = pt[i] - node0[i];
+            this->mat[2*i + 0] = node1[i] - node0[i];
+            this->mat[2*i + 1] = node2[i] - node0[i];
         }
-        this->slvr->setMatrix(&mat[0]);
-        this->slvr->setRightHandSide(&rhs[0]);
+        this->slvr->setMatrix(this->mat);
+        this->slvr->setRightHandSide(this->rhs);
         int ier = this->slvr->solve();
         if (ier > 0) {
             // singular system, likely degenerate triangle
@@ -189,16 +180,14 @@ struct SgQuadIntersect_type {
                                             const double edge2Point0[],
                                             const double edge2Point1[],
                                             double pt[]) {
-        std::vector<double> mat(2 * 2);
-        std::vector<double> rhs(2);
         // edge1Point0 + xi*(edge1Point1 - edge1Point0) = edge2Point0 + eta*(edge2Point1 - edge2Point0)
         for (size_t i = 0; i < 2; ++i) {
-            rhs[i] = edge2Point0[i] - edge1Point0[i];
-            mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
-            mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
+            this->rhs[i] = edge2Point0[i] - edge1Point0[i];
+            this->mat[2*i + 0] = edge1Point1[i] - edge1Point0[i];
+            this->mat[2*i + 1] = edge2Point0[i] - edge2Point1[i];
         }
-        this->slvr->setMatrix(&mat[0]);
-        this->slvr->setRightHandSide(&rhs[0]);
+        this->slvr->setMatrix(this->mat);
+        this->slvr->setRightHandSide(this->rhs);
         int ier = this->slvr->solve();
         if (ier > 0) {
             // singular system, likely because the two edges are parallel 
@@ -229,7 +218,7 @@ struct SgQuadIntersect_type {
 
 
     /**
-     * Collect all the interstion points
+     * Collect all the intersection points
      * @param numPoints number of points (output)
      * @param points flat array of points (output)
      */
@@ -238,7 +227,6 @@ struct SgQuadIntersect_type {
         *numPoints = 0;
         double pt[NDIMS_2D_PHYS];
 
-        // seems like the quads are at least partially overlapping 
         this->collectNodesInsideQuad((const double*)this->quad1Coords, 
                                      (const double*)this->quad2Coords);
         this->collectNodesInsideQuad((const double*)this->quad2Coords,
