@@ -229,7 +229,7 @@ private:
   		size_t nodeIndx = this->dstNodeDimProd[0] * cellIndsOffset[0];
 
 		// fill in the node's coordinates
-		for (size_t j = 0; j < NDIMS_1D_PHYS; ++j) {
+		for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
 			coords[j] = this->dstGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
 		}
 	}

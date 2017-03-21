@@ -36,7 +36,7 @@ bool testSimple() {
         srcData[0][i] = 0;
         srcData[1][i] = 0;
     }
-    // src fluxes
+    // src fluxes. Shown below are the edge values and the ghost cells
     //   +.......+
     //   :       :
     //   :   3   :
@@ -60,7 +60,7 @@ bool testSimple() {
     i = 1; j = 0;
     srcData[1][NDIMS_2D_TOPO*j + i] = 2.0;
 
-    // no need to the ghost fluxes
+    // no need to set the ghost fluxes
 
     // destination grid, a segment
     const int dstDims[] = {2}; // number of nodes
@@ -81,6 +81,16 @@ bool testSimple() {
     SgFlowInterp2D_apply(&interp, 0, srcData[0], dstData[0]);
     SgFlowInterp2D_apply(&interp, 1, srcData[1], dstData[1]);
     SgFlowInterp2D_del(&interp);
+
+    // check flux projected onto segment
+    double deltaX = dstXmaxs[0] - dstXmins[0];
+    double deltaY = dstXmaxs[1] - dstXmins[1];
+    double avrgX = 0.5*(dstXmaxs[0] + dstXmins[0]);
+    double avrgY = 0.5*(dstXmaxs[1] + dstXmins[1]);
+    double xFlux = deltaX*avrgY*(1. + 3.);
+    double yFlux = deltaY*avrgX*(2. + 4.);
+    std::cout << "Flux in x: " << dstData[0][0] << " expected: " << xFlux << " error: " << dstData[0][0] - xFlux << '\n';
+    std::cout << "Flux in y: " << dstData[1][0] << " expected: " << yFlux << " error: " << dstData[1][0] - yFlux << '\n';
 
     // clean up
     for (size_t j = 0; j < 2; ++j) {
