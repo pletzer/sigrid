@@ -213,18 +213,16 @@ private:
     void getDstLineCoord(size_t indx, int offset, double coords[]) const {
 
         // compute the index set of the cell and add the offset
-        size_t cellIndsOffset[NDIMS_1D_TOPO];
-        for (size_t j = 0; j < NDIMS_1D_TOPO; ++j) {
-            cellIndsOffset[j] = indx / this->dstCellDimProd[j] % this->dstCellDims[j];
-            cellIndsOffset[j] += offset;
-          }
+        size_t cellIndsOffset;
+        cellIndsOffset = indx / this->dstCellDimProd[0] % this->dstCellDims[0];
+        cellIndsOffset += offset;
 
-          // compute the low-corner flat index of the node coorresponding to this cell
-          size_t nodeIndx = this->dstNodeDimProd[0] * cellIndsOffset[0];
+        // compute the low-corner flat index of the node coorresponding to this cell
+        size_t nodeIndx = this->dstNodeDimProd[0] * cellIndsOffset;
 
         // fill in the node's coordinates
         for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            coords[j] = this->dstGrdCoords[nodeIndx * NDIMS_2D_PHYS + j];
+            coords[j] = this->dstGrdCoords[nodeIndx*NDIMS_2D_PHYS + j];
         }
     }
 
