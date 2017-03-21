@@ -41,20 +41,14 @@ bool testSimple() {
     //   |       |
     //   +-------+
     //       1
-    size_t i; 
-    size_t j;
 
     // fluxes along x edges
-    i = 0; j = 0;
-    srcData[0][NDIMS_2D_TOPO*j + i] = 1.0; // flux along x edge
-    i = 0; j = 1;
-    srcData[0][NDIMS_2D_TOPO*j + i] = 3.0;
+    srcData[0][0] = 1.0; // flux along x edge
+    srcData[0][1] = 3.0;
 
     // fluxes along y edges
-    i = 0; j = 0;
-    srcData[1][NDIMS_2D_TOPO*j + i] = 4.0;
-    i = 1; j = 0;
-    srcData[1][NDIMS_2D_TOPO*j + i] = 2.0;
+    srcData[1][0] = 4.0;
+    srcData[1][1] = 2.0;
 
     // destination grid, a segment
     const int dstDims[] = {2}; // number of nodes
@@ -83,8 +77,14 @@ bool testSimple() {
     double avrgY = 0.5*(dstXmaxs[1] + dstXmins[1]);
     double xFlux = deltaX*avrgY*(1. + 3.);
     double yFlux = deltaY*avrgX*(2. + 4.);
-    std::cout << "Flux in x: " << dstData[0][0] << " expected: " << xFlux << " error: " << dstData[0][0] - xFlux << '\n';
-    std::cout << "Flux in y: " << dstData[1][0] << " expected: " << yFlux << " error: " << dstData[1][0] - yFlux << '\n';
+    std::cout << "Flux in x: " << dstData[0][0] << 
+                 " expected: " << xFlux << 
+                 " error: " << dstData[0][0] - xFlux << '\n';
+    assert(fabs(dstData[0][0] - xFlux) < 1.e-8);
+    std::cout << "Flux in y: " << dstData[1][0] << 
+                 " expected: " << yFlux << 
+                 " error: " << dstData[1][0] - yFlux << '\n';
+    assert(fabs(dstData[1][0] - yFlux) < 1.e-8);
 
     // clean up
     for (size_t j = 0; j < 2; ++j) {
