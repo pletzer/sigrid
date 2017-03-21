@@ -19,8 +19,12 @@ struct SgFlowInterp2D_type {
     // the source grid
     int srcNodeDims[NDIMS_2D_TOPO];
     int srcCellDims[NDIMS_2D_TOPO];
+    int srcEdgeXDims[NDIMS_2D_TOPO];
+    int srcEdgeYDims[NDIMS_2D_TOPO];
     int srcNodeDimProd[NDIMS_2D_TOPO];
     int srcCellDimProd[NDIMS_2D_TOPO];
+    int srcEdgeXDimProd[NDIMS_2D_TOPO];
+    int srcEdgeYDimProd[NDIMS_2D_TOPO];
     std::vector<double> srcGrdCoords; // flat array (node, components)
     size_t srcNumPoints;
     size_t srcNumCells;
@@ -35,7 +39,7 @@ struct SgFlowInterp2D_type {
     size_t dstNumCells;
 
     // the flux integrals of x and y 2-forms
-    // {dst cell index: {src node index: [wx, wy]}}
+    // {dst cell index: {src cell index: [wXLo, wXHi, wYLo, wYHi]}}
     std::map<size_t, std::vector< std::pair<size_t, std::vector<double> > > > weights;
 
     /** 
@@ -71,16 +75,14 @@ struct SgFlowInterp2D_type {
             // last index varies fastest
             this->dstCellDimProd[j] = this->dstCellDimProd[j + 1] * this->dstCellDims[j + 1];
             this->dstNodeDimProd[j] = this->dstNodeDimProd[j + 1] * this->dstNodeDims[j + 1];
-          }
+        }
 
-          this->dstGrdCoords.resize(NDIMS_2D_PHYS * this->dstNumPoints);
-          for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-              size_t k = 0;
-              for (size_t i = 0; i < this->dstNumPoints; ++i) {
-                  this->dstGrdCoords[k*NDIMS_2D_PHYS + j] = coords[j][i];
-                  k++;
-              }
-          }
+        this->dstGrdCoords.resize(NDIMS_2D_PHYS * this->dstNumPoints);
+        for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
+            for (size_t i = 0; i < this->dstNumPoints; ++i) {
+                this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i];
+            }
+        }
     }
 
     /**
@@ -91,51 +93,39 @@ struct SgFlowInterp2D_type {
     void setSrcGrid(const int dims[], 
                     const double** coords) {
 
-        // note: we use ghost cells to the right so there is one more 
-        // cell 
-        this->srcNumPoints = (dims[0] + 1) * (dims[1] + 1);
-        this->srcNumCells = (dims[0] + 0) * (dims[1] + 0);
+        this->srcNumPoints = dims[0] * dims[1];
+        this->srcNumCells = (dims[0] - 1) * (dims[1] - 1);
 
-        this->srcNodeDims[0] = dims[0] + 1;
-        this->srcNodeDims[1] = dims[1] + 1;
-        this->srcCellDims[0] = dims[0] + 0;
-        this->srcCellDims[1] = dims[1] + 0;
+        this->srcCellDims[0] = dims[0] - 1;
+        this->srcCellDims[1] = dims[1] - 1;
+
+        this->srcEdgeXDims[0] = dims[0];     // y direction
+        this->srcEdgeXDims[1] = dims[1] - 1; // x dimension
+
+        this->srcEdgeYDims[0] = dims[0] - 1; // y direction
+        this->srcEdgeYDims[1] = dims[1];     // x dimension
+
+        this->srcNodeDims[0] = dims[0];
+        this->srcNodeDims[1] = dims[1];
 
         this->srcCellDimProd[1] = 1;
-        this->srcCellDimProd[0] = (dims[1] + 0);
-        this->srcNodeDimProd[1] = 1;
-        this->srcNodeDimProd[0] = (dims[1] + 1);
+        this->srcCellDimProd[0] = this->srcCellDims[1];
  
+        this->srcEdgeXDimProd[1] = 1;
+        this->srcEdgeXDimProd[0] = this->srcEdgeXDims[1];
+
+        this->srcEdgeYDimProd[1] = 1;
+        this->srcEdgeYDimProd[0] = this->srcEdgeYDims[1];
+
+        this->srcNodeDimProd[1] = 1;
+        this->srcNodeDimProd[0] = this->srcNodeDims[1];
+
         this->srcGrdCoords.resize(NDIMS_2D_PHYS * this->srcNumPoints);
         // iterate over components
         for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
-            size_t j, i;
-            // fill in the interior, without ghost cells
-            for (j = 0; j < dims[0]; ++j) {
-                for (i = 0; i < dims[1]; ++i) {
-                    // nodal flat index
-                    size_t indx = j*this->srcCellDimProd[0] + i*this->srcCellDimProd[1];
-                    // nodal flat index taking into account ghosts
-                    size_t indxExt = j*this->srcNodeDimProd[0] + i*this->srcNodeDimProd[1];
-                    this->srcGrdCoords[indxExt*NDIMS_2D_PHYS + k] = coords[k][indx];
-                }
-            }
-            // last row/column is same as previous row/column
-            j = dims[0];
-            for (size_t i = 0; i < dims[1]; ++i) {
-                // nodal flat index
-                size_t indx = (j - 1)*this->srcCellDimProd[0] + i*this->srcCellDimProd[1];
-                // nodal flat index taking into account ghosts
-                size_t indxExt = j*this->srcNodeDimProd[0] + i*this->srcNodeDimProd[1];
-                this->srcGrdCoords[indxExt*NDIMS_2D_PHYS + k] = coords[k][indx];
-            }
-            i = dims[1];
-            for (size_t j = 0; j < dims[0]; ++j) {
-                // nodal flat index
-                size_t indx = j*this->srcCellDimProd[0] + (i - 1)*this->srcCellDimProd[1];
-                // nodal flat index taking into account ghosts
-                size_t indxExt = j*this->srcNodeDimProd[0] + i*this->srcNodeDimProd[1];
-                this->srcGrdCoords[indxExt*NDIMS_2D_PHYS + k] = coords[k][indx];
+            // iterate over nodes
+            for (size_t i = 0; i < this->srcNumPoints; ++i) {
+                this->srcGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i];
             }
         }
     }
@@ -143,20 +133,36 @@ struct SgFlowInterp2D_type {
     /** 
      * Apply the interpolation weights to the src edge field
      * @param index 0 or 1 (0 = x flux, 1 = y flux)
-     * @param srcData source edge data with number of nodes dimension (input)
+     * @param srcData source edge data with dimensions numCells x numNodes (x) or numNodes x numCells (y)
      * @param dstData destination cell data (output)
      */
     void apply(size_t index, const double srcData[], double dstData[]) {
 
+        size_t inds[2];
+        int* edgeDimProd;
+
+        edgeDimProd = this->srcEdgeXDimProd;
+        if (index == 1) {
+            edgeDimProd = this->srcEdgeYDimProd;
+        }
+
         for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
-            it = this->weights.begin();
-            it != this->weights.end(); ++it) {
+            it = this->weights.begin(); it != this->weights.end(); ++it) {
             size_t dstIndx = it->first;
+            // initialize
             dstData[dstIndx] = 0;
+            // iterate over the src cells
             for (size_t i = 0; i < it->second.size(); ++i) {
                 size_t srcIndx = it->second[i].first;
-                double wght = it->second[i].second[index];
-                dstData[dstIndx] += wght * srcData[srcIndx];
+                inds[0] = srcIndx / edgeDimProd[0] % edgeDimProd[0];
+                inds[1] = srcIndx / edgeDimProd[1] % edgeDimProd[1];
+                // iterate over the 2 edges
+                for (size_t loHi = 0; loHi < 2; ++loHi) {
+                    inds[index] += loHi;
+                    double weight = it->second[i].second[2*index + loHi];
+                    size_t srcEdgeIndx = edgeDimProd[0] * inds[0] + edgeDimProd[1] * inds[1];
+                    dstData[dstIndx] += weight * srcData[srcEdgeIndx];
+                }
             }
         }
     }
@@ -208,16 +214,19 @@ struct SgFlowInterp2D_type {
                     if (it == this->weights.end()) {
                         std::vector< std::pair<size_t, std::vector<double> > > v;
                         std::pair<size_t, std::vector<std::pair<size_t, std::vector<double> > > > p(dstIndx, v);
+
                         this->weights.insert(p);
+                        it = this->weights.find(dstIndx);
                     }
-                    it = this->weights.find(dstIndx);
 
                     double* pA = &points[0*NDIMS_2D_PHYS];
                     double* pB = &points[1*NDIMS_2D_PHYS];
 
-                    std::vector<double> w(2);
+                    std::vector<double> w(4);
                     w[0] = 0.5*(pB[0] - pA[0])*(pB[1] + pA[1]);
-                    w[1] = 0.5*(pB[0] + pA[0])*(pB[1] - pA[1]);
+                    w[1] = 0.5*(pB[0] - pA[0])*(pB[1] + pA[1]); // same as above?
+                    w[2] = 0.5*(pB[0] + pA[0])*(pB[1] - pA[1]);
+                    w[3] = 0.5*(pB[0] + pA[0])*(pB[1] - pA[1]); // same as above?
 
                     std::pair<size_t, std::vector<double> > p(srcNodeInds[0], w);
                     it->second.push_back(p);

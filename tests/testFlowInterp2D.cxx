@@ -25,25 +25,21 @@ bool testSimple() {
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
     int srcNumPoints = srcDims[0] * srcDims[1];
+    int srcNumEdgeX = srcDims[0] * (srcDims[1] - 1);
+    int srcNumEdgeY = (srcDims[0] - 1) * srcDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcDims, srcXmins, srcXmaxs, srcCoords);
 
     // src data, dimensioned number of nodes
-    double* srcData[] = {new double[srcNumPoints], new double[srcNumPoints]};
+    double* srcData[] = {new double[srcNumEdgeX], new double[srcNumEdgeY]};
 
-    // setting the src data
-    for (int i = 0; i < srcNumPoints; ++i) {
-        srcData[0][i] = 0;
-        srcData[1][i] = 0;
-    }
-    // src fluxes. Shown below are the edge values and the ghost cells
-    //   +.......+
-    //   :       :
-    //   :   3   :
-    //   +-------+......+
-    // 4 |       | 2    :
-    //   |       |      :
-    //   +-------+......+
+    // src fluxes. Shown below are the edge values
+    //  
+    //      3   
+    //   +-------+
+    // 4 |       | 2
+    //   |       |
+    //   +-------+
     //       1
     size_t i; 
     size_t j;
@@ -59,8 +55,6 @@ bool testSimple() {
     srcData[1][NDIMS_2D_TOPO*j + i] = 4.0;
     i = 1; j = 0;
     srcData[1][NDIMS_2D_TOPO*j + i] = 2.0;
-
-    // no need to set the ghost fluxes
 
     // destination grid, a segment
     const int dstDims[] = {2}; // number of nodes
