@@ -155,8 +155,7 @@ struct SgFlowInterp2D_type {
         for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
 
             // get the start/end points
-            this->getDstLineCoord(dstIndx, offset1D[0], &dstLineCoords[0*NDIMS_2D_PHYS]);
-            this->getDstLineCoord(dstIndx, offset1D[1], &dstLineCoords[1*NDIMS_2D_PHYS]);
+            this->getDstLineCoord(dstIndx, offset1D, dstLineCoords);
 
             intersector.setLinePoints(dstLineCoords);
 
@@ -207,22 +206,18 @@ private:
     /** 
      * Extract the destination cell coordinates from the grid
      * @param indx cell flat index
-     * @param offset displacement from the above node, either 0 or one
+     * @param offset displacement from the above node, either 0 or 1
      * @param coords array of size NDIMS_2D_PHYS to be filled in 
      */
-    void getDstLineCoord(size_t indx, int offset, double coords[]) const {
+    void getDstLineCoord(size_t indx, const int offset[], double coords[]) const {
 
-        // compute the index set of the cell and add the offset
-        size_t cellIndsOffset;
-        cellIndsOffset = indx / this->dstCellDimProd[0] % this->dstCellDims[0];
-        cellIndsOffset += offset;
-
-        // compute the low-corner flat index of the node coorresponding to this cell
-        size_t nodeIndx = this->dstNodeDimProd[0] * cellIndsOffset;
-
-        // fill in the node's coordinates
-        for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-            coords[j] = this->dstGrdCoords[nodeIndx*NDIMS_2D_PHYS + j];
+        // iterate over the 2 nodes
+        for (size_t i = 0; i < 2; ++i) {
+            size_t nodeIndx = indx + offset[i];
+            // fill in the node's coordinates
+            for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
+                coords[i*NDIMS_2D_PHYS + j] = this->dstGrdCoords[nodeIndx*NDIMS_2D_PHYS + j];
+            }
         }
     }
 
