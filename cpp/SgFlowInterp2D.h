@@ -91,27 +91,53 @@ struct SgFlowInterp2D_type {
     void setSrcGrid(const int dims[], 
                     const double** coords) {
 
-        this->srcNumPoints = dims[0] * dims[1];
-        this->srcNumCells = (dims[0] - 1) * (dims[1] - 1);
+        // note: we use ghost cells to the right so there is one more 
+        // cell 
+        this->srcNumPoints = (dims[0] + 1) * (dims[1] + 1);
+        this->srcNumCells = (dims[0] + 0) * (dims[1] + 0);
 
-        this->srcNodeDims[0] = dims[0];
-        this->srcNodeDims[1] = dims[1];
-        this->srcCellDims[0] = dims[0] - 1;
-        this->srcCellDims[1] = dims[1] - 1;
+        this->srcNodeDims[0] = dims[0] + 1;
+        this->srcNodeDims[1] = dims[1] + 1;
+        this->srcCellDims[0] = dims[0] + 0;
+        this->srcCellDims[1] = dims[1] + 0;
 
         this->srcCellDimProd[1] = 1;
-        this->srcCellDimProd[0] = (dims[1] - 1);
+        this->srcCellDimProd[0] = (dims[1] + 0);
         this->srcNodeDimProd[1] = 1;
-        this->srcNodeDimProd[0] = dims[1];
+        this->srcNodeDimProd[0] = (dims[1] + 1);
  
-          this->srcGrdCoords.resize(NDIMS_2D_PHYS * this->srcNumPoints);
-          for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-              size_t k = 0;
-              for (size_t i = 0; i < this->srcNumPoints; ++i) {
-                  this->srcGrdCoords[k*NDIMS_2D_PHYS + j] = coords[j][i];
-                  k++;
-              }
-          }
+        this->srcGrdCoords.resize(NDIMS_2D_PHYS * this->srcNumPoints);
+        // iterate over components
+        for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
+            size_t j, i;
+            // fill in the interior, without ghost cells
+            for (j = 0; j < dims[0]; ++j) {
+                for (i = 0; i < dims[1]; ++i) {
+                    // nodal flat index
+                    size_t indx = j*this->srcCellDimProd[0] + i*this->srcCellDimProd[1];
+                    // nodal flat index taking into account ghosts
+                    size_t indxExt = j*this->srcNodeDimProd[0] + i*this->srcNodeDimProd[1];
+                    this->srcGrdCoords[indxExt*NDIMS_2D_PHYS + k] = coords[k][indx];
+                }
+            }
+            // last row/column is same as previous row/column
+            j = dims[0];
+            for (size_t i = 0; i < dims[1]; ++i) {
+                // nodal flat index
+                size_t indx = (j - 1)*this->srcCellDimProd[0] + i*this->srcCellDimProd[1];
+                // nodal flat index taking into account ghosts
+                size_t indxExt = j*this->srcNodeDimProd[0] + i*this->srcNodeDimProd[1];
+                this->srcGrdCoords[indxExt*NDIMS_2D_PHYS + k] = coords[k][indx];
+            }
+            i = dims[1];
+            for (size_t j = 0; j < dims[0]; ++j) {
+                // nodal flat index
+                size_t indx = j*this->srcCellDimProd[0] + (i - 1)*this->srcCellDimProd[1];
+                // nodal flat index taking into account ghosts
+                size_t indxExt = j*this->srcNodeDimProd[0] + i*this->srcNodeDimProd[1];
+                this->srcGrdCoords[indxExt*NDIMS_2D_PHYS + k] = coords[k][indx];
+            }
+        }
     }
 
     /** 
