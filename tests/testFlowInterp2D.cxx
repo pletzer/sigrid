@@ -18,7 +18,7 @@ void createLineGrid(const int dims[], const double xmins[], const double xmaxs[]
 }
 
 
-bool testSimple() {
+bool testSimple(const double dstXmins[], const double dstXmaxs[]) {
 
     // source grid
     const int srcDims[] = {2, 2}; // number of nodes
@@ -52,8 +52,6 @@ bool testSimple() {
 
     // destination grid, a segment
     const int dstDims[] = {2}; // number of nodes
-    const double dstXmins[] = {0., 0.};
-    const double dstXmaxs[] = {1., 1.};
     int dstNumPoints = dstDims[0];
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
     createLineGrid(dstDims, dstXmins, dstXmaxs, dstCoords);    
@@ -75,8 +73,8 @@ bool testSimple() {
     double deltaY = dstXmaxs[1] - dstXmins[1];
     double avrgX = 0.5*(dstXmaxs[0] + dstXmins[0]);
     double avrgY = 0.5*(dstXmaxs[1] + dstXmins[1]);
-    double xFlux = deltaX*avrgY*(1. + 3.);
-    double yFlux = deltaY*avrgX*(2. + 4.);
+    double xFlux = deltaX*( (1. - avrgY)*1. + avrgY*3.);
+    double yFlux = deltaY*( (1. - avrgX)*4. + avrgX*2.);
     std::cout << "Flux in x: " << dstData[0][0] << 
                  " expected: " << xFlux << 
                  " error: " << dstData[0][0] - xFlux << '\n';
@@ -100,7 +98,24 @@ bool testSimple() {
 
 int main(int argc, char** argv) {
 
-    if (!testSimple()) return 1;
+    double dstXmins[2];
+    double dstXmaxs[2];
+
+    dstXmins[0] = 0.; dstXmins[1] = 0.;
+    dstXmaxs[0] = 1.; dstXmaxs[1] = 1.;
+    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+
+    dstXmins[0] = 0.2; dstXmins[1] = 0.;
+    dstXmaxs[0] = 0.2; dstXmaxs[1] = 1.;
+    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+
+    dstXmins[0] = 0.2; dstXmins[1] = 1.;
+    dstXmaxs[0] = 0.2; dstXmaxs[1] = 0.;
+    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+
+    dstXmins[0] = 0.2; dstXmins[1] = 0.9;
+    dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
+    if (!testSimple(dstXmins, dstXmaxs)) return 1;
 
     std::cout << "SUCCESS\n";
     return 0;
