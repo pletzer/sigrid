@@ -147,6 +147,7 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
     SgFlowInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgFlowInterp2D_computeWeights(&interp);
     SgFlowInterp2D_apply(&interp, (const double**) srcData, dstData);
+    SgFlowInterp2D_debug(&interp);
     SgFlowInterp2D_del(&interp);
 
     // check flux projected onto segment
@@ -176,6 +177,7 @@ int main(int argc, char** argv) {
 
     double dstXmins[2];
     double dstXmaxs[2];
+    int srcNodeDims[2];
 
     dstXmins[0] = 0.; dstXmins[1] = 0.;
     dstXmaxs[0] = 1.; dstXmaxs[1] = 1.;
@@ -183,15 +185,20 @@ int main(int argc, char** argv) {
 
     dstXmins[0] = 0.2; dstXmins[1] = 0.;
     dstXmaxs[0] = 0.2; dstXmaxs[1] = 1.;
-    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+    if (!testSimple(dstXmins, dstXmaxs)) return 2;
 
     dstXmins[0] = 0.2; dstXmins[1] = 1.;
     dstXmaxs[0] = 0.2; dstXmaxs[1] = 0.;
-    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+    if (!testSimple(dstXmins, dstXmaxs)) return 3;
 
     dstXmins[0] = 0.2; dstXmins[1] = 0.9;
     dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
-    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+    if (!testSimple(dstXmins, dstXmaxs)) return 4;
+
+    dstXmins[0] = 0.2; dstXmins[1] = 0.9;
+    dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
+    srcNodeDims[0] = 2; srcNodeDims[1] = 3;
+    if (!testLinear(dstXmins, dstXmaxs, srcNodeDims)) return 5;
 
     std::cout << "SUCCESS\n";
     return 0;

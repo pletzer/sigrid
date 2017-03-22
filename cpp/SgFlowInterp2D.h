@@ -13,6 +13,7 @@
 #include <map>
 #include <cstdio> // size_t
 #include <cmath>
+#include <iostream>
  
 struct SgFlowInterp2D_type {
 
@@ -255,6 +256,29 @@ struct SgFlowInterp2D_type {
 
     }
 
+    /**
+     * Write debug information
+     */
+    void debug() const {
+        std::cerr << "SgFlowInterp2D:\n";
+        for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
+            it = this->weights.begin(); it != this->weights.end(); ++it) {
+
+            size_t dstIndx = it->first;
+            std::cerr << "dst segment index: " << dstIndx << ":\n";
+            const std::vector< std::pair<size_t, std::vector<double> > >& srcIndx2Weights = it->second;
+
+            for (size_t i = 0; i < srcIndx2Weights.size(); ++i) {
+                std::cerr << "\tsrc cell index: " << srcIndx2Weights[i].first << " -> weights (xLo, xHi, yLo, yHi): ";
+                for (size_t j = 0; j < srcIndx2Weights[i].second.size(); ++j) {
+                    std::cerr << srcIndx2Weights[i].second[j] << ", ";
+                }
+                std::cerr << '\n';
+            }
+        }
+
+    }
+
 private:
 
     /** 
@@ -326,6 +350,8 @@ extern "C" {
 
     int SgFlowInterp2D_apply(SgFlowInterp2D_type** self,
                               const double* srcData[], double dstData[]);
+
+    int SgFlowInterp2D_debug(SgFlowInterp2D_type** self);
 
 #ifdef __cplusplus
 }

@@ -46,3 +46,9 @@ int SgFlowInterp2D_apply(SgFlowInterp2D_type** self,
 	(*self)->apply(srcData, dstData);
 	return 0;
 }
+
+extern "C"
+int SgFlowInterp2D_debug(SgFlowInterp2D_type** self) {
+	(*self)->debug();
+	return 0;
+}
