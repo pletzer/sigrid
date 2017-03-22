@@ -223,10 +223,10 @@ struct SgFlowInterp2D_type {
                     double* pB = &points[1*NDIMS_2D_PHYS];
 
                     std::vector<double> w(4);
-                    w[0] = 0.5*(pB[0] - pA[0])*(pB[1] + pA[1]);
-                    w[1] = 0.5*(pB[0] - pA[0])*(pB[1] + pA[1]); // same as above?
-                    w[2] = 0.5*(pB[0] + pA[0])*(pB[1] - pA[1]);
-                    w[3] = 0.5*(pB[0] + pA[0])*(pB[1] - pA[1]); // same as above?
+                    w[0] = (pB[0] - pA[0])*(1.0 - 0.5*(pB[1] + pA[1])); // x low side
+                    w[1] = (pB[0] - pA[0])*(0.0 + 0.5*(pB[1] + pA[1])); // x high side
+                    w[2] = (1.0 - 0.5*(pB[0] + pA[0]))*(pB[1] - pA[1]); // y low side
+                    w[3] = (0.0 + 0.5*(pB[0] + pA[0]))*(pB[1] - pA[1]); // y high side
 
                     std::pair<size_t, std::vector<double> > p(srcNodeInds[0], w);
                     it->second.push_back(p);
