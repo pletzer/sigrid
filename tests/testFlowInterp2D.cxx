@@ -91,42 +91,45 @@ bool testSimple(const double dstXmins[], const double dstXmaxs[]) {
 
 bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcNodeDims[]) {
 
+    // 2-form field is
+    // x*y*(dz ^ dx) + (x + y)*(dy ^ dz)
+
     // source grid
     const double srcXmins[] = {0., 0.};
     const double srcXmaxs[] = {1., 1.};
     int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
-    int srcNumEdgeX = srcNodeDims[0] * (srcNodeDims[1] - 1);
-    int srcNumEdgeY = (srcNodeDims[0] - 1) * srcNodeDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcNodeDims, srcXmins, srcXmaxs, srcCoords);
 
     // src data, dimensioned number of nodes
+    int srcNumEdgeX = (srcNodeDims[0] - 1) * srcNodeDims[1];
+    int srcNumEdgeY = srcNodeDims[0] * (srcNodeDims[1] - 1);
     double* srcData[] = {new double[srcNumEdgeX], new double[srcNumEdgeY]};
 
-    double hx = (srcXmaxs[0] - srcXmins[0])/double(srcNodeDims[1] - 1);
-    double hy = (srcXmaxs[1] - srcXmins[1])/double(srcNodeDims[0] - 1);
+    double hx = (srcXmaxs[0] - srcXmins[0])/double(srcNodeDims[0] - 1);
+    double hy = (srcXmaxs[1] - srcXmins[1])/double(srcNodeDims[1] - 1);
     size_t k;
 
     // fluxes along x
     k = 0;
-    for (size_t j = 0; j < srcNodeDims[0]; ++j) {
-        double y = srcXmins[1] + j*hy;
-        for (size_t i = 0; i < srcNodeDims[1] - 1; ++i) {
-            size_t index = j*(srcNodeDims[1] - 1) + i;
-            double xLo = srcXmins[0] + i*hx;
-            double xHi = xLo + hx;
+    for (size_t i = 0; i < srcNodeDims[0] - 1; ++i) {
+        double xLo = srcXmins[0] + i*hx;
+        double xHi = xLo + hx;
+        for (size_t j = 0; j < srcNodeDims[1] - 0; ++j) {
+            double y = srcXmins[1] + j*hy;
+            size_t index = i*(srcNodeDims[1] - 0) + j;
             srcData[k][index] = 0.5*y*(xHi*xHi - xLo*xLo);
         }
     }
 
     // fluxes along y
     k = 1;
-    for (size_t j = 0; j < srcNodeDims[0] - 1; ++j) {
-        double yLo = srcXmins[1] + j*hy;
-        double yHi = yLo + hy;
-        for (size_t i = 0; i < srcNodeDims[1]; ++i) {
-            size_t index = j*srcNodeDims[1] + i;
-            double x = srcXmins[0] + i*hx;
+    for (size_t i = 0; i < srcNodeDims[0] - 0; ++i) {
+        double x = srcXmins[0] + i*hx;
+        for (size_t j = 0; j < srcNodeDims[1] - 1; ++j) {
+            double yLo = srcXmins[1] + j*hy;
+            double yHi = yLo + hy;
+            size_t index = i*(srcNodeDims[1] - 1) + j;
             srcData[k][index] = x*hy + 0.5*(yHi*yHi - yLo*yLo);
         }
     }
@@ -181,19 +184,19 @@ int main(int argc, char** argv) {
 
     dstXmins[0] = 0.; dstXmins[1] = 0.;
     dstXmaxs[0] = 1.; dstXmaxs[1] = 1.;
-    if (!testSimple(dstXmins, dstXmaxs)) return 1;
+    //if (!testSimple(dstXmins, dstXmaxs)) return 1;
 
     dstXmins[0] = 0.2; dstXmins[1] = 0.;
     dstXmaxs[0] = 0.2; dstXmaxs[1] = 1.;
-    if (!testSimple(dstXmins, dstXmaxs)) return 2;
+    //if (!testSimple(dstXmins, dstXmaxs)) return 2;
 
     dstXmins[0] = 0.2; dstXmins[1] = 1.;
     dstXmaxs[0] = 0.2; dstXmaxs[1] = 0.;
-    if (!testSimple(dstXmins, dstXmaxs)) return 3;
+    //if (!testSimple(dstXmins, dstXmaxs)) return 3;
 
     dstXmins[0] = 0.2; dstXmins[1] = 0.9;
     dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
-    if (!testSimple(dstXmins, dstXmaxs)) return 4;
+    //if (!testSimple(dstXmins, dstXmaxs)) return 4;
 
     dstXmins[0] = 0.2; dstXmins[1] = 0.9;
     dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
