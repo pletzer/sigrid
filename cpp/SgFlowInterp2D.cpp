@@ -41,8 +41,8 @@ int SgFlowInterp2D_computeWeights(SgFlowInterp2D_type** self) {
 }
 
 extern "C"
-int SgFlowInterp2D_apply(SgFlowInterp2D_type** self, int index,
- 	                     const double srcData[], double dstData[]) {
-	(*self)->apply((size_t) index, srcData, dstData);
+int SgFlowInterp2D_apply(SgFlowInterp2D_type** self,
+ 	                     const double* srcData[], double dstData[]) {
+	(*self)->apply(srcData, dstData);
 	return 0;
 }

@@ -132,36 +132,55 @@ struct SgFlowInterp2D_type {
 
     /** 
      * Apply the interpolation weights to the src edge field
-     * @param index 0 or 1 (0 = x flux, 1 = y flux)
      * @param srcData source edge data with dimensions numCells x numNodes (x) or numNodes x numCells (y)
      * @param dstData destination cell data (output)
      */
-    void apply(size_t index, const double srcData[], double dstData[]) {
+    void apply(const double* srcData[], double dstData[]) {
 
         size_t inds[2];
         int* edgeDimProd;
+        int* edgeDimProds[] = {this->srcEdgeXDimProd, this->srcEdgeYDimProd};
 
-        edgeDimProd = this->srcEdgeXDimProd;
-        if (index == 1) {
-            edgeDimProd = this->srcEdgeYDimProd;
-        }
-
+        // iterate over the dst segments
         for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
             it = this->weights.begin(); it != this->weights.end(); ++it) {
+
+            // dst cell (flat) index 
             size_t dstIndx = it->first;
+
             // initialize
             dstData[dstIndx] = 0;
-            // iterate over the src cells
+
+            // iterate over the src cells intersected by this segment
             for (size_t i = 0; i < it->second.size(); ++i) {
+
                 size_t srcIndx = it->second[i].first;
-                inds[0] = srcIndx / edgeDimProd[0] % edgeDimProd[0];
-                inds[1] = srcIndx / edgeDimProd[1] % edgeDimProd[1];
-                // iterate over the 2 edges
-                for (size_t loHi = 0; loHi < 2; ++loHi) {
-                    inds[index] += loHi;
-                    double weight = it->second[i].second[2*index + loHi];
-                    size_t srcEdgeIndx = edgeDimProd[0] * inds[0] + edgeDimProd[1] * inds[1];
-                    dstData[dstIndx] += weight * srcData[srcEdgeIndx];
+
+                // iterate over the two directions/components
+                for (size_t k = 0; k < 2; ++k) {
+
+                    // select the right dimensions (number of edges along x and y are different)
+                    edgeDimProd = edgeDimProds[k];
+
+                    // compute the src cell index set
+                    inds[0] = srcIndx / edgeDimProd[0] % edgeDimProd[0];
+                    inds[1] = srcIndx / edgeDimProd[1] % edgeDimProd[1];
+                
+                    // iterate over the lo/hi edges
+                    for (size_t loHi = 0; loHi < 2; ++loHi) {
+                    
+                        // aply offset (or not)
+                        inds[k] += loHi;
+
+                        // get the interpolation weight
+                        double weight = it->second[i].second[2*k + loHi];
+
+                        // compute the flat index for the src edge
+                        size_t srcEdgeIndx = edgeDimProd[0]*inds[0] + edgeDimProd[1]*inds[1];
+
+                        // update the flux
+                        dstData[dstIndx] += weight * srcData[k][srcEdgeIndx];
+                    }
                 }
             }
         }
@@ -305,8 +324,8 @@ extern "C" {
 
     int SgFlowInterp2D_computeWeights(SgFlowInterp2D_type** self);
 
-    int SgFlowInterp2D_apply(SgFlowInterp2D_type** self, int index,
-                              const double srcData[], double dstData[]);
+    int SgFlowInterp2D_apply(SgFlowInterp2D_type** self,
+                              const double* srcData[], double dstData[]);
 
 #ifdef __cplusplus
 }

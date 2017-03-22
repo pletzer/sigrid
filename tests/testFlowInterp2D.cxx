@@ -53,48 +53,124 @@ bool testSimple(const double dstXmins[], const double dstXmaxs[]) {
     // destination grid, a segment
     const int dstDims[] = {2}; // number of nodes
     int dstNumPoints = dstDims[0];
+    int dstNumCells = dstDims[0] - 1;
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
     createLineGrid(dstDims, dstXmins, dstXmaxs, dstCoords);    
 
     // dst data, dimensioned number of nodes
-    double* dstData[] = {new double[dstNumPoints], new double[dstNumPoints]};
+    double* dstData = new double[dstNumCells];
 
     SgFlowInterp2D_type* interp = NULL;
     SgFlowInterp2D_new(&interp);
     SgFlowInterp2D_setSrcGrid(&interp, srcDims, (const double**) srcCoords);
     SgFlowInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgFlowInterp2D_computeWeights(&interp);
-    SgFlowInterp2D_apply(&interp, 0, srcData[0], dstData[0]);
-    SgFlowInterp2D_apply(&interp, 1, srcData[1], dstData[1]);
+    SgFlowInterp2D_apply(&interp, (const double**) srcData, dstData);
     SgFlowInterp2D_del(&interp);
 
     // check flux projected onto segment
-    double deltaX = dstXmaxs[0] - dstXmins[0];
-    double deltaY = dstXmaxs[1] - dstXmins[1];
+    double hx = dstXmaxs[0] - dstXmins[0];
+    double hy = dstXmaxs[1] - dstXmins[1];
     double avrgX = 0.5*(dstXmaxs[0] + dstXmins[0]);
     double avrgY = 0.5*(dstXmaxs[1] + dstXmins[1]);
-    double xFlux = deltaX*( (1. - avrgY)*1. + avrgY*3.);
-    double yFlux = deltaY*( (1. - avrgX)*4. + avrgX*2.);
-    std::cout << "Flux in x: " << dstData[0][0] << 
-                 " expected: " << xFlux << 
-                 " error: " << dstData[0][0] - xFlux << '\n';
-    assert(fabs(dstData[0][0] - xFlux) < 1.e-8);
-    std::cout << "Flux in y: " << dstData[1][0] << 
-                 " expected: " << yFlux << 
-                 " error: " << dstData[1][0] - yFlux << '\n';
-    assert(fabs(dstData[1][0] - yFlux) < 1.e-8);
+    const double exactFlux = hx*( (1. - avrgY)*1. + avrgY*3. ) + hy*( (1. - avrgX)*4. + avrgX*2. );
+    std::cout << "Flux: " << dstData[0] << 
+                 " expected: " << exactFlux << 
+                 " error: " << dstData[0] - exactFlux << '\n';
 
     // clean up
     for (size_t j = 0; j < 2; ++j) {
         delete[] srcCoords[j];
         delete[] dstCoords[j];
         delete[] srcData[j];
-        delete[] dstData[j];
     }
+    delete[] dstData;
 
     return true;
 }
 
+bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcNodeDims[]) {
+
+    // source grid
+    const double srcXmins[] = {0., 0.};
+    const double srcXmaxs[] = {1., 1.};
+    int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
+    int srcNumEdgeX = srcNodeDims[0] * (srcNodeDims[1] - 1);
+    int srcNumEdgeY = (srcNodeDims[0] - 1) * srcNodeDims[1];
+    double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
+    createRectangularGrid(srcNodeDims, srcXmins, srcXmaxs, srcCoords);
+
+    // src data, dimensioned number of nodes
+    double* srcData[] = {new double[srcNumEdgeX], new double[srcNumEdgeY]};
+
+    double hx = (srcXmaxs[0] - srcXmins[0])/double(srcNodeDims[1] - 1);
+    double hy = (srcXmaxs[1] - srcXmins[1])/double(srcNodeDims[0] - 1);
+    size_t k;
+
+    // fluxes along x
+    k = 0;
+    for (size_t j = 0; j < srcNodeDims[0]; ++j) {
+        double y = srcXmins[1] + j*hy;
+        for (size_t i = 0; i < srcNodeDims[1] - 1; ++i) {
+            size_t index = j*(srcNodeDims[1] - 1) + i;
+            double xLo = srcXmins[0] + i*hx;
+            double xHi = xLo + hx;
+            srcData[k][index] = 0.5*y*(xHi*xHi - xLo*xLo);
+        }
+    }
+
+    // fluxes along y
+    k = 1;
+    for (size_t j = 0; j < srcNodeDims[0] - 1; ++j) {
+        double yLo = srcXmins[1] + j*hy;
+        double yHi = yLo + hy;
+        for (size_t i = 0; i < srcNodeDims[1]; ++i) {
+            size_t index = j*srcNodeDims[1] + i;
+            double x = srcXmins[0] + i*hx;
+            srcData[k][index] = x*hy + 0.5*(yHi*yHi - yLo*yLo);
+        }
+    }
+
+    // destination grid, a segment
+    const int dstDims[] = {2}; // number of nodes
+    int dstNumPoints = dstDims[0];
+    int dstNumCells = dstDims[0] - 1;
+    double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
+    createLineGrid(dstDims, dstXmins, dstXmaxs, dstCoords);    
+
+    // dst data, dimensioned number of cells
+    double* dstData = new double[dstNumCells];
+
+    SgFlowInterp2D_type* interp = NULL;
+    SgFlowInterp2D_new(&interp);
+    SgFlowInterp2D_setSrcGrid(&interp, srcNodeDims, (const double**) srcCoords);
+    SgFlowInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
+    SgFlowInterp2D_computeWeights(&interp);
+    SgFlowInterp2D_apply(&interp, (const double**) srcData, dstData);
+    SgFlowInterp2D_del(&interp);
+
+    // check flux projected onto segment
+    const double xa = dstXmins[0];
+    const double ya = dstXmins[1];
+    const double xb = dstXmaxs[0];
+    const double yb = dstXmaxs[1];
+    double exactFlux = hy*(xa + ya + 0.5*(hx + hy)) 
+                     + hx*(xa*ya + 0.5*(xb*ya + xa*yb - 2*xa*ya) + (1./3.)*hx*hy);
+    std::cout << "Flux: " << dstData[0] << 
+                 " expected: " << exactFlux << 
+                 " error: " << dstData[0] - exactFlux << '\n';
+    assert(fabs(dstData[0] - exactFlux) < 1.e-8);
+
+    // clean up
+    for (size_t j = 0; j < 2; ++j) {
+        delete[] srcCoords[j];
+        delete[] dstCoords[j];
+        delete[] srcData[j];
+    }
+    delete[] dstData;
+
+    return true;
+}
 
 int main(int argc, char** argv) {
 
