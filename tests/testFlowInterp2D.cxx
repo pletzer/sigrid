@@ -89,7 +89,7 @@ bool testSimple(const double dstXmins[], const double dstXmaxs[]) {
     return true;
 }
 
-bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcNodeDims[]) {
+bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcNodeDims[], double expectedVal) {
 
     // 2-form field is
     // x*y*(dz ^ dx) + (x + y)*(dy ^ dz)
@@ -161,9 +161,10 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
     double exactFlux = hy*(xa + ya + 0.5*(hx + hy)) 
                      + hx*(xa*ya + 0.5*(xb*ya + xa*yb - 2*xa*ya) + (1./3.)*hx*hy);
     std::cout << "Flux: " << dstData[0] << 
-                 " expected: " << exactFlux << 
+                 " expected: " << expectedVal <<
+                 " exact: " << exactFlux << 
                  " error: " << dstData[0] - exactFlux << '\n';
-    assert(fabs(dstData[0] - exactFlux) < 1.e-8);
+    assert(fabs(dstData[0] - expectedVal) < 1.e-8);
 
     // clean up
     for (size_t j = 0; j < 2; ++j) {
@@ -198,10 +199,11 @@ int main(int argc, char** argv) {
     dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
     //if (!testSimple(dstXmins, dstXmaxs)) return 4;
 
-    dstXmins[0] = 0.2; dstXmins[1] = 0.9;
-    dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
+    dstXmins[0] = 0.0; dstXmins[1] = 0.0;
+    dstXmaxs[0] = 1.0; dstXmaxs[1] = 1.0;
     srcNodeDims[0] = 2; srcNodeDims[1] = 3;
-    if (!testLinear(dstXmins, dstXmaxs, srcNodeDims)) return 5;
+    double expectedVal = 0.5;
+    if (!testLinear(dstXmins, dstXmaxs, srcNodeDims, expectedVal)) return 5;
 
     std::cout << "SUCCESS\n";
     return 0;

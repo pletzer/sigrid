@@ -217,6 +217,7 @@ struct SgFlowInterp2D_type {
                 // get the src quad's vertices
                 this->getSrcQuadCoord(srcIndx, offset2D, srcNodeInds, srcQuadCoords);
 
+                intersector.reset();
                 intersector.setQuadPoints(srcQuadCoords);
 
                 if (!intersector.checkIfOverlap()) {
