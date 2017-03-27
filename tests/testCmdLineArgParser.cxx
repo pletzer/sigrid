@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
     prsr.set("--expr", "2*x + y", "Expression of x and y.");
     prsr.set("--name", std::string("foo"), "Name.");
     prsr.set("--vec", "0, 1, 2., -3.14, -4.e+06, -5.24e-45", "A vector.");
+    prsr.set("--ivec", "0, 1, -2, 3", "An int vector.");
     prsr.parse(argc, argv);
 
     std::cout << "src_nj = " << prsr.get<int>("--src_nj") << '\n';
@@ -23,6 +24,10 @@ int main(int argc, char** argv) {
     std::vector<double> vec = prsr.get<std::vector<double> >("--vec");
     std::cout << "vec = ";
     for (size_t i = 0; i < vec.size(); ++i) std::cout << vec[i] << ", ";
+    std::cout << '\n';
+    std::vector<int> ivec = prsr.get<std::vector<int> >("--ivec");
+    std::cout << "ivec = ";
+    for (size_t i = 0; i < ivec.size(); ++i) std::cout << ivec[i] << ", ";
     std::cout << '\n';
 
     if (prsr.get<bool>("-h") || prsr.get<bool>("--help")) {
