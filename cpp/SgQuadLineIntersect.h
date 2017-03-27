@@ -177,11 +177,11 @@ struct SgQuadLineIntersect_type {
         }
         double* xis;
         this->slvr->getSolution(&xis);
-        // make sure the parametric coordinates are within the (0+, 1-) range
+        // make sure the parametric coordinates are within the (0-, 1-) range
         // no need to include the end points since they are already taken into 
         // account when looking for nodes inside cell
-        if (xis[0] > this->tol && xis[0] <= 1 - this->tol && 
-            xis[1] > this->tol && xis[1] <= 1 - this->tol) {
+        if (xis[0] >= -this->tol && xis[0] < 1.0 - this->tol && 
+            xis[1] >= -this->tol && xis[1] < 1.0 - this->tol) {
             // the two edges intersect
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
                 pt[j] = edgePoint0[j] + xis[0]*(edgePoint1[j] - edgePoint0[j]);
@@ -226,8 +226,10 @@ struct SgQuadLineIntersect_type {
       for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
         this->lineMin[j] = std::numeric_limits<double>::infinity();
         this->lineMax[j] = -std::numeric_limits<double>::infinity();
-        for (size_t k = 0; k < 4; ++k) { // 4 nodes
+        for (size_t k = 0; k < 2; ++k) { // 2 nodes
           size_t i = NDIMS_2D_PHYS*k + j;
+          // perturb lineCoords to avoid hitting quad nodes
+          this->lineCoords[i] += (i - 2.1)*1.8645237120137646*this->tol;
           this->lineMin[j] = std::min(this->lineCoords[i], this->lineMin[j]);
           this->lineMax[j] = std::max(this->lineCoords[i], this->lineMax[j]);
         }
@@ -264,7 +266,9 @@ struct SgQuadLineIntersect_type {
         }
 
         // add the ending line point if inside the quad
-        if (this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
+        size_t npts = this->intersectionPoints.size() / NDIMS_2D_PHYS;
+        if (npts < 2 && 
+            this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
           std::vector<double> pt(&this->lineCoords[1*NDIMS_2D_PHYS], &this->lineCoords[1*NDIMS_2D_PHYS] + 2);
           this->addPoint(pt);
         }
