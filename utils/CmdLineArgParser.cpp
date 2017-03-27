@@ -6,7 +6,8 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
-
+#include <string>
+#include <sstream>
 
 CmdLineArgParser::CmdLineArgParser() {
     // always activate -h
@@ -258,6 +259,27 @@ CmdLineArgParser::get<bool>(const std::string& name) const {
     i = this->boolArg.find(name);
     if (i != this->boolArg.end()) {
         res = i->second;
+    }
+    return res;
+}
+
+template <>
+std::vector<double>
+CmdLineArgParser::get<std::vector<double> >(const std::string& name) const {
+    // construct a double vector from a string such as "1.0, 2.e-2, 3.e33"
+    std::vector<double> res;
+    std::map<std::string, std::string>::const_iterator 
+      i = this->stringArg.find(name);
+    if (i != this->stringArg.end() && i->second.size() > 0) {
+      std::string str = i->second;
+      size_t pos0 = 0;
+      size_t pos1 = str.find(',', pos0);
+      while (pos1 < str.size()){
+        res.push_back(std::atof(str.substr(pos0, pos1 - pos0).c_str()));
+        pos0 = pos1 + 1;
+        pos1 = str.find(',', pos0);
+      }
+      res.push_back(std::atof(str.substr(pos0, pos1 - pos0).c_str()));
     }
     return res;
 }

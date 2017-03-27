@@ -2,6 +2,7 @@
 // standard includes
 #include <string>
 #include <map>
+#include <vector>
 
 #ifndef CMD_LINE_ARG_PARSER_H
 #define CMD_LINE_ARG_PARSER_H
