@@ -19,10 +19,13 @@ void createLineGrid(const int dims[], const double xmins[], const double xmaxs[]
     }
 }
 
-double psi(const double pos[]) {
+/**
+ * The stream function
+ */
+double psi(const std::vector<double>& pos) {
     double x = pos[0];
     double y = pos[1];
-    return 0.5*(x*x + cos(2.*y));
+    return 0.5*(x*x + cos(2.*M_PI*y)/M_PI);
 }
 
 int main(int argc, char** argv) {
@@ -32,12 +35,12 @@ int main(int argc, char** argv) {
     prsr.set("--ni", 11, "Number of nodes in the x direction");
     prsr.set("--nj", 21, "Number of nodes in the y direction");
     prsr.set("--pa", "0.,0.", "Start position");
-    prsr.set("--pb", "0.,1.", "End position");
+    prsr.set("--pb", "1.,1.", "End position");
     prsr.parse(argc, argv);
 
     // create src grid
-    const double srcXmins[] = {-1.0, -M_PI};
-    const double srcXmaxs[] = {+1.0, +M_PI};
+    const double srcXmins[] = {0.0, 0.0};
+    const double srcXmaxs[] = {1.0, 1.0};
     int srcNodeDims[] = {prsr.get<int>("--ni"), prsr.get<int>("--nj")};
     int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
@@ -51,28 +54,32 @@ int main(int argc, char** argv) {
     double hx = (srcXmaxs[0] - srcXmins[0])/double(srcNodeDims[0] - 1);
     double hy = (srcXmaxs[1] - srcXmins[1])/double(srcNodeDims[1] - 1);
     size_t k;
+    std::vector<double> posLo(2);
+    std::vector<double> posHi(2);
 
     // fluxes along x (y-field)
     k = 0;
     for (size_t i = 0; i < srcNodeDims[0] - 1; ++i) {
-        double xLo = srcXmins[0] + i*hx;
-        double xHi = xLo + hx;
+        posLo[0] = srcXmins[0] + i*hx;
+        posHi[0] = posLo[0] + hx;
         for (size_t j = 0; j < srcNodeDims[1] - 0; ++j) {
-            double y = srcXmins[1] + j*hy;
+            posLo[1] = srcXmins[1] + j*hy;
+            posHi[1] = posLo[1];
             size_t index = i*(srcNodeDims[1] - 0) + j;
-            srcData[k][index] = 0.5*(xHi*xHi - xLo*xLo);
+            srcData[k][index] = psi(posHi) - psi(posLo);
         }
     }
 
     // fluxes along y (x field)
     k = 1;
     for (size_t i = 0; i < srcNodeDims[0] - 0; ++i) {
-        double x = srcXmins[0] + i*hx;
+        posLo[0] = srcXmins[0] + i*hx;
+        posHi[0] = posLo[0];
         for (size_t j = 0; j < srcNodeDims[1] - 1; ++j) {
-            double yLo = srcXmins[1] + j*hy;
-            double yHi = yLo + hy;
+            posLo[1] = srcXmins[1] + j*hy;
+            posHi[1] = posLo[1] + hy;
             size_t index = i*(srcNodeDims[1] - 1) + j;
-            srcData[k][index] = 0.5*(cos(2.*yHi) - cos(2.*yLo));
+            srcData[k][index] = psi(posHi) - psi(posLo);
         }
     }
 
@@ -81,7 +88,9 @@ int main(int argc, char** argv) {
     int dstNumPoints = dstDims[0];
     int dstNumCells = dstDims[0] - 1;
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
-    createLineGrid(dstDims, dstXmins, dstXmaxs, dstCoords);    
+    std::vector<double> pa = prsr.get<std::vector<double> >("--pa");
+    std::vector<double> pb = prsr.get<std::vector<double> >("--pb");
+    createLineGrid(dstDims, &pa[0], &pb[0], dstCoords);    
 
     // dst data, dimensioned number of cells
     double* dstData = new double[dstNumCells];
@@ -97,7 +106,7 @@ int main(int argc, char** argv) {
     SgFlowInterp2D_del(&interp);
 
     // check
-    double exactFlux = psi(dstXmaxs) - psi(dstXmins);
+    double exactFlux = psi(pb) - psi(pa);
     std::cout << "Flux: " << dstData[0] << 
                  " exact: " << exactFlux <<
                  " error: " << dstData[0] - exactFlux << '\n';
@@ -110,6 +119,5 @@ int main(int argc, char** argv) {
     }
     delete[] dstData;
 
-    std::cout << "SUCCESS\n";
     return 0;
 }

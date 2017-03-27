@@ -67,6 +67,9 @@ target_link_libraries(testNodeInterpRotatedPole sigrid sgutils)
 add_executable(testCmdLineArgParser testCmdLineArgParser.cxx)
 target_link_libraries(testCmdLineArgParser sgutils)
 
+add_executable(streamFunctionInterp streamFunctionInterp.cxx)
+target_link_libraries(streamFunctionInterp sigrid sgutils)
+
 add_test(testLinearSolve
         ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testLinearSolve.py)
 add_test(testLinearSolveOverDetermined
