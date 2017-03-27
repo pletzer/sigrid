@@ -177,11 +177,11 @@ struct SgQuadLineIntersect_type {
         }
         double* xis;
         this->slvr->getSolution(&xis);
-        // make sure the parametric coordinates are within the (0-, 1-) range
+        // make sure the parametric coordinates are within the (0+, 1-) range
         // no need to include the end points since they are already taken into 
         // account when looking for nodes inside cell
-        if (xis[0] >= -this->tol && xis[0] < 1.0 - this->tol && 
-            xis[1] >= -this->tol && xis[1] < 1.0 - this->tol) {
+        if (xis[0] > this->tol && xis[0] < 1.0 - this->tol && 
+            xis[1] > this->tol && xis[1] < 1.0 - this->tol) {
             // the two edges intersect
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
                 pt[j] = edgePoint0[j] + xis[0]*(edgePoint1[j] - edgePoint0[j]);
@@ -248,7 +248,8 @@ struct SgQuadLineIntersect_type {
 
         // add the starting line point if inside the quad
         if (this->isPointInQuad(&this->lineCoords[0*NDIMS_2D_PHYS], this->quadCoords)) {
-          std::vector<double> pt(&this->lineCoords[0*NDIMS_2D_PHYS], &this->lineCoords[0*NDIMS_2D_PHYS] + 2);
+          std::vector<double> pt(&this->lineCoords[0*NDIMS_2D_PHYS], 
+                                 &this->lineCoords[0*NDIMS_2D_PHYS] + 2);
           this->addPoint(pt);
         }
 
