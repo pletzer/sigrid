@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 
     // create src grid
     const double srcXmins[] = {0.0, 0.0};
-    const double srcXmaxs[] = {1.0, 1.0};
+    const double srcXmaxs[] = {0.5, 0.5};
     int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcNodeDims, srcXmins, srcXmaxs, srcCoords);
