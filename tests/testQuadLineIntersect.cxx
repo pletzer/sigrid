@@ -176,7 +176,7 @@ bool testLineOnEdge() {
     std::cout << "testLineOnEdge: num intersection points = " << numPoints << '\n';
 
     if (numPoints != 2) {
-        // error
+        // not well defined
         return false;
     }
 
