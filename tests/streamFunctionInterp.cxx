@@ -32,8 +32,8 @@ int main(int argc, char** argv) {
 
     // parse command line arguments
     CmdLineArgParser prsr;
-    prsr.set("--ni", 11, "Number of nodes in the x direction");
-    prsr.set("--nj", 21, "Number of nodes in the y direction");
+    prsr.set("--ni", 3, "Number of nodes in the x direction");
+    prsr.set("--nj", 3, "Number of nodes in the y direction");
     prsr.set("--pa", "0.,0.", "Start position");
     prsr.set("--pb", "1.,1.", "End position");
     prsr.parse(argc, argv);

@@ -228,6 +228,42 @@ bool testSmallLineOnEdge() {
     return true;
 }
 
+bool testAcrossQuad() {
+
+    double quadCoords[] = {0., 0.,
+                           0.5, 0.,
+                           0.5, 0.5,
+                           0., 0.5};
+
+    double lineCoords[] = {0.0, 0.0,
+                           1.0, 1.0};
+
+    SgQuadLineIntersect_type* qis = NULL;
+    SgQuadLineIntersect_new(&qis);
+    SgQuadLineIntersect_setQuadPoints(&qis, quadCoords);
+    SgQuadLineIntersect_setLinePoints(&qis, lineCoords);
+    int numPoints;
+    double* points = NULL;
+    SgQuadLineIntersect_collectIntersectPoints(&qis, &numPoints, &points);
+    SgQuadLineIntersect_del(&qis);
+
+    std::cout << "testAcrossQuad: num intersection points = " << numPoints << '\n';
+
+    if (numPoints != 2) {
+        // error
+        return false;
+    }
+
+    for (int i = 0; i < numPoints; ++i) {
+        std::cout << "point " << i << ": ";
+        for (size_t j = 0; j < 2; ++j) {
+            std::cout << points[2*i + j] << ", ";
+        }
+        std::cout << '\n';
+    }
+    // OK
+    return true;
+}
 
 int main(int argc, char** argv) {
 
@@ -238,6 +274,7 @@ int main(int argc, char** argv) {
     if (!testParallelSegment()) return 5;
     if (!testLineOnEdge()) return 6;
     if (!testSmallLineOnEdge()) return 7;
+    if (!testAcrossQuad()) return 8;
 
     std::cout << "SUCCESS\n";
     return 0;
