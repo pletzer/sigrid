@@ -38,10 +38,24 @@ int main(int argc, char** argv) {
     prsr.set("--pb", "1.,1.", "End position");
     prsr.parse(argc, argv);
 
+    int srcNodeDims[] = {prsr.get<int>("--ni"), prsr.get<int>("--nj")};
+    std::vector<double> pa = prsr.get<std::vector<double> >("--pa");
+    std::vector<double> pb = prsr.get<std::vector<double> >("--pb");
+
+    std::cout << "Compute flow integral: " << srcNodeDims[0] << "x" << srcNodeDims[1] <<  " pa = ";
+    for (size_t i = 0; i < pa.size(); ++i) {
+        std::cout << pa[i] << ", ";
+    }
+    std::cout << " pb = ";
+    for (size_t i = 0; i < pb.size(); ++i) {
+        std::cout << pb[i] << ", ";
+    }
+    std::cout << '\n';
+
+
     // create src grid
     const double srcXmins[] = {0.0, 0.0};
     const double srcXmaxs[] = {1.0, 1.0};
-    int srcNodeDims[] = {prsr.get<int>("--ni"), prsr.get<int>("--nj")};
     int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcNodeDims, srcXmins, srcXmaxs, srcCoords);
@@ -88,8 +102,6 @@ int main(int argc, char** argv) {
     int dstNumPoints = dstDims[0];
     int dstNumCells = dstDims[0] - 1;
     double* dstCoords[] = {new double[dstNumPoints], new double[dstNumPoints]};
-    std::vector<double> pa = prsr.get<std::vector<double> >("--pa");
-    std::vector<double> pb = prsr.get<std::vector<double> >("--pb");
     createLineGrid(dstDims, &pa[0], &pb[0], dstCoords);    
 
     // dst data, dimensioned number of cells
