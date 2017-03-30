@@ -17,7 +17,7 @@ extern "C"
 int SgQuadLineFlows_del(SgQuadLineFlows_type** self) {
 
  	delete *self;
- 	
+
  	return 0;
 }
 
@@ -40,3 +40,10 @@ int SgQuadLineFlows_computeProjections(SgQuadLineFlows_type** self) {
 	(*self)->computeProjections();
  	return 0;
 }
+
+extern "C"
+int SgQuadLineFlows_getProjection(SgQuadLineFlows_type** self, int edgeIndex) {
+	(*self)->getProjection(edgeIndex);
+ 	return 0;
+}
+

@@ -11,7 +11,12 @@
 #include <limits>
 #include <algorithm>
 #include "SgNdims.h"
- 
+
+const int EDGE_LO_X = 0;
+const int EDGE_HI_X = 1;
+const int EDGE_LO_Y = 2;
+const int EDGE_HI_Y = 3;
+
 struct SgQuadLineFlows_type {
 
     // flat array (node, component) of the nodal coordinates
@@ -45,6 +50,15 @@ struct SgQuadLineFlows_type {
     void setLinePoints(const double* lineCoords) {
 
       this->lineCoords = (double*) lineCoords;
+    }
+
+    /**
+     * Get the flux projection onto an edge
+     * @param edgeIndex (0 = low x, 1 = high x, 2 = low y, 3 = high y)
+     * @return flux 
+     */
+    double getProjection(int edgeIndex) {
+      return this->projections[edgeIndex];
     }
 
     /**
@@ -1617,9 +1631,22 @@ struct SgQuadLineFlows_type {
        p0y*(p3x*(-xa + xb) + p1x*(ya - yb) + p2x*(xa - xb - ya + yb)),3));
 
 
-    }
+    // flux along lower x edge
+    this->projections[0] = ((xb - xa)*(p3x - p0x) + (yb - ya)*(p3y - p0y)) * integrals[0]
+                         + ((xb - xa)*(p2x - p1x) + (yb - ya)*(p2y - p1y)) * integrals[1];
 
+    // flux along upper x edge
+    this->projections[1] = ((xb - xa)*(p3x - p0x) + (yb - ya)*(p3y - p0y)) * integrals[3]
+                         + ((xb - xa)*(p2x - p1x) + (yb - ya)*(p2y - p1y)) * integrals[2];
 
+    // flux along lower y edge
+    this->projections[2] = ((xb - xa)*(p1x - p0x) + (yb - ya)*(p1y - p0y)) * integrals[0]
+                         + ((xb - xa)*(p2x - p3x) + (yb - ya)*(p2y - p3y)) * integrals[3];
+
+    // flux along upper y edge
+    this->projections[2] = ((xb - xa)*(p1x - p0x) + (yb - ya)*(p1y - p0y)) * integrals[1]
+                         + ((xb - xa)*(p2x - p3x) + (yb - ya)*(p2y - p3y)) * integrals[2];
+  }
 
 
 };
@@ -1639,6 +1666,8 @@ int SgQuadLineFlows_setLinePoints(SgQuadLineFlows_type** self,
                                       const double* linePoints);
 
 int SgQuadLineFlows_computeProjections(SgQuadLineFlows_type** self);
+
+int SgQuadLineFlows_getProjection(SgQuadLineFlows_type** self, int edgeIndex);
 
 #ifdef __cplusplus
 }
