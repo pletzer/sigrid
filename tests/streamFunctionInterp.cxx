@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 
     // create src grid
     const double srcXmins[] = {0.0, 0.0};
-    const double srcXmaxs[] = {0.5, 0.5};
+    const double srcXmaxs[] = {1.0, 1.0};
     int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcNodeDims, srcXmins, srcXmaxs, srcCoords);
@@ -81,6 +81,7 @@ int main(int argc, char** argv) {
             posHi[1] = posLo[1];
             size_t index = i*(srcNodeDims[1] - 0) + j;
             srcData[k][index] = psi(posHi) - psi(posLo);
+            std::cout << "x flux/y component: k = " << k << " index = " << index << " i = " << i << " j = " << j << " value = " << srcData[k][index] << '\n';
         }
     }
 
@@ -94,6 +95,7 @@ int main(int argc, char** argv) {
             posHi[1] = posLo[1] + hy;
             size_t index = i*(srcNodeDims[1] - 1) + j;
             srcData[k][index] = psi(posHi) - psi(posLo);
+            std::cout << "y flux/x component: k = " << k << " index = " << index << " i = " << i << " j = " << j << " value = " << srcData[k][index] << '\n';
         }
     }
 

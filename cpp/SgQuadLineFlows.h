@@ -139,43 +139,20 @@ struct SgQuadLineFlows_type {
       double xb = this->xib[0];
       double yb = this->xib[1];
 
-      double p0x = 0.;
-      double p0y = 0.;
-
-      double p1x = 1.;
-      double p1y = 0.;
-
-      double p2x = 1.;
-      double p2y = 1.;
-
-      double p3x = 0.;
-      double p3y = 1.;
-
-      double integrals[4];
-
-      integrals[0] = (-3*(-2 + xb + ya + yb) + xa*(-3 + 2*ya + yb) + xb*(ya + 2*yb))/6.;
-
-      integrals[1] = (-(xa*(-3 + 2*ya + yb)) - xb*(-3 + ya + 2*yb))/6.;
-
-      integrals[2] = (xa*(2*ya + yb) + xb*(ya + 2*yb))/6.;
-
-      integrals[3] = (-((-3 + 2*xa + xb)*ya) - (-3 + xa + 2*xb)*yb)/6.;
+      double xabMid = 0.5*(xa + xb);
+      double yabMid = 0.5*(ya + yb);
 
       // flux along lower x edge
-      this->projections[0] = ((xb - xa)*(p3x - p0x) + (yb - ya)*(p3y - p0y)) * integrals[0]
-                         + ((xb - xa)*(p2x - p1x) + (yb - ya)*(p2y - p1y)) * integrals[1];
+      this->projections[0] = (xb - xa)*(1. - yabMid);
 
       // flux along upper x edge
-      this->projections[1] = ((xb - xa)*(p3x - p0x) + (yb - ya)*(p3y - p0y)) * integrals[3]
-                         + ((xb - xa)*(p2x - p1x) + (yb - ya)*(p2y - p1y)) * integrals[2];
+      this->projections[1] = (xb - xa)*yabMid;
 
       // flux along lower y edge
-      this->projections[2] = ((xb - xa)*(p1x - p0x) + (yb - ya)*(p1y - p0y)) * integrals[0]
-                         + ((xb - xa)*(p2x - p3x) + (yb - ya)*(p2y - p3y)) * integrals[3];
+      this->projections[2] = (yb - ya)*(1. - xabMid);
 
       // flux along upper y edge
-      this->projections[2] = ((xb - xa)*(p1x - p0x) + (yb - ya)*(p1y - p0y)) * integrals[1]
-                         + ((xb - xa)*(p2x - p3x) + (yb - ya)*(p2y - p3y)) * integrals[2];
+      this->projections[2] = (yb - ya)*xabMid;
   }
 
 
