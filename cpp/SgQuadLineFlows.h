@@ -105,7 +105,7 @@ struct SgQuadLineFlows_type {
     /**
      * Compute projections
      */
-    void computeProjections() {
+    int computeProjections() {
 
       int res = this->computeStartEndLineIndices();
 
