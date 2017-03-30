@@ -377,14 +377,14 @@ void computeJacobianAndRHS() {
         for (size_t j = 0; j < ndims; ++j) {
 
             dIndsHi[j] += 0.5;
-            dIndsHi[j] = (dIndsHi[j] < this->dims[j] - 1? dIndsHi[j]: this->dims[j] - 2);
+            dIndsHi[j] = (dIndsHi[j] <= this->dims[j] - 1? dIndsHi[j]: this->dims[j] - 1);
             double xHi = this->interp(dIndsHi, this->coords[i]);
 
             dIndsLo[j] -= 0.5;
             dIndsLo[j] = (dIndsLo[j] >= 0? dIndsLo[j]: 0);
             double xLo = this->interp(dIndsLo, this->coords[i]);
 
-            // average difference of the i-th coordinate anlong the j-th topo direction
+            // average difference of the i-th coordinate along the j-th topo direction
             this->jacMatrix[k] = (xHi - xLo)/(dIndsHi[j] - dIndsLo[j]);
 
             // reset
