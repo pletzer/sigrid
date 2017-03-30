@@ -80,7 +80,8 @@ struct SgQuadLineFlows_type {
       }
       const int dims[] = {2, 2};
       const int periodicity[] = {0, 0};
-      this->indexFinder->setGrid(NDIMS_2D_TOPO, dims, periodicity, (const double**) &this->quadGridCoords[0]);
+      this->indexFinder->setGrid(NDIMS_2D_TOPO, dims, periodicity,
+                                (const double**) &this->quadGridCoords[0]);
     }
 
     /**
@@ -88,31 +89,9 @@ struct SgQuadLineFlows_type {
      * @param lineCoords line coordinates
      */
     void setLinePoints(const double* lineCoords) {
-
-      int end;
-
       this->lineCoords = (double*) lineCoords;
-      double initInds[] = {0.5, 0.5};
-
-      // search xia
-      this->indexFinder->reset(initInds, &lineCoords[0]);
-      end = 0;
-      while (end == 0) {
-        end = this->indexFinder->next();
-      }
-      this->xia = this->indexFinder->getIndices();
-
-      // search xib
-      this->indexFinder->reset(initInds, &lineCoords[2]);
-      end = 0;
-      while (end == 0) {
-        end = this->indexFinder->next();
-      }
-      this->xib = this->indexFinder->getIndices();
-
-      // need to check error
-      // HERE...
     }
+
 
     /**
      * Get the flux projection onto an edge
@@ -128,6 +107,8 @@ struct SgQuadLineFlows_type {
      */
     void computeProjections() {
 
+      int res = this->computeStartEndLineIndices();
+
       double x0a = this->xia[0];
       double x1a = this->xia[1];
       double x0b = this->xib[0];
@@ -142,8 +123,55 @@ struct SgQuadLineFlows_type {
       this->projections[EDGE_HI_0] = x0abDiff*x1abMid;
       this->projections[EDGE_LO_1] = x1abDiff*(1. - x0abMid);
       this->projections[EDGE_HI_1] = x1abDiff*x0abMid;
+
+      return res;
   }
 
+private:
+
+    /**
+     * Compute the start/end indices of the line
+     * @return error (0 = OK, 1 lower point failed, 2 upper point failed, < 0 other error)
+     */
+     int computeStartEndLineIndices() {
+
+      if (! this->lineCoords) {
+        // must call setLinePoints before calling this method
+        return -1;
+      }
+
+      int end, res;
+
+      // initial guess indices
+      res = 0;
+      double initInds[] = {0.5, 0.5};
+
+      // search index position of the start point
+      this->indexFinder->reset(initInds, &lineCoords[0]);
+      end = 0;
+      while (end == 0) {
+        end = this->indexFinder->next();
+      }
+      this->xia = this->indexFinder->getIndices();
+      if (end != 1) {
+        // not converged
+        res = 1;
+      }
+
+      // search index position of the end point
+      this->indexFinder->reset(initInds, &lineCoords[2]);
+      end = 0;
+      while (end == 0) {
+        end = this->indexFinder->next();
+      }
+      this->xib = this->indexFinder->getIndices();
+      if (end != 1) {
+        // not converged
+        res = 2;
+      }
+
+      return res;
+    }
 
 };
  

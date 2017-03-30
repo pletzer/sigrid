@@ -37,8 +37,8 @@ int SgQuadLineFlows_setLinePoints(SgQuadLineFlows_type** self,
 
 extern "C"
 int SgQuadLineFlows_computeProjections(SgQuadLineFlows_type** self) {
-	(*self)->computeProjections();
- 	return 0;
+	int res = (*self)->computeProjections();
+ 	return res;
 }
 
 extern "C"
