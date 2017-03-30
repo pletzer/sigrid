@@ -13,10 +13,10 @@
 #include "SgNdims.h"
 #include "SgFindPointInCell.h"
 
-const int EDGE_LO_X = 0;
-const int EDGE_HI_X = 1;
-const int EDGE_LO_Y = 2;
-const int EDGE_HI_Y = 3;
+const int EDGE_LO_0 = 0;
+const int EDGE_HI_0 = 1;
+const int EDGE_LO_1 = 2;
+const int EDGE_HI_1 = 3;
 
 struct SgQuadLineFlows_type {
 
@@ -46,8 +46,8 @@ struct SgQuadLineFlows_type {
         this->quadGridCoords.resize(2);
         this->xia.resize(2);
         this->xib.resize(2);
-        this->quadGridCoords[0] = new double[2]; // x
-        this->quadGridCoords[1] = new double[2]; // y
+        this->quadGridCoords[0] = new double[4]; // x, 4 nodes
+        this->quadGridCoords[1] = new double[4]; // y
         int nitermax = 10;
         double tolpos = 1.e-10;
         this->indexFinder = new SgFindPointInCell_type(nitermax, tolpos);
@@ -70,23 +70,17 @@ struct SgQuadLineFlows_type {
 
       this->quadCoords = (double*)quadCoords;
 
-      // set the grid
-      this->quadGridCoords[0][0] = quadCoords[0];
-      this->quadGridCoords[1][0] = quadCoords[1];
-
-      this->quadGridCoords[0][1] = quadCoords[2];
-      this->quadGridCoords[1][1] = quadCoords[3];
-
-      this->quadGridCoords[0][2] = quadCoords[6];
-      this->quadGridCoords[1][2] = quadCoords[7];
-
-      this->quadGridCoords[0][3] = quadCoords[4];
-      this->quadGridCoords[1][3] = quadCoords[5];
-
-      const int ndims = 2;
+      // set the grid. Note that we're getting the coordinates in counterclockwise numbering 
+      // while the grid assumes structured node ordering, the first index varying faster
+      for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
+        this->quadGridCoords[k][0] = quadCoords[0*NDIMS_2D_PHYS + k];
+        this->quadGridCoords[k][1] = quadCoords[3*NDIMS_2D_PHYS + k];
+        this->quadGridCoords[k][2] = quadCoords[1*NDIMS_2D_PHYS + k];
+        this->quadGridCoords[k][3] = quadCoords[2*NDIMS_2D_PHYS + k];
+      }
       const int dims[] = {2, 2};
       const int periodicity[] = {0, 0};
-      this->indexFinder->setGrid(ndims, dims, periodicity, (const double**) &this->quadGridCoords[0]);
+      this->indexFinder->setGrid(NDIMS_2D_TOPO, dims, periodicity, (const double**) &this->quadGridCoords[0]);
     }
 
     /**
@@ -134,25 +128,20 @@ struct SgQuadLineFlows_type {
      */
     void computeProjections() {
 
-      double xa = this->xia[0];
-      double ya = this->xia[1];
-      double xb = this->xib[0];
-      double yb = this->xib[1];
+      double x0a = this->xia[0];
+      double x1a = this->xia[1];
+      double x0b = this->xib[0];
+      double x1b = this->xib[1];
 
-      double xabMid = 0.5*(xa + xb);
-      double yabMid = 0.5*(ya + yb);
+      double x0abMid = 0.5*(x0a + x0b);
+      double x1abMid = 0.5*(x1a + x1b);
+      double x0abDiff = x0b - x0a;
+      double x1abDiff = x1b - x1a;
 
-      // flux along lower x edge
-      this->projections[0] = (xb - xa)*(1. - yabMid);
-
-      // flux along upper x edge
-      this->projections[1] = (xb - xa)*yabMid;
-
-      // flux along lower y edge
-      this->projections[2] = (yb - ya)*(1. - xabMid);
-
-      // flux along upper y edge
-      this->projections[2] = (yb - ya)*xabMid;
+      this->projections[EDGE_LO_0] = x0abDiff*(1. - x1abMid);
+      this->projections[EDGE_HI_0] = x0abDiff*x1abMid;
+      this->projections[EDGE_LO_1] = x1abDiff*(1. - x0abMid);
+      this->projections[EDGE_HI_1] = x1abDiff*x0abMid;
   }
 
 
