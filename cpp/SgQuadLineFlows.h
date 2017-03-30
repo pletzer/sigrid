@@ -1667,7 +1667,7 @@ int SgQuadLineFlows_setLinePoints(SgQuadLineFlows_type** self,
 
 int SgQuadLineFlows_computeProjections(SgQuadLineFlows_type** self);
 
-int SgQuadLineFlows_getProjection(SgQuadLineFlows_type** self, int edgeIndex);
+int SgQuadLineFlows_getProjection(SgQuadLineFlows_type** self, int edgeIndex, double* flux);
 
 #ifdef __cplusplus
 }

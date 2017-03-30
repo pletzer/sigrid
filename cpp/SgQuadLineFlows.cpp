@@ -42,8 +42,8 @@ int SgQuadLineFlows_computeProjections(SgQuadLineFlows_type** self) {
 }
 
 extern "C"
-int SgQuadLineFlows_getProjection(SgQuadLineFlows_type** self, int edgeIndex) {
-	(*self)->getProjection(edgeIndex);
+int SgQuadLineFlows_getProjection(SgQuadLineFlows_type** self, int edgeIndex, double* flux) {
+	*flux = (*self)->getProjection(edgeIndex);
  	return 0;
 }
 
