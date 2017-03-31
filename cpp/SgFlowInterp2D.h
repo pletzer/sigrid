@@ -7,7 +7,7 @@
  
 #include "SgNdims.h"
 #include "SgQuadLineIntersect.h"
-#include "SgTriangulate.h"
+#include "SgQuadLineFlows.h"
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -201,6 +201,7 @@ struct SgFlowInterp2D_type {
                                 0, 1};
 
         SgQuadLineIntersect_type intersector;
+        SgQuadLineFlows_type weightCalc;
 
         // iterate over the dst segments
         for (size_t dstIndx = 0; dstIndx < this->dstNumCells; ++dstIndx) {
@@ -216,7 +217,10 @@ struct SgFlowInterp2D_type {
                 // get the src quad's vertices
                 this->getSrcQuadCoord(srcIndx, offset2D, srcQuadCoords);
 
+                // reset the number of intersection points to zero
                 intersector.reset();
+
+                // set the quad's vertices in counterclock ordering
                 intersector.setQuadPoints(srcQuadCoords);
 
                 if (!intersector.checkIfOverlap()) {
@@ -239,20 +243,15 @@ struct SgFlowInterp2D_type {
                         it = this->weights.find(dstIndx);
                     }
 
-                    double* pA = &points[0*NDIMS_2D_PHYS];
-                    double* pB = &points[1*NDIMS_2D_PHYS];
-
-                    double dx = pB[0] - pA[0];
-                    double dy = pB[1] - pA[1];
-
-                    double xMid = 0.5*(pA[0] + pB[0]);
-                    double yMid = 0.5*(pA[1] + pB[1]);
+                    weightCalc.setQuadPoints(srcQuadCoords);
+                    weightCalc.setLinePoints(points);
+                    weightCalc.computeProjections();
 
                     std::vector<double> w(4);
-                    w[0] = dx * (1.0 - yMid); // x low side
-                    w[1] = dx * (0.0 + yMid); // x high side
-                    w[2] = (1.0 - xMid) * dy; // y low side
-                    w[3] = (0.0 + xMid) * dy; // y high side
+                    w[0] = weightCalc.getProjection(EDGE_LO_0);
+                    w[1] = weightCalc.getProjection(EDGE_HI_0);
+                    w[2] = weightCalc.getProjection(EDGE_LO_1);
+                    w[3] = weightCalc.getProjection(EDGE_HI_1);
 
                     std::pair<size_t, std::vector<double> > p(srcIndx, w);
                     it->second.push_back(p);

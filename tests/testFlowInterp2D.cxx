@@ -66,15 +66,16 @@ bool testSimple(const double dstXmins[], const double dstXmaxs[]) {
     SgFlowInterp2D_setDstGrid(&interp, dstDims, (const double**) dstCoords);
     SgFlowInterp2D_computeWeights(&interp);
     SgFlowInterp2D_apply(&interp, (const double**) srcData, dstData);
+    SgFlowInterp2D_debug(&interp);
     SgFlowInterp2D_del(&interp);
 
     // check flux projected onto segment
-    double hx = dstXmaxs[0] - dstXmins[0];
-    double hy = dstXmaxs[1] - dstXmins[1];
-    double avrgX = 0.5*(dstXmaxs[0] + dstXmins[0]);
-    double avrgY = 0.5*(dstXmaxs[1] + dstXmins[1]);
-    const double exactFlux = hx*( (1. - avrgY)*1. + avrgY*3. ) + hy*( (1. - avrgX)*4. + avrgX*2. );
-    std::cout << "Flux: " << dstData[0] << 
+    double u = dstXmaxs[0] - dstXmins[0];
+    double v = dstXmaxs[1] - dstXmins[1];
+    double xa = dstXmins[0];
+    double ya = dstXmins[1];
+    const double exactFlux = 1.*u*(1 - ya - v/2.) + 3.*u*(ya + v/2.) + 4.*v*(1. - xa - u/2.) + 2.*v*(xa + u/2.);
+    std::cout << "tstSimple flux: " << dstData[0] << 
                  " expected: " << exactFlux << 
                  " error: " << dstData[0] - exactFlux << '\n';
 
@@ -118,7 +119,7 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
         for (size_t j = 0; j < srcNodeDims[1] - 0; ++j) {
             double y = srcXmins[1] + j*hy;
             size_t index = i*(srcNodeDims[1] - 0) + j;
-            srcData[k][index] = 0.5*y*(xHi*xHi - xLo*xLo);
+            srcData[k][index] = 0 * 0.5*y*(xHi*xHi - xLo*xLo);
         }
     }
 
@@ -130,7 +131,7 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
             double yLo = srcXmins[1] + j*hy;
             double yHi = yLo + hy;
             size_t index = i*(srcNodeDims[1] - 1) + j;
-            srcData[k][index] = x*hy + 0.5*(yHi*yHi - yLo*yLo);
+            srcData[k][index] = 1 * x*hy + 0.5*(yHi*yHi - yLo*yLo);
         }
     }
 
@@ -154,17 +155,9 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
     SgFlowInterp2D_del(&interp);
 
     // check flux projected onto segment
-    const double xa = dstXmins[0];
-    const double ya = dstXmins[1];
-    const double xb = dstXmaxs[0];
-    const double yb = dstXmaxs[1];
-    double exactFlux = hy*(xa + ya + 0.5*(hx + hy)) 
-                     + hx*(xa*ya + 0.5*(xb*ya + xa*yb - 2*xa*ya) + (1./3.)*hx*hy);
-    std::cout << "Flux: " << dstData[0] << 
-                 " expected: " << expectedVal <<
-                 " exact: " << exactFlux << 
-                 " error: " << dstData[0] - exactFlux << '\n';
-    assert(fabs(dstData[0] - expectedVal) < 1.e-8);
+    std::cout << "testLinear flux: " << dstData[0] << 
+                 " expected: " << expectedVal << '\n';
+    assert(fabs(dstData[0] - expectedVal) < 1.e-3);
 
     // clean up
     for (size_t j = 0; j < 2; ++j) {
@@ -183,26 +176,38 @@ int main(int argc, char** argv) {
     double dstXmaxs[2];
     int srcNodeDims[2];
 
-    dstXmins[0] = 0.; dstXmins[1] = 0.;
-    dstXmaxs[0] = 1.; dstXmaxs[1] = 1.;
-    //if (!testSimple(dstXmins, dstXmaxs)) return 1;
+/**
+    // make sure the segment is inside the cell
+    dstXmins[0] = 0.0000001; dstXmins[1] = 0.0000001;
+    dstXmaxs[0] = 0.9999999; dstXmaxs[1] = 0.0000001;
+    if (!testSimple(dstXmins, dstXmaxs)) return 1;
 
-    dstXmins[0] = 0.2; dstXmins[1] = 0.;
-    dstXmaxs[0] = 0.2; dstXmaxs[1] = 1.;
-    //if (!testSimple(dstXmins, dstXmaxs)) return 2;
+    // going along y
+    dstXmins[0] = 0.2; dstXmins[1] = 0.0000001;
+    dstXmaxs[0] = 0.2; dstXmaxs[1] = 0.9999999;
+    if (!testSimple(dstXmins, dstXmaxs)) return 2;
 
-    dstXmins[0] = 0.2; dstXmins[1] = 1.;
-    dstXmaxs[0] = 0.2; dstXmaxs[1] = 0.;
-    //if (!testSimple(dstXmins, dstXmaxs)) return 3;
+    // going down along y
+    dstXmins[0] = 0.2; dstXmins[1] = 0.9999999;
+    dstXmaxs[0] = 0.2; dstXmaxs[1] = 0.0000001;
+    if (!testSimple(dstXmins, dstXmaxs)) return 3;
 
+    // arbitrary segment
     dstXmins[0] = 0.2; dstXmins[1] = 0.9;
     dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
-    //if (!testSimple(dstXmins, dstXmaxs)) return 4;
+    if (!testSimple(dstXmins, dstXmaxs)) return 4;
 
-    dstXmins[0] = 0.0; dstXmins[1] = 0.0;
-    dstXmaxs[0] = 1.0; dstXmaxs[1] = 1.0;
-    srcNodeDims[0] = 2; srcNodeDims[1] = 3;
-    double expectedVal = 0.5;
+**/
+    dstXmins[0] = 0.0000001; dstXmins[1] = 0.00000001;
+    dstXmaxs[0] = 0.0000001; dstXmaxs[1] = 0.99999999;
+    srcNodeDims[0] = 3; srcNodeDims[1] = 3;
+    double xa = dstXmins[0];
+    double xb = dstXmaxs[0];
+    double ya = dstXmins[1];
+    double yb = dstXmaxs[1];
+    double u = xb - xa;
+    double v = yb - ya;
+    double expectedVal = 0*u*(xa*ya + (u + v)/2. + u*v/3.) + 1*v*(xa + ya + (u + v)/2.);
     if (!testLinear(dstXmins, dstXmaxs, srcNodeDims, expectedVal)) return 5;
 
     std::cout << "SUCCESS\n";

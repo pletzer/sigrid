@@ -249,7 +249,7 @@ bool testAcrossQuad() {
 
     std::cout << "testAcrossQuad: num intersection points = " << numPoints << '\n';
 
-    if (numPoints != 2) {
+    if (numPoints != 1) { // or should it be 2?
         // error
         return false;
     }

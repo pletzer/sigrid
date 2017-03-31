@@ -39,5 +39,6 @@ for j in range(args.nj):
     pylab.plot(lons[j, :], lats[j, :], 'b-')
 for i in range(args.ni):
     pylab.plot(lons[:, i], lats[:, i], 'r-')
-pylab.show()
+pylab.savefig('testCreateRotatedPole.png')
+
 
