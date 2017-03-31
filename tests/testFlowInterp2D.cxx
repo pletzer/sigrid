@@ -113,24 +113,24 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
 
     // fluxes along x
     k = 0;
-    for (size_t i = 0; i < srcNodeDims[0] - 1; ++i) {
-        double xLo = srcXmins[0] + i*hx;
-        double xHi = xLo + hx;
-        for (size_t j = 0; j < srcNodeDims[1] - 0; ++j) {
-            double y = srcXmins[1] + j*hy;
-            size_t index = i*(srcNodeDims[1] - 0) + j;
-            srcData[k][index] = 0 * 0.5*y*(xHi*xHi - xLo*xLo);
+    for (size_t j = 0; j < srcNodeDims[0] - 0; ++j) {
+        double y = srcXmins[1] + j*hy;
+        for (size_t i = 0; i < srcNodeDims[1] - 1; ++i) {
+            double xLo = srcXmins[0] + i*hx;
+            double xHi = xLo + hx;
+            size_t index = j*(srcNodeDims[1] - 1) + j;
+            srcData[k][index] = 1 * 0.5*y*(xHi*xHi - xLo*xLo);
         }
     }
 
     // fluxes along y
     k = 1;
-    for (size_t i = 0; i < srcNodeDims[0] - 0; ++i) {
-        double x = srcXmins[0] + i*hx;
-        for (size_t j = 0; j < srcNodeDims[1] - 1; ++j) {
-            double yLo = srcXmins[1] + j*hy;
-            double yHi = yLo + hy;
-            size_t index = i*(srcNodeDims[1] - 1) + j;
+    for (size_t j = 0; j < srcNodeDims[0] - 1; ++j) {
+        double yLo = srcXmins[1] + j*hy;
+        double yHi = yLo + hy;
+        for (size_t i = 0; i < srcNodeDims[1] - 0; ++i) {
+            double x = srcXmins[0] + i*hx;
+            size_t index = j*(srcNodeDims[1] - 0) + i;
             srcData[k][index] = 1 * x*hy + 0.5*(yHi*yHi - yLo*yLo);
         }
     }
@@ -205,8 +205,21 @@ int main(int argc, char** argv) {
     double yb = dstXmaxs[1];
     double u = xb - xa;
     double v = yb - ya;
-    double expectedVal = 0*u*(xa*ya + (u + v)/2. + u*v/3.) + 1*v*(xa + ya + (u + v)/2.);
+    double expectedVal = 1*u*(xa*ya + (u + v)/2. + u*v/3.) + 1*v*(xa + ya + (u + v)/2.);
     if (!testLinear(dstXmins, dstXmaxs, srcNodeDims, expectedVal)) return 5;
+
+
+    dstXmins[0] = 0.99999999; dstXmins[1] = 0.00000001;
+    dstXmaxs[0] = 0.99999999; dstXmaxs[1] = 0.99999999;
+    srcNodeDims[0] = 3; srcNodeDims[1] = 3;
+    xa = dstXmins[0];
+    xb = dstXmaxs[0];
+    ya = dstXmins[1];
+    yb = dstXmaxs[1];
+    u = xb - xa;
+    v = yb - ya;
+    expectedVal = 1*u*(xa*ya + (u + v)/2. + u*v/3.) + 1*v*(xa + ya + (u + v)/2.);
+    if (!testLinear(dstXmins, dstXmaxs, srcNodeDims, expectedVal)) return 6;
 
     std::cout << "SUCCESS\n";
     return 0;
