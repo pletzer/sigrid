@@ -34,7 +34,6 @@ struct SgFlowInterp2D_type {
     // the destination grid 
     int dstCellDims[NDIMS_1D_TOPO];
     std::vector<double> dstGrdCoords; // flat array (node, components)
-    size_t dstNumPoints;
     size_t dstNumCells;
 
     // the flux integrals of x and y 2-forms
@@ -60,17 +59,17 @@ struct SgFlowInterp2D_type {
      */
     void setDstGrid(const int dims[], const double** coords) {
 
-        this->dstNumPoints = 1;
+        size_t dstNumPoints = 1;
         this->dstNumCells = 1;
         for (size_t j = 0; j < NDIMS_1D_TOPO; ++j) {
             this->dstCellDims[j] = dims[j] - 1;
-            this->dstNumPoints *= dims[j];
+            dstNumPoints *= dims[j];
             this->dstNumCells *= dims[j] - 1;
         }
 
-        this->dstGrdCoords.resize(NDIMS_2D_PHYS * this->dstNumPoints);
+        this->dstGrdCoords.resize(NDIMS_2D_PHYS * dstNumPoints);
         for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
-            for (size_t i = 0; i < this->dstNumPoints; ++i) {
+            for (size_t i = 0; i < dstNumPoints; ++i) {
                 this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i];
             }
         }
