@@ -140,7 +140,9 @@ struct SgFlowInterp2D_type {
 
         size_t inds[2];
         int* edgeDimProd;
-        int* edgeDimProds[] = {this->srcEdgeXDimProd, this->srcEdgeYDimProd};
+        int* edgeDims;
+        int* edgeXYDimProd[] = {this->srcEdgeXDimProd, this->srcEdgeYDimProd};
+        int* edgeXYDims[] = {this->srcEdgeXDims, this->srcEdgeYDims};
 
         // iterate over the dst segments
         for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
@@ -161,11 +163,12 @@ struct SgFlowInterp2D_type {
                 for (size_t k = 0; k < 2; ++k) {
 
                     // select the right dimensions (number of edges along x and y are different)
-                    edgeDimProd = edgeDimProds[k];
+                    edgeDimProd = edgeXYDimProd[k];
+                    edgeDims = edgeXYDims[k];
 
                     // compute the src cell index set
-                    inds[0] = srcIndx / edgeDimProd[0] % edgeDimProd[0];
-                    inds[1] = srcIndx / edgeDimProd[1] % edgeDimProd[1];
+                    inds[0] = srcIndx / edgeDimProd[0] % edgeDims[0];
+                    inds[1] = srcIndx / edgeDimProd[1] % edgeDims[1];
                 
                     // iterate over the lo/hi edges
                     for (size_t loHi = 0; loHi < 2; ++loHi) {

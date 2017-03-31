@@ -176,7 +176,6 @@ int main(int argc, char** argv) {
     double dstXmaxs[2];
     int srcNodeDims[2];
 
-/**
     // make sure the segment is inside the cell
     dstXmins[0] = 0.0000001; dstXmins[1] = 0.0000001;
     dstXmaxs[0] = 0.9999999; dstXmaxs[1] = 0.0000001;
@@ -197,7 +196,6 @@ int main(int argc, char** argv) {
     dstXmaxs[0] = 0.3; dstXmaxs[1] = 0.3;
     if (!testSimple(dstXmins, dstXmaxs)) return 4;
 
-**/
     dstXmins[0] = 0.0000001; dstXmins[1] = 0.00000001;
     dstXmaxs[0] = 0.0000001; dstXmaxs[1] = 0.99999999;
     srcNodeDims[0] = 3; srcNodeDims[1] = 3;
