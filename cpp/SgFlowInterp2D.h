@@ -32,10 +32,8 @@ struct SgFlowInterp2D_type {
     size_t srcNumCells;
 
     // the destination grid 
-    int dstNodeDims[NDIMS_1D_TOPO];
     int dstCellDims[NDIMS_1D_TOPO];
     int dstCellDimProd[NDIMS_1D_TOPO];
-    int dstNodeDimProd[NDIMS_1D_TOPO];
     std::vector<double> dstGrdCoords; // flat array (node, components)
     size_t dstNumPoints;
     size_t dstNumCells;
@@ -66,17 +64,14 @@ struct SgFlowInterp2D_type {
         this->dstNumPoints = 1;
         this->dstNumCells = 1;
         for (size_t j = 0; j < NDIMS_1D_TOPO; ++j) {
-            this->dstNodeDims[j] = dims[j];
             this->dstCellDims[j] = dims[j] - 1;
             this->dstNumPoints *= dims[j];
             this->dstNumCells *= dims[j] - 1;
         }
         this->dstCellDimProd[NDIMS_1D_TOPO - 1] = 1;
-        this->dstNodeDimProd[NDIMS_1D_TOPO - 1] = 1;
         for (int j = NDIMS_1D_TOPO - 2; j >= 0; --j) {
             // last index varies fastest
             this->dstCellDimProd[j] = this->dstCellDimProd[j + 1] * this->dstCellDims[j + 1];
-            this->dstNodeDimProd[j] = this->dstNodeDimProd[j + 1] * this->dstNodeDims[j + 1];
         }
 
         this->dstGrdCoords.resize(NDIMS_2D_PHYS * this->dstNumPoints);
