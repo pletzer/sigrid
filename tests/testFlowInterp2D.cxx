@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <iostream>
 #include "SgFlowInterp2D.h"
+#include "SgBoxIterator.h"
 #include "createGrids2D.h"
 
 void createLineGrid(const int dims[], const double xmins[], const double xmaxs[], double* coords[]) {
@@ -111,28 +112,35 @@ bool testLinear(const double dstXmins[], const double dstXmaxs[], const int srcN
     double hy = (srcXmaxs[1] - srcXmins[1])/double(srcNodeDims[1] - 1);
     size_t k;
 
+    const int zeros[] = {0, 0};
+    int inds[] = {-1, -1};
+
     // fluxes along x
     k = 0;
-    for (size_t j = 0; j < srcNodeDims[0] - 0; ++j) {
+    const int srcEdgeXDims[] = {srcNodeDims[0], srcNodeDims[1] - 1}; // y, x
+    SgBoxIterator_type edgeXIt(2, zeros, srcEdgeXDims);
+    for (int index = 0; index < edgeXIt.getNumberOfElements(); ++index) {
+        edgeXIt.getElement(index, inds);
+        int j = inds[0]; 
+        int i = inds[1];
         double y = srcXmins[1] + j*hy;
-        for (size_t i = 0; i < srcNodeDims[1] - 1; ++i) {
-            double xLo = srcXmins[0] + i*hx;
-            double xHi = xLo + hx;
-            size_t index = j*(srcNodeDims[1] - 1) + j;
-            srcData[k][index] = 1 * 0.5*y*(xHi*xHi - xLo*xLo);
-        }
+        double xLo = srcXmins[0] + i*hx;
+        double xHi = xLo + hx;
+        srcData[k][index] = 0 * y * 0.5*(xHi*xHi - xLo*xLo);
     }
 
     // fluxes along y
     k = 1;
-    for (size_t j = 0; j < srcNodeDims[0] - 1; ++j) {
+    const int srcEdgeYDims[] = {srcNodeDims[0] - 1, srcNodeDims[1]}; // y, x
+    SgBoxIterator_type edgeYIt(2, zeros, srcEdgeYDims);
+    for (int index = 0; index < edgeYIt.getNumberOfElements(); ++index) {
+        edgeYIt.getElement(index, inds);
+        int j = inds[0]; 
+        int i = inds[1];
         double yLo = srcXmins[1] + j*hy;
         double yHi = yLo + hy;
-        for (size_t i = 0; i < srcNodeDims[1] - 0; ++i) {
-            double x = srcXmins[0] + i*hx;
-            size_t index = j*(srcNodeDims[1] - 0) + i;
-            srcData[k][index] = 1 * x*hy + 0.5*(yHi*yHi - yLo*yLo);
-        }
+        double x = srcXmins[0] + i*hx;
+        srcData[k][index] = 1 * x*hy + 0.5*(yHi*yHi - yLo*yLo);
     }
 
     // destination grid, a segment

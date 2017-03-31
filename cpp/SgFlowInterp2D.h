@@ -8,6 +8,7 @@
 #include "SgNdims.h"
 #include "SgQuadLineIntersect.h"
 #include "SgQuadLineFlows.h"
+#include "SgBoxIterator.h"
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -138,52 +139,55 @@ struct SgFlowInterp2D_type {
      */
     void apply(const double* srcData[], double dstData[]) {
 
-        size_t inds[2];
-        int* edgeDimProd;
-        int* edgeDims;
-        int* edgeXYDimProd[] = {this->srcEdgeXDimProd, this->srcEdgeYDimProd};
-        int* edgeXYDims[] = {this->srcEdgeXDims, this->srcEdgeYDims};
+        int inds[2];
+        const int zeros[] = {0, 0};
 
-        // iterate over the dst segments
-        for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
-            it = this->weights.begin(); it != this->weights.end(); ++it) {
+        SgBoxIterator_type cellIt(2, zeros, this->srcCellDims);
+        SgBoxIterator_type edgeXIt(2, zeros, this->srcEdgeXDims);
+        SgBoxIterator_type edgeYIt(2, zeros, this->srcEdgeYDims);
+        SgBoxIterator_type edgeIts[] = {edgeXIt, edgeYIt};
 
-            // dst cell (flat) index 
-            size_t dstIndx = it->first;
+        // iterate over components
+        for (size_t k = 0; k < 2; ++k) {
 
-            // initialize
-            dstData[dstIndx] = 0;
+            // iterate over the dst segments
+            for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
+                 it = this->weights.begin(); it != this->weights.end(); ++it) {
 
-            // iterate over the src cells intersected by this segment
-            for (size_t i = 0; i < it->second.size(); ++i) {
+                // dst cell (flat) index 
+                size_t dstIndx = it->first;
 
-                size_t srcIndx = it->second[i].first;
+                // initialize
+                dstData[dstIndx] = 0.0;
 
-                // iterate over the two directions/components
-                for (size_t k = 0; k < 2; ++k) {
+                // iterate over the src cells intersected by this segment
+                for (size_t i = 0; i < it->second.size(); ++i) {
 
-                    // select the right dimensions (number of edges along x and y are different)
-                    edgeDimProd = edgeXYDimProd[k];
-                    edgeDims = edgeXYDims[k];
+                    // weights: xLo, xHi, yLo, yHi
+                    const std::vector<double>& weightsXLoXHiYLoYHi = it->second[i].second;
 
-                    // compute the src cell index set
-                    inds[0] = srcIndx / edgeDimProd[0] % edgeDims[0];
-                    inds[1] = srcIndx / edgeDimProd[1] % edgeDims[1];
-                
-                    // iterate over the lo/hi edges
+                    // src cell index
+                    size_t srcIndx = it->second[i].first;
+
+                    // cell indices
+                    cellIt.getElement(srcIndx, inds);
+
+                    // iterate over the low/high sides
                     for (size_t loHi = 0; loHi < 2; ++loHi) {
-                    
-                        // aply offset (or not)
+
+                        // note that we're using y, z order for indexing
+                        // so xHi is in the y direction (index 0) and 
+                        // yHi is in the x direction (index 1)
                         inds[k] += loHi;
 
-                        // get the interpolation weight
-                        double weight = it->second[i].second[2*k + loHi];
+                        // convert the index set to a flat edge iterator index
+                        int index = edgeIts[k].getIndex(inds);
 
-                        // compute the flat index for the src edge
-                        size_t srcEdgeIndx = edgeDimProd[0]*inds[0] + edgeDimProd[1]*inds[1];
+                        // get the weight 
+                        double weight = weightsXLoXHiYLoYHi[2*k + loHi];
 
-                        // update the flux
-                        dstData[dstIndx] += weight * srcData[k][srcEdgeIndx];
+                        // update
+                        dstData[dstIndx] += weight*srcData[k][index];
                     }
                 }
             }

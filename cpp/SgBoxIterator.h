@@ -72,6 +72,19 @@ struct SgBoxIterator_type {
                 index / this->dimProd[i] % this->dims[i];
         }
     }
+
+    /**
+     * Get the flat index given an index set
+     * @param inds index set
+     * @return flat index
+     */
+    int getIndex(const int inds[]) {
+        int index = 0;
+        for (size_t i = 0; i < this->dims.size(); ++i) {
+            index += (inds[i] - this->lowEnd[i]) * this->dimProd[i];
+        }
+        return index;
+    }
 };
  
 #ifdef __cplusplus
@@ -91,6 +104,8 @@ int SgBoxIterator_getNumberOfElements(SgBoxIterator_type** self,
 int SgBoxIterator_getElement(SgBoxIterator_type** self,
                              int index,
                              int inds[]);
+
+int SgBoxIterator_getIndex(SgBoxIterator_type** self, const int inds[], int* index);
 
 #ifdef __cplusplus
 }

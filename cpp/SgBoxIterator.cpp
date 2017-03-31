@@ -34,3 +34,9 @@ int SgBoxIterator_getElement(SgBoxIterator_type** self,
  	return 0;
 }
  
+extern "C"
+int SgBoxIterator_getIndex(SgBoxIterator_type** self,
+                           const int inds[], int* index) {
+  *index = (*self)->getIndex(inds);
+  return 0;
+}
