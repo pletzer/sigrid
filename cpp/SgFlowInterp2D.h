@@ -328,10 +328,8 @@ private:
      */
     void getSrcQuadCoord(size_t indx, const int offset[], double coords[]) const {
 
-        size_t cellInds[NDIMS_2D_TOPO];
-        for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-            cellInds[j] = indx / this->srcCellDimProd[j] % this->srcCellDims[j];
-        }
+        int cellInds[NDIMS_2D_TOPO];
+        this->srcCellIt->getElement(indx, cellInds);
 
         // iterate over the quad's nodes
         for (size_t i = 0; i < 4; ++i) {
