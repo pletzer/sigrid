@@ -19,9 +19,6 @@
 struct SgFlowInterp2D_type {
 
     // the source grid
-    int srcCellDims[NDIMS_2D_TOPO];
-    int srcEdgeXDims[NDIMS_2D_TOPO];
-    int srcEdgeYDims[NDIMS_2D_TOPO];
     std::vector<double> srcGrdCoords; // flat array (node, components)
     size_t srcNumPoints;
     size_t srcNumCells;
@@ -98,20 +95,16 @@ struct SgFlowInterp2D_type {
         this->srcNumPoints = dims[0] * dims[1];
         this->srcNumCells = (dims[0] - 1) * (dims[1] - 1);
 
-        this->srcCellDims[0] = dims[0] - 1;
-        this->srcCellDims[1] = dims[1] - 1;
+        int srcCellDims[] = {dims[0] - 1, dims[1] - 1};
 
-        this->srcEdgeXDims[0] = dims[0];     // y direction
-        this->srcEdgeXDims[1] = dims[1] - 1; // x dimension
-
-        this->srcEdgeYDims[0] = dims[0] - 1; // y direction
-        this->srcEdgeYDims[1] = dims[1];     // x dimension
+        int srcEdge0Dims[] = {dims[0], dims[1] - 1};
+        int srcEdge1Dims[] = {dims[0] - 1, dims[1]};
 
         const int zeros[] = {0, 0};
         this->srcNodeIt = new SgBoxIterator_type(2, zeros, dims);
-        this->srcCellIt = new SgBoxIterator_type(2, zeros, this->srcCellDims);
-        this->srcEdgeIts[0] = new SgBoxIterator_type(2, zeros, this->srcEdgeXDims);
-        this->srcEdgeIts[1] = new SgBoxIterator_type(2, zeros, this->srcEdgeYDims);
+        this->srcCellIt = new SgBoxIterator_type(2, zeros, srcCellDims);
+        this->srcEdgeIts[0] = new SgBoxIterator_type(2, zeros, srcEdge0Dims);
+        this->srcEdgeIts[1] = new SgBoxIterator_type(2, zeros, srcEdge1Dims);
 
         this->srcGrdCoords.resize(NDIMS_2D_PHYS * this->srcNumPoints);
         // iterate over components
