@@ -125,6 +125,11 @@ struct SgFlowInterp2D_type {
         this->srcNodeDimProd[1] = 1;
         this->srcNodeDimProd[0] = this->srcNodeDims[1];
 
+        const int zeros[] = {0, 0};
+        this->srcCellIt = new SgBoxIterator_type(2, zeros, this->srcCellDims);
+        this->srcEdgeIts[0] = new SgBoxIterator_type(2, zeros, this->srcEdgeXDims);
+        this->srcEdgeIts[1] = new SgBoxIterator_type(2, zeros, this->srcEdgeYDims);
+
         this->srcGrdCoords.resize(NDIMS_2D_PHYS * this->srcNumPoints);
         // iterate over components
         for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
