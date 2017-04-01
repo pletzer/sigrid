@@ -40,16 +40,31 @@ struct SgFlowInterp2D_type {
     // {dst cell index: {src cell index: [wXLo, wXHi, wYLo, wYHi]}}
     std::map<size_t, std::vector< std::pair<size_t, std::vector<double> > > > weights;
 
+    // iterators
+    SgBoxIterator_type* srcCellIt;
+    std::vector<SgBoxIterator_type*> srcEdgeIts;
+
     /** 
      * Constructor
      */
     SgFlowInterp2D_type() {
+        this->srcCellIt = NULL;
+        this->srcEdgeIts.resize(2);
+        for (size_t i = 0; i < this->srcEdgeIts.size(); ++i) {
+            this->srcEdgeIts[i] = NULL;
+        }
     }
 
     /**
      * Destructor
      */
     ~SgFlowInterp2D_type() {
+        if (this->srcCellIt) {
+            delete this->srcCellIt;
+        }
+        for (size_t i = 0; i < this->srcEdgeIts.size(); ++i) {
+            delete this->srcEdgeIts[i];
+        }
     }
 
     /**
