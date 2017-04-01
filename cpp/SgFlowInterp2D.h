@@ -41,6 +41,7 @@ struct SgFlowInterp2D_type {
     std::map<size_t, std::vector< std::pair<size_t, std::vector<double> > > > weights;
 
     // iterators
+    SgBoxIterator_type* srcNodeIt;
     SgBoxIterator_type* srcCellIt;
     std::vector<SgBoxIterator_type*> srcEdgeIts;
 
@@ -48,6 +49,7 @@ struct SgFlowInterp2D_type {
      * Constructor
      */
     SgFlowInterp2D_type() {
+        this->srcNodeIt = NULL;
         this->srcCellIt = NULL;
         this->srcEdgeIts.resize(2);
         for (size_t i = 0; i < this->srcEdgeIts.size(); ++i) {
@@ -59,8 +61,8 @@ struct SgFlowInterp2D_type {
      * Destructor
      */
     ~SgFlowInterp2D_type() {
-        if (this->srcCellIt) {
-            delete this->srcCellIt;
+        if (this->srcNodeIt) {
+            delete this->srcNodeIt;
         }
         for (size_t i = 0; i < this->srcEdgeIts.size(); ++i) {
             delete this->srcEdgeIts[i];
@@ -126,6 +128,7 @@ struct SgFlowInterp2D_type {
         this->srcNodeDimProd[0] = this->srcNodeDims[1];
 
         const int zeros[] = {0, 0};
+        this->srcNodeIt = new SgBoxIterator_type(2, zeros, this->srcNodeDims);
         this->srcCellIt = new SgBoxIterator_type(2, zeros, this->srcCellDims);
         this->srcEdgeIts[0] = new SgBoxIterator_type(2, zeros, this->srcEdgeXDims);
         this->srcEdgeIts[1] = new SgBoxIterator_type(2, zeros, this->srcEdgeYDims);
@@ -329,16 +332,19 @@ private:
     void getSrcQuadCoord(size_t indx, const int offset[], double coords[]) const {
 
         int cellInds[NDIMS_2D_TOPO];
+        int inds[NDIMS_2D_TOPO];
         this->srcCellIt->getElement(indx, cellInds);
 
         // iterate over the quad's nodes
         for (size_t i = 0; i < 4; ++i) {
 
-            // compute the low-corner flat index of the node coorresponding to this cell
-            size_t nodeIndx = 0;
+            // apply offset
             for (size_t j = 0; j < NDIMS_2D_TOPO; ++j) {
-                nodeIndx += this->srcNodeDimProd[j]*(cellInds[j] + offset[i*NDIMS_2D_TOPO + j]);
+                inds[j] = cellInds[j] + offset[i*NDIMS_2D_TOPO + j];
             }
+
+            // get the nodal flat index
+            int nodeIndx = this->srcNodeIt->getIndex(inds);
 
             // fill in the node's coordinates
             for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
