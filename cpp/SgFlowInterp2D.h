@@ -19,7 +19,6 @@
 struct SgFlowInterp2D_type {
 
     // the source grid
-    int srcNodeDims[NDIMS_2D_TOPO];
     int srcCellDims[NDIMS_2D_TOPO];
     int srcEdgeXDims[NDIMS_2D_TOPO];
     int srcEdgeYDims[NDIMS_2D_TOPO];
@@ -108,11 +107,8 @@ struct SgFlowInterp2D_type {
         this->srcEdgeYDims[0] = dims[0] - 1; // y direction
         this->srcEdgeYDims[1] = dims[1];     // x dimension
 
-        this->srcNodeDims[0] = dims[0];
-        this->srcNodeDims[1] = dims[1];
-
         const int zeros[] = {0, 0};
-        this->srcNodeIt = new SgBoxIterator_type(2, zeros, this->srcNodeDims);
+        this->srcNodeIt = new SgBoxIterator_type(2, zeros, dims);
         this->srcCellIt = new SgBoxIterator_type(2, zeros, this->srcCellDims);
         this->srcEdgeIts[0] = new SgBoxIterator_type(2, zeros, this->srcEdgeXDims);
         this->srcEdgeIts[1] = new SgBoxIterator_type(2, zeros, this->srcEdgeYDims);
@@ -135,12 +131,6 @@ struct SgFlowInterp2D_type {
     void apply(const double* srcData[], double dstData[]) {
 
         int inds[2];
-        const int zeros[] = {0, 0};
-
-        SgBoxIterator_type cellIt(2, zeros, this->srcCellDims);
-        SgBoxIterator_type edgeXIt(2, zeros, this->srcEdgeXDims);
-        SgBoxIterator_type edgeYIt(2, zeros, this->srcEdgeYDims);
-        SgBoxIterator_type edgeIts[] = {edgeXIt, edgeYIt};
 
         // iterate over components
         for (size_t k = 0; k < 2; ++k) {
@@ -165,7 +155,7 @@ struct SgFlowInterp2D_type {
                     size_t srcIndx = it->second[i].first;
 
                     // cell indices
-                    cellIt.getElement(srcIndx, inds);
+                    this->srcCellIt->getElement(srcIndx, inds);
 
                     // iterate over the low/high sides
                     for (size_t loHi = 0; loHi < 2; ++loHi) {
@@ -176,7 +166,7 @@ struct SgFlowInterp2D_type {
                         inds[k] += loHi;
 
                         // convert the index set to a flat edge iterator index
-                        int index = edgeIts[k].getIndex(inds);
+                        int index = this->srcEdgeIts[k]->getIndex(inds);
 
                         // get the weight 
                         double weight = weightsXLoXHiYLoYHi[2*k + loHi];
