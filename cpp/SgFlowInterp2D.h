@@ -23,10 +23,6 @@ struct SgFlowInterp2D_type {
     int srcCellDims[NDIMS_2D_TOPO];
     int srcEdgeXDims[NDIMS_2D_TOPO];
     int srcEdgeYDims[NDIMS_2D_TOPO];
-    int srcNodeDimProd[NDIMS_2D_TOPO];
-    int srcCellDimProd[NDIMS_2D_TOPO];
-    int srcEdgeXDimProd[NDIMS_2D_TOPO];
-    int srcEdgeYDimProd[NDIMS_2D_TOPO];
     std::vector<double> srcGrdCoords; // flat array (node, components)
     size_t srcNumPoints;
     size_t srcNumCells;
@@ -114,18 +110,6 @@ struct SgFlowInterp2D_type {
 
         this->srcNodeDims[0] = dims[0];
         this->srcNodeDims[1] = dims[1];
-
-        this->srcCellDimProd[1] = 1;
-        this->srcCellDimProd[0] = this->srcCellDims[1];
- 
-        this->srcEdgeXDimProd[1] = 1;
-        this->srcEdgeXDimProd[0] = this->srcEdgeXDims[1];
-
-        this->srcEdgeYDimProd[1] = 1;
-        this->srcEdgeYDimProd[0] = this->srcEdgeYDims[1];
-
-        this->srcNodeDimProd[1] = 1;
-        this->srcNodeDimProd[0] = this->srcNodeDims[1];
 
         const int zeros[] = {0, 0};
         this->srcNodeIt = new SgBoxIterator_type(2, zeros, this->srcNodeDims);
