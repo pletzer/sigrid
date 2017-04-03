@@ -97,8 +97,8 @@ struct SgFlowInterp2D_type {
 
         int srcCellDims[] = {dims[0] - 1, dims[1] - 1};
 
-        int srcEdge0Dims[] = {dims[0], dims[1] - 1};
-        int srcEdge1Dims[] = {dims[0] - 1, dims[1]};
+        int srcEdge0Dims[] = {dims[0] - 1, dims[1]};
+        int srcEdge1Dims[] = {dims[0], dims[1] - 1};
 
         const int zeros[] = {0, 0};
         this->srcNodeIt = new SgBoxIterator_type(2, zeros, dims);
@@ -124,49 +124,50 @@ struct SgFlowInterp2D_type {
     void apply(const double* srcData[], double dstData[]) {
 
         int inds[2];
+        int indsOffset[2];
+        const int offset[] = {
+            0, 0,
+            0, 1,
+            0, 0,
+            1, 0
+        };
 
-        // iterate over components
-        for (size_t k = 0; k < 2; ++k) {
+        // iterate over the dst segments
+        for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
+             it = this->weights.begin(); it != this->weights.end(); ++it) {
 
-            // iterate over the dst segments
-            for (std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::const_iterator 
-                 it = this->weights.begin(); it != this->weights.end(); ++it) {
+            // dst cell (flat) index 
+            size_t dstIndx = it->first;
 
-                // dst cell (flat) index 
-                size_t dstIndx = it->first;
+            // initialize
+            dstData[dstIndx] = 0.0;
 
-                // initialize
-                dstData[dstIndx] = 0.0;
+            // iterate over the src cells intersected by this segment
+            for (size_t i = 0; i < it->second.size(); ++i) {
 
-                // iterate over the src cells intersected by this segment
-                for (size_t i = 0; i < it->second.size(); ++i) {
+                // weights: xLo, xHi, yLo, yHi
+                const std::vector<double>& weightsXLoXHiYLoYHi = it->second[i].second;
 
-                    // weights: xLo, xHi, yLo, yHi
-                    const std::vector<double>& weightsXLoXHiYLoYHi = it->second[i].second;
+                // src cell index
+                size_t srcIndx = it->second[i].first;
 
-                    // src cell index
-                    size_t srcIndx = it->second[i].first;
+                // cell indices
+                this->srcCellIt->getElement(srcIndx, inds);
 
-                    // cell indices
-                    this->srcCellIt->getElement(srcIndx, inds);
+                // iterate over the sides of the cell
+                for (size_t side = 0; side < 4; ++side) {
 
-                    // iterate over the low/high sides
-                    for (size_t loHi = 0; loHi < 2; ++loHi) {
+                    indsOffset[0] = inds[0] + offset[side*2 + 0];
+                    indsOffset[1] = inds[1] + offset[side*2 + 1];
 
-                        // note that we're using y, z order for indexing
-                        // so xHi is in the y direction (index 0) and 
-                        // yHi is in the x direction (index 1)
-                        inds[k] += loHi;
+                    // component; 0 = x edge, 1 = y edge
+                    size_t k = side / 2;
 
-                        // convert the index set to a flat edge iterator index
-                        int index = this->srcEdgeIts[k]->getIndex(inds);
+                    // flat index of edge
+                    size_t index = this->srcEdgeIts[k]->getIndex(indsOffset);
 
-                        // get the weight 
-                        double weight = weightsXLoXHiYLoYHi[2*k + loHi];
-
-                        // update
-                        dstData[dstIndx] += weight*srcData[k][index];
-                    }
+                    // update flux
+                    dstData[dstIndx] += weightsXLoXHiYLoYHi[side]*srcData[k][index];
                 }
             }
         }
