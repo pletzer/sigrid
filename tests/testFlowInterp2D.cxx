@@ -344,5 +344,30 @@ int main(int argc, char** argv) {
     expectedVal = 0. + 3.;
     if (!testSimple2x2(dstXmins, dstXmaxs, expectedVal)) return 8;
 
+    dstXmins[0] = 0.0000001; dstXmins[1] = 0.00000001;
+    dstXmaxs[0] = 0.0000001; dstXmaxs[1] = 0.99999999;
+    srcNodeDims[0] = 3; srcNodeDims[1] = 3;
+    xa = dstXmins[0];
+    xb = dstXmaxs[0];
+    ya = dstXmins[1];
+    yb = dstXmaxs[1];
+    u = xb - xa;
+    v = yb - ya;
+    expectedVal = 6. + 7.;
+    if (!testSimple2x2(dstXmins, dstXmaxs, expectedVal)) return 8;
+
+    dstXmins[0] = 0.0000001; dstXmins[1] = 0.00000001;
+    dstXmaxs[0] = 0.2499999; dstXmaxs[1] = 0.49999999;
+    srcNodeDims[0] = 3; srcNodeDims[1] = 3;
+    xa = dstXmins[0];
+    xb = dstXmaxs[0];
+    ya = dstXmins[1];
+    yb = dstXmaxs[1];
+    u = xb - xa;
+    v = yb - ya;
+    expectedVal = 6.*3./4. + 8.*1./4. + 1.*1./4.;
+    if (!testSimple2x2(dstXmins, dstXmaxs, expectedVal)) return 8;
+
+    std::cout << "SUCCESS\n";
     return 0;
 }
