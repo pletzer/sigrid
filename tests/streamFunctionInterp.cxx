@@ -55,6 +55,8 @@ void saveStreamlinesVtk(const char* filename,
     }
     f << "POINT_DATA " << numPoints << '\n';
     f << "SCALARS psi double 1\n";
+    f << "LOOKUP_TABLE default\n";
+    
      for (size_t index = 0; index < numPoints; ++index) {
         double x = coords[0][index];
         double y = coords[1][index];
@@ -67,6 +69,7 @@ void saveStreamlinesVtk(const char* filename,
 
     f << "CELL_DATA " << numCells << '\n';
     f << "SCALARS velocity double 3\n";
+    f << "LOOKUP_TABLE default\n";
 
     SgBoxIterator_type nodeIt(2, zeros, dims);
     SgBoxIterator_type cellIt(2, zeros, cellDims);
