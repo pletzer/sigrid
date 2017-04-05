@@ -6,6 +6,7 @@
 #define SG_QUAD_LINE_INTERSECT_H
  
 #include <vector>
+#include <algorithm>
 #include <cstdio> // size_t
 #include <cmath>
 #include <limits>
@@ -23,7 +24,10 @@ struct SgQuadLineIntersect_type {
     double* quadCoords;
     double* lineCoords;
 
-    // intersection points as a flat array (array of zero, one or two elements)
+    // intersection linear parametric coefficients
+    std::vector<double> intersectionLambdas;
+
+    // intersection points corresponding to the above lambdas
     std::vector<double> intersectionPoints;
 
     // a tolerance to determine whether a two edges intersect
@@ -57,7 +61,7 @@ struct SgQuadLineIntersect_type {
     }
 
     void reset() {
-        this->intersectionPoints.resize(0);
+        this->intersectionLambdas.resize(0);
     }
 
     /**
@@ -111,16 +115,6 @@ struct SgQuadLineIntersect_type {
     }
 
     /**
-     * Add a point to the list of intersections
-     * @param point point
-     */
-    void addPoint(const std::vector<double>& point) {
-      for (size_t i = 0; i < NDIMS_2D_PHYS; ++i) {
-        this->intersectionPoints.push_back(point[i]);
-      }
-    }
-
-    /**
      * Get the intersection points gathered so far
      * @return array
      */
@@ -153,14 +147,12 @@ struct SgQuadLineIntersect_type {
      * @param edgePoint1 end point of edge 1
      * @param edgePoint2 start point of edge 2
      * @param edgePoint2 end point of edge 2
-     * @param pt intersection point (if present)
      * @return 1 if intersection, 0 otherwise
      */
     int collectEdgeToLineIntersectionPoints(const double edgePoint0[],
                                             const double edgePoint1[],
                                             const double linePoint0[],
-                                            const double linePoint1[],
-                                            double pt[]) {
+                                            const double linePoint1[]) {
         // edgePoint0 + xi*(edgePoint1 - edgePoint0) = linePoint0 + eta*(linePoint1 - linePoint0)
         for (size_t i = 0; i < 2; ++i) {
             this->rhs[i] = linePoint0[i] - edgePoint0[i];
@@ -183,10 +175,7 @@ struct SgQuadLineIntersect_type {
         if (xis[0] > this->tol && xis[0] < 1.0 - this->tol && 
             xis[1] > this->tol && xis[1] < 1.0 - this->tol) {
             // the two edges intersect
-            for (size_t j = 0; j < NDIMS_2D_PHYS; ++j) {
-                pt[j] = edgePoint0[j] + xis[0]*(edgePoint1[j] - edgePoint0[j]);
-                this->intersectionPoints.push_back(pt[j]);
-            }
+            this->intersectionLambdas.push_back(xis[1]);
             return 1;
         }
         return 0;
@@ -244,14 +233,14 @@ struct SgQuadLineIntersect_type {
     void collectIntersectPoints(int* numPoints, double** points) {
 
         *numPoints = 0;
-        double pt[NDIMS_2D_PHYS];
 
         // add the starting line point if inside the quad
         if (this->isPointInQuad(&this->lineCoords[0*NDIMS_2D_PHYS], this->quadCoords)) {
-          std::vector<double> pt(&this->lineCoords[0*NDIMS_2D_PHYS], 
-                                 &this->lineCoords[0*NDIMS_2D_PHYS] + 2);
-          this->addPoint(pt);
+          this->intersectionLambdas.push_back(0.0);
         }
+
+        double* lineCoordA = &this->lineCoords[0*NDIMS_2D_PHYS];
+        double* lineCoordB = &this->lineCoords[1*NDIMS_2D_PHYS];
 
         // iterate over edges
         for (size_t i = 0; i < 4; ++i) {
@@ -260,25 +249,34 @@ struct SgQuadLineIntersect_type {
             size_t quadIndxB = (i + 1) % 4;
             double* quadCoordA = &this->quadCoords[quadIndxA*NDIMS_2D_PHYS];
             double* quadCoordB = &this->quadCoords[quadIndxB*NDIMS_2D_PHYS];
-            double* lineCoordA = &this->lineCoords[0*NDIMS_2D_PHYS];
-            double* lineCoordB = &this->lineCoords[1*NDIMS_2D_PHYS];
             this->collectEdgeToLineIntersectionPoints(quadCoordA, quadCoordB,
-                                                      lineCoordA, lineCoordB, pt);
+                                                      lineCoordA, lineCoordB);
         }
 
         // add the ending line point if inside the quad
-        size_t npts = this->intersectionPoints.size() / NDIMS_2D_PHYS;
+        size_t npts = this->intersectionLambdas.size();
         if (npts < 2 && 
             this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
-          std::vector<double> pt(&this->lineCoords[1*NDIMS_2D_PHYS], &this->lineCoords[1*NDIMS_2D_PHYS] + 2);
-          this->addPoint(pt);
+          this->intersectionLambdas.push_back(1.0);
         }
 
-        // set the return values
-        *numPoints = this->intersectionPoints.size() / NDIMS_2D_PHYS;
+        npts = this->intersectionLambdas.size();
+        *numPoints = npts;
         *points = NULL;
-        if (*numPoints > 0) {
-            *points = &this->intersectionPoints[0];
+
+        // sort the points by lambda
+        std::sort(this->intersectionLambdas.begin(), this->intersectionLambdas.end());
+
+        // set the intersection points
+        this->intersectionPoints.resize(NDIMS_2D_PHYS * npts);
+        for (size_t i = 0; i < npts; ++i) {
+          double lambda = this->intersectionLambdas[i];
+          this->intersectionPoints[i*NDIMS_2D_PHYS + 0] = lineCoordA[0] + lambda * (lineCoordB[0] - lineCoordA[0]);
+          this->intersectionPoints[i*NDIMS_2D_PHYS + 1] = lineCoordA[1] + lambda * (lineCoordB[1] - lineCoordA[1]);
+        }
+
+        if (npts > 0) {
+          *points = &this->intersectionPoints.front();
         }
     }
 
