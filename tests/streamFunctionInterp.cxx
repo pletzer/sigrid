@@ -41,7 +41,7 @@ void saveStreamlinesVtk(const char* filename,
     int inds[] = {-1, -1};
 
     std::fstream f;
-    f.open(filename);
+    f.open(filename, std::ios_base::out);
 
     f << "# vtk DataFile Version 2.0\n";
     f << "streamFunctionInterp\n";
