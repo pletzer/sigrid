@@ -33,7 +33,7 @@ double psi(const std::vector<double>& pos) {
     return 0.5*(x*x + cos(2.*M_PI*y)/M_PI);
 }
 
-void saveStreamlinesVtk(const std::string& filename,
+void saveStreamlinesVtk(const char* filename,
                         const int dims[], const double** coords, 
                         double (*psiFunc)(const std::vector<double>&)) {
 
