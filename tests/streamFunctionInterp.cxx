@@ -6,6 +6,8 @@
 #include <cassert>
 #include <cstdio>
 #include <cmath>
+#include <string>
+#include <fstream>
 #include <iostream>
 #include "SgFlowInterp2D.h"
 #include "SgBoxIterator.h"
@@ -29,6 +31,97 @@ double psi(const std::vector<double>& pos) {
     double x = pos[0];
     double y = pos[1];
     return 0.5*(x*x + cos(2.*M_PI*y)/M_PI);
+}
+
+void saveStreamlinesVtk(const std::string& filename,
+                        const int dims[], const double** coords, 
+                        double (*psiFunc)(const std::vector<double>&)) {
+
+    const int zeros[] = {0, 0};
+    int inds[] = {-1, -1};
+
+    std::fstream f;
+    f.open(filename);
+
+    f << "# vtk DataFile Version 2.0\n";
+    f << "streamFunctionInterp\n";
+    f << "ASCII\n";
+    f << "DATASET STRUCTURED_GRID\n";
+    f << "DIMENSIONS " << dims[0] << " " << dims[1] << " 1\n";
+    int numPoints = dims[0] * dims[1];
+    f << "POINTS " << numPoints << " double\n";
+    for (size_t index = 0; index < numPoints; ++index) {
+        f << coords[0][index] << " " << coords[1][index] << " 0.0\n";
+    }
+    f << "POINT_DATA " << numPoints << '\n';
+    f << "SCALARS psi double 1\n";
+     for (size_t index = 0; index < numPoints; ++index) {
+        double x = coords[0][index];
+        double y = coords[1][index];
+        std::vector<double> pos(2);
+        pos[0] = x; pos[1] = y;
+        f << psi(pos) << '\n';
+    }
+    int numCells = (dims[0] - 1) * (dims[1] - 1);
+    const int cellDims[] = {dims[0] - 1, dims[1] - 1};
+
+    f << "CELL_DATA " << numCells << '\n';
+    f << "SCALARS velocity double 3\n";
+
+    SgBoxIterator_type nodeIt(2, zeros, dims);
+    SgBoxIterator_type cellIt(2, zeros, cellDims);
+    const int edgeDimsX[] = {dims[0] - 1, dims[1]};
+    const int edgeDimsY[] = {dims[0], dims[1] - 1};
+    SgBoxIterator_type edgeItX(2, zeros, edgeDimsX);
+    SgBoxIterator_type edgeItY(2, zeros, edgeDimsY);
+
+    for (size_t index = 0; index < cellIt.getNumberOfElements(); ++index) {
+
+        cellIt.getElement(index, inds);
+
+        size_t node00 = nodeIt.getIndex(inds);
+        size_t edgeX0 = edgeItX.getIndex(inds);
+        size_t edgeY0 = edgeItY.getIndex(inds);
+        size_t x00 = coords[0][node00];
+        size_t y00 = coords[1][node00];
+        std::vector<double> pos00(2);
+        pos00[0] = x00; pos00[1] = y00;
+
+        inds[0] += 1;
+        size_t node10 = nodeIt.getIndex(inds);
+        size_t edgeY1 = edgeItY.getIndex(inds);
+        size_t x10 = coords[0][node10];
+        size_t y10 = coords[1][node10];
+        std::vector<double> pos10(2);
+        pos10[0] = x10; pos10[1] = y10;
+
+        inds[1] += 1;
+        size_t node11 = nodeIt.getIndex(inds);
+        size_t x11 = coords[0][node11];
+        size_t y11 = coords[1][node11];
+        std::vector<double> pos11(2);
+        pos11[0] = x11; pos11[1] = y11;
+
+        inds[0] -= 1;
+        size_t node01 = nodeIt.getIndex(inds);
+        size_t edgeX1 = edgeItX.getIndex(inds);
+        size_t x01 = coords[0][node01];
+        size_t y01 = coords[1][node01];
+        std::vector<double> pos01(2);
+        pos01[0] = x01; pos01[1] = y01;
+        
+        double vx0 = (psiFunc(pos01) - psiFunc(pos00))/(y01 - y00);
+        double vx1 = (psiFunc(pos11) - psiFunc(pos10))/(y11 - y10);
+        double vy0 = (psiFunc(pos10) - psiFunc(pos00))/(x10 - x00);
+        double vy1 = (psiFunc(pos11) - psiFunc(pos01))/(x11 - x01);
+
+        double vx = 0.5*(vx0 + vx1);
+        double vy = 0.5*(vy0 + vy1);
+
+        f << vx << ' ' << vy << " 0.0\n";
+    }
+
+    f.close();
 }
 
 int main(int argc, char** argv) {
@@ -107,6 +200,8 @@ int main(int argc, char** argv) {
         posHi[0] = x; posHi[1] = yHi;
         srcData[k][index] = psi(posHi) - psi(posLo);
     }
+
+    saveStreamlinesVtk("streamFunctionInterp.vtk", srcNodeDims, (const double**) srcCoords, psi);
 
     // destination grid, a segment
     const int dstDims[] = {2}; // number of nodes
