@@ -8,13 +8,16 @@
 #include <cmath>
 #include <iostream>
 #include "SgFlowInterp2D.h"
+#include "SgBoxIterator.h"
 #include "createGrids2D.h"
 #include "CmdLineArgParser.h" 
 
 void createLineGrid(const int dims[], const double xmins[], const double xmaxs[], double* coords[]) {
-    for (size_t i = 0; i < dims[0]; ++i) {
-        for (size_t j = 0; j < 2; ++j) {
-            coords[j][i] = xmins[j] + (xmaxs[j] - xmins[j]) * i / double(dims[0] - 1);
+    double dx[] = {(xmaxs[0] - xmins[0]) / double(dims[0] - 1),  
+                   (xmaxs[1] - xmins[1]) / double(dims[0] - 1)};
+    for (size_t j = 0; j < 2; ++j) {
+        for (size_t i = 0; i < dims[0]; ++i) {
+            coords[j][i] = xmins[j] + i * dx[j];
         }
     }
 }
@@ -34,8 +37,8 @@ int main(int argc, char** argv) {
     CmdLineArgParser prsr;
     prsr.set("--ni", 3, "Number of nodes in the x direction");
     prsr.set("--nj", 3, "Number of nodes in the y direction");
-    prsr.set("--pa", "0.,0.", "Start position");
-    prsr.set("--pb", "1.,1.", "End position");
+    prsr.set("--pa", "0.000001,0.00001", "Start position");
+    prsr.set("--pb", "0.999999,0.00001", "End position");
     prsr.parse(argc, argv);
 
     int srcNodeDims[] = {prsr.get<int>("--ni"), prsr.get<int>("--nj")};
@@ -70,33 +73,39 @@ int main(int argc, char** argv) {
     size_t k;
     std::vector<double> posLo(2);
     std::vector<double> posHi(2);
+    const int zeros[] = {0, 0};
+    int inds[] = {-1, -1};
 
     // fluxes along x (y-field)
     k = 0;
-    for (size_t i = 0; i < srcNodeDims[0] - 1; ++i) {
-        posLo[0] = srcXmins[0] + i*hx;
-        posHi[0] = posLo[0] + hx;
-        for (size_t j = 0; j < srcNodeDims[1] - 0; ++j) {
-            posLo[1] = srcXmins[1] + j*hy;
-            posHi[1] = posLo[1];
-            size_t index = i*(srcNodeDims[1] - 0) + j;
-            srcData[k][index] = psi(posHi) - psi(posLo);
-            std::cout << "x flux/y component: k = " << k << " index = " << index << " i = " << i << " j = " << j << " value = " << srcData[k][index] << '\n';
-        }
+    const int srcEdge0Dims[] = {srcNodeDims[0] - 1, srcNodeDims[1]}; // x, y
+    SgBoxIterator_type edge0It(2, zeros, srcEdge0Dims);
+    for (int index = 0; index < edge0It.getNumberOfElements(); ++index) {
+        edge0It.getElement(index, inds);
+        int i = inds[0]; 
+        int j = inds[1];
+        double xLo = srcXmins[0] + i*hx;
+        double xHi = xLo + hx;
+        double y = srcXmins[1] + j*hy;
+        posLo[0] = xLo; posLo[1] = y;
+        posHi[0] = xHi; posHi[1] = y;
+        srcData[k][index] = psi(posHi) - psi(posLo);
     }
 
     // fluxes along y (x field)
     k = 1;
-    for (size_t i = 0; i < srcNodeDims[0] - 0; ++i) {
-        posLo[0] = srcXmins[0] + i*hx;
-        posHi[0] = posLo[0];
-        for (size_t j = 0; j < srcNodeDims[1] - 1; ++j) {
-            posLo[1] = srcXmins[1] + j*hy;
-            posHi[1] = posLo[1] + hy;
-            size_t index = i*(srcNodeDims[1] - 1) + j;
-            srcData[k][index] = psi(posHi) - psi(posLo);
-            std::cout << "y flux/x component: k = " << k << " index = " << index << " i = " << i << " j = " << j << " value = " << srcData[k][index] << '\n';
-        }
+    const int srcEdge1Dims[] = {srcNodeDims[0], srcNodeDims[1] - 1}; // x, y
+    SgBoxIterator_type edge1It(2, zeros, srcEdge1Dims);
+    for (int index = 0; index < edge1It.getNumberOfElements(); ++index) {
+        edge1It.getElement(index, inds);
+        int i = inds[0]; 
+        int j = inds[1];
+        double x = srcXmins[1] + i*hx;
+        double yLo = srcXmins[1] + j*hy;
+        double yHi = yLo + hy;
+        posLo[0] = x; posLo[1] = yLo;
+        posHi[0] = x; posHi[1] = yHi;
+        srcData[k][index] = psi(posHi) - psi(posLo);
     }
 
     // destination grid, a segment
