@@ -47,7 +47,7 @@ void saveStreamlinesVtk(const char* filename,
     f << "streamFunctionInterp\n";
     f << "ASCII\n";
     f << "DATASET STRUCTURED_GRID\n";
-    f << "DIMENSIONS " << dims[0] << " " << dims[1] << " 1\n";
+    f << "DIMENSIONS 1 " << dims[1] << " " << dims[0] << "\n";
     int numPoints = dims[0] * dims[1];
     f << "POINTS " << numPoints << " float\n";
     for (size_t index = 0; index < numPoints; ++index) {
