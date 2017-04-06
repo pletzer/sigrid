@@ -49,14 +49,14 @@ void saveStreamlinesVtk(const char* filename,
     f << "DATASET STRUCTURED_GRID\n";
     f << "DIMENSIONS " << dims[0] << " " << dims[1] << " 1\n";
     int numPoints = dims[0] * dims[1];
-    f << "POINTS " << numPoints << " double\n";
+    f << "POINTS " << numPoints << " float\n";
     for (size_t index = 0; index < numPoints; ++index) {
         f << coords[0][index] << " " << coords[1][index] << " 0.0\n";
     }
     f << "POINT_DATA " << numPoints << '\n';
-    f << "SCALARS psi double 1\n";
+    f << "SCALARS psi float\n";
     f << "LOOKUP_TABLE default\n";
-    
+
      for (size_t index = 0; index < numPoints; ++index) {
         double x = coords[0][index];
         double y = coords[1][index];
@@ -68,7 +68,7 @@ void saveStreamlinesVtk(const char* filename,
     const int cellDims[] = {dims[0] - 1, dims[1] - 1};
 
     f << "CELL_DATA " << numCells << '\n';
-    f << "SCALARS velocity double 3\n";
+    f << "VECTORS velocity float\n";
     f << "LOOKUP_TABLE default\n";
 
     SgBoxIterator_type nodeIt(2, zeros, dims);
@@ -85,31 +85,31 @@ void saveStreamlinesVtk(const char* filename,
         size_t node00 = nodeIt.getIndex(inds);
         size_t edgeX0 = edgeItX.getIndex(inds);
         size_t edgeY0 = edgeItY.getIndex(inds);
-        size_t x00 = coords[0][node00];
-        size_t y00 = coords[1][node00];
+        double x00 = coords[0][node00];
+        double y00 = coords[1][node00];
         std::vector<double> pos00(2);
         pos00[0] = x00; pos00[1] = y00;
 
         inds[0] += 1;
         size_t node10 = nodeIt.getIndex(inds);
         size_t edgeY1 = edgeItY.getIndex(inds);
-        size_t x10 = coords[0][node10];
-        size_t y10 = coords[1][node10];
+        double x10 = coords[0][node10];
+        double y10 = coords[1][node10];
         std::vector<double> pos10(2);
         pos10[0] = x10; pos10[1] = y10;
 
         inds[1] += 1;
         size_t node11 = nodeIt.getIndex(inds);
-        size_t x11 = coords[0][node11];
-        size_t y11 = coords[1][node11];
+        double x11 = coords[0][node11];
+        double y11 = coords[1][node11];
         std::vector<double> pos11(2);
         pos11[0] = x11; pos11[1] = y11;
 
         inds[0] -= 1;
         size_t node01 = nodeIt.getIndex(inds);
         size_t edgeX1 = edgeItX.getIndex(inds);
-        size_t x01 = coords[0][node01];
-        size_t y01 = coords[1][node01];
+        double x01 = coords[0][node01];
+        double y01 = coords[1][node01];
         std::vector<double> pos01(2);
         pos01[0] = x01; pos01[1] = y01;
         
