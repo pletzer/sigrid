@@ -68,7 +68,7 @@ void saveStreamlinesVtk(const char* filename,
     const int cellDims[] = {dims[0] - 1, dims[1] - 1};
 
     f << "CELL_DATA " << numCells << '\n';
-    f << "VECTORS velocity float\n";
+    f << "SCALARS velocity float 3\n";
     f << "LOOKUP_TABLE default\n";
 
     SgBoxIterator_type nodeIt(2, zeros, dims);
@@ -113,10 +113,10 @@ void saveStreamlinesVtk(const char* filename,
         std::vector<double> pos01(2);
         pos01[0] = x01; pos01[1] = y01;
         
-        double vx0 = (psiFunc(pos01) - psiFunc(pos00))/(y01 - y00);
-        double vx1 = (psiFunc(pos11) - psiFunc(pos10))/(y11 - y10);
-        double vy0 = (psiFunc(pos10) - psiFunc(pos00))/(x10 - x00);
-        double vy1 = (psiFunc(pos11) - psiFunc(pos01))/(x11 - x01);
+        double vx0 = -(psiFunc(pos01) - psiFunc(pos00))/(y01 - y00);
+        double vx1 = -(psiFunc(pos11) - psiFunc(pos10))/(y11 - y10);
+        double vy0 = +(psiFunc(pos10) - psiFunc(pos00))/(x10 - x00);
+        double vy1 = +(psiFunc(pos11) - psiFunc(pos01))/(x11 - x01);
 
         double vx = 0.5*(vx0 + vx1);
         double vy = 0.5*(vy0 + vy1);
