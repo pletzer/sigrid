@@ -29,7 +29,7 @@ parser.add_argument('--psi', dest='psi', default='0.5*(x**2 + cos(2*pi*y))',
 args = parser.parse_args()
 
 # create structured grid and field
-dims = numpy.array(eval(args.dims), numpy.int)
+dims = numpy.array(eval(args.dims), numpy.int32)
 xmin = numpy.array(eval(args.xmin), numpy.float64)
 xmax = numpy.array(eval(args.xmax), numpy.float64)
 coords = sgutils.createRectilinearGrid(dims, xmin, xmax)
@@ -43,18 +43,24 @@ dstX, dstY = eval(args.xline), eval(args.yline)
 sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
 this = c_void_p()
 
-sg.SgFlowInterp2D_new(byref(this))
+ier = sg.SgFlowInterp2D_new(byref(this))
+assert(ier == 0)
 
 srcCoords = (POINTER(c_double) * 2)(coords[0].ctypes.data_as(POINTER(c_double)),
                                     coords[1].ctypes.data_as(POINTER(c_double)))
-sg.SgFlowInterp2D_setSrcGrid(byref(this), dims.ctypes.data_as(POINTER(c_int)), srcCoords)
-dstDims = (c_int*1)(n)
-dstCoords = (POINTER(c_double) * 2)(dstX.ctypes.data_as(POINTER(c_double)), dstY.ctypes.data_as(POINTER(c_double)))
-sg.SgFlowInterp2D_setDstGrid(byref(this), dstDims, dstCoords)
-sg.SgFlowInterp2D_computeWeights(byref(this))
+ier = sg.SgFlowInterp2D_setSrcGrid(byref(this), dims.ctypes.data_as(POINTER(c_int)), srcCoords)
+assert(ier == 0)
 
-x = coords[:, 0].reshape(dims)
-y = coords[:, 1].reshape(dims)
+dstDims = (c_int*1)(n + 1)
+dstCoords = (POINTER(c_double) * 2)(dstX.ctypes.data_as(POINTER(c_double)), dstY.ctypes.data_as(POINTER(c_double)))
+ier = sg.SgFlowInterp2D_setDstGrid(byref(this), dstDims, dstCoords)
+assert(ier == 0)
+
+ier = sg.SgFlowInterp2D_computeWeights(byref(this))
+assert(ier == 0)
+
+x = coords[0]
+y = coords[1]
 psi = eval(args.psi)
 
 srcXFlux = (psi[1:, :] - psi[:-1, :]) / (x[1:, :] - x[:-1, :])
