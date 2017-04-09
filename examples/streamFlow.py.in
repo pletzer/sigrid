@@ -24,7 +24,7 @@ parser.add_argument('--xline', dest='xline', default='xmin[0] + (xmax[0] - xmin[
                     help='X coordinate parametric representation of line as a function of t, 0 <= t <= 1')
 parser.add_argument('--yline', dest='yline', default='xmin[1] + (xmax[1] - xmin[1])*t',
                     help='Y coordinate parametric representation of line as a function of t, 0 <= t <= 1')
-parser.add_argument('--psi', dest='psi', default='0.5*(x**2 + cos(2*pi*y))',
+parser.add_argument('--psi', dest='psi', default='0.5*(x**2 + cos(2*pi*y)/pi)',
                     help='Stream function of x and y')
 args = parser.parse_args()
 
@@ -63,8 +63,9 @@ x = coords[0]
 y = coords[1]
 psi = eval(args.psi)
 
-srcXFlux = (psi[1:, :] - psi[:-1, :]) / (x[1:, :] - x[:-1, :])
-srcYFlux = (psi[:, 1:] - psi[:, :-1]) / (y[:, 1:] - y[:, :-1])
+# integrated flux
+srcXFlux = -(psi[1:, :] - psi[:-1, :])
+srcYFlux = +(psi[:, 1:] - psi[:, :-1])
 srcData = (POINTER(c_double) * 2)(srcXFlux.ctypes.data_as(POINTER(c_double)), srcYFlux.ctypes.data_as(POINTER(c_double)))
 dstData = numpy.zeros((n,), numpy.float64) # to be filled in
 sg.SgFlowInterp2D_apply(byref(this), srcData, dstData.ctypes.data_as(POINTER(c_double)))
@@ -72,3 +73,5 @@ sg.SgFlowInterp2D_debug(byref(this))
 sg.SgFlowInterp2D_del(byref(this))
 
 print('integrated flux: {}'.format(dstData.sum()))
+
+sgutils.saveStreamlinesVtk('streamFlow.vtk', coords, psi)
