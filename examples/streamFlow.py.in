@@ -75,3 +75,4 @@ sg.SgFlowInterp2D_del(byref(this))
 print('integrated flux: {}'.format(dstData.sum()))
 
 sgutils.saveStreamlinesVtk('streamFlow.vtk', coords, psi)
+sgutils.saveLineVtk('streamLine.vtk', (dstX, dstY), dstData)

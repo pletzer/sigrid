@@ -8,6 +8,31 @@ def createRectilinearGrid(dims, xmin, xmax):
 	xx1 = numpy.outer(numpy.ones((dims[0],), numpy.float64), x1)
 	return (xx0, xx1)
 
+def saveLineVtk(filename, coords, data):
+
+    numPoints = len(coords[0])
+    f = open(filename, 'w')
+
+    f.write("# vtk DataFile Version 2.0\n")
+    f.write("streamFunctionInterp\n")
+    f.write("ASCII\n")
+    f.write("DATASET POLYDATA\n")
+    f.write("POINTS {} float\n".format(numPoints))
+    for i in range(numPoints):
+    	f.write("{} {} 0.0\n".format(coords[0][i], coords[1][i]))
+    numCells = numPoints - 1
+    f.write("LINES {} {}\n".format(numCells, 3*numCells))
+    for i in range(numCells):
+    	f.write("2 {} {}\n".format(i, i + 1))
+    f.write("CELL_DATA {}\n".format(numCells))
+    f.write("SCALARS integrated_flux float\n")
+    f.write("LOOKUP_TABLE default\n")
+    for i in range(numCells):
+    	print i, data[i]
+    	f.write("{}\n".format(data[i]))
+
+	f.close()	
+
 def saveStreamlinesVtk(filename, coords, psi):
 
     zeros = (0, 0)
