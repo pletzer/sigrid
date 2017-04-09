@@ -29,9 +29,9 @@ def saveStreamlinesVtk(filename, coords, psi):
     f.write("POINT_DATA {}\n".format(numPoints))
     f.write("SCALARS psi float\n")
     f.write("LOOKUP_TABLE default\n")
-    for j in range(dims[1]):
-    	for i in range(dims[0]):
-        	f.write("{}\n".format(psi[i,j]))
+    for i in range(dims[0]):
+    	for j in range(dims[1]):
+        	f.write("{}\n".format(psi[i, j]))
         
     numCells = (dims[0] - 1) * (dims[1] - 1)
 
@@ -40,14 +40,14 @@ def saveStreamlinesVtk(filename, coords, psi):
     f.write("LOOKUP_TABLE default\n")
 
     vx = -(psi[:, 1:] - psi[:, :-1])/(coords[1][:, 1:] - coords[1][:, :-1]) #- dpsi/dy
-    vy = +(psi[1:, :] - psi[:-1, :])/(coords[0][1:, :] - coords[1][:-1, :]) #+ dpsi/dx
+    vy = +(psi[1:, :] - psi[:-1, :])/(coords[0][1:, :] - coords[0][:-1, :]) #+ dpsi/dx
 
     # average the velocity field to cell centres
     vxAvg = 0.5*(vx[:-1, :] + vx[1:, :])
     vyAvg = 0.5*(vy[:, :-1] + vy[:, 1:])
 
-    for j in range(dims[1] - 1):
-    	for i in range(dims[0] - 1):
+    for i in range(dims[0] - 1):
+    	for j in range(dims[1] - 1):
         	f.write("{} {} 0.0\n".format(vxAvg[i, j], vyAvg[i, j]))
 
     f.close();

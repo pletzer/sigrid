@@ -12,11 +12,11 @@ import sgutils
 # parse input arguments
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('--dims', dest='dims', default='11,21',
+parser.add_argument('--dims', dest='dims', default='3,5',
                     help='Number of nodes in x and y')
 parser.add_argument('--xmin', dest='xmin', default='0.0,0.0',
                     help='Min domain corner')
-parser.add_argument('--xmax', dest='xmax', default='1.0,pi',
+parser.add_argument('--xmax', dest='xmax', default='1.0,1.0',
                     help='Max domain corner')
 parser.add_argument('--n', dest='n', type=int, default=10,
                     help='Number of line segments')
