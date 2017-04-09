@@ -20,18 +20,21 @@ def saveLineVtk(filename, coords, data):
     f.write("POINTS {} float\n".format(numPoints))
     for i in range(numPoints):
     	f.write("{} {} 0.0\n".format(coords[0][i], coords[1][i]))
+    f.write("LINES 1 {}\n".format(numPoints + 1))
+    f.write("{} ".format(numPoints))
+    for i in range(numPoints):
+    	f.write("{} ".format(i))
+    f.write("\n")
     numCells = numPoints - 1
-    f.write("LINES {} {}\n".format(numCells, 3*numCells))
-    for i in range(numCells):
-    	f.write("2 {} {}\n".format(i, i + 1))
     f.write("CELL_DATA {}\n".format(numCells))
     f.write("SCALARS integrated_flux float\n")
     f.write("LOOKUP_TABLE default\n")
     for i in range(numCells):
-    	print i, data[i]
-    	f.write("{}\n".format(data[i]))
+        print i, data[i]
+        f.write("{} ".format(data[i]))
+    f.write("\n")
 
-	f.close()	
+    f.close()	
 
 def saveStreamlinesVtk(filename, coords, psi):
 
