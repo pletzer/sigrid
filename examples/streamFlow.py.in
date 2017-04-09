@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+from ctypes import CDLL, c_int, c_void_p, byref, POINTER
+import numpy
+import argparse
+from math import pi, sin, cos, tan, exp, log, acos, asin, atan2, atan
+import sgutils
+
+# parse input arguments
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--dims', dest='dims', default='11,21',
+                    help='Number of nodes in x and y')
+parser.add_argument('--xmin', dest='xmin', default='0.0,0.0',
+                    help='Min domain corner')
+parser.add_argument('--xmax', dest='xmax', default='1.0,pi',
+                    help='Max domain corner')
+parser.add_argument('--n', dest='n', type=int, default=10,
+                    help='Number of line segments')
+parser.add_argument('--line', dest='line', default='xmin + (xmax - xmin)*t',
+                    help='Parametric representation of line as a function of t, 0 <= t <= 1')
+parser.add_argument('--psi', dest='psi', default='0.5*(x**2 + cos(2*pi*y))',
+                    help='Stream function of x and y')
+args = parser.parse_args()
+
+# create structured grid and field
+dims = numpy.fromstring(args.dims, numpy.int)
+xmin = numpy.fromstring(args.xmin, numpy.float64)
+xmax = numpy.fromstring(args.xmax, numpy.float64)
+coords = sgutils.createRectangularGrid(dims, xmin, xmax)
+
+# create line
+n = args.n
+t = numpy.linspace(0., 1., n + 1)
+xLineFunc, yLineFunc = args.line.split(',')
+dstX, dstY = eval(xLineFunc), eval(yLineFunc)
+
+# project online 
+sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
+this = c_void_p()
+
+sg.SgFlowInterp2D_new(byref(this))
+
+sg.SgFlowInterp2D_setSrcGrid(byref(this), dims.ctypes.data_as(POINTER(c_int)), srcCoords)
+dstDims = (c_int*1)(n)
+dstCoords = (POINTER(c_double) * 2)(dstX.ctypes.data_as(POINTER(double)), dstY.ctypes.data_as(POINTER(double)))
+sg.SgFlowInterp2D_setDstGrid(byref(this), dstDims, dstCoords)
+sg.SgFlowInterp2D_computeWeights(byref(this))
+
+x = coords[:, 0].reshape(dims)
+y = coords[:, 1].reshape(dims)
+psi = eval(args.psi)
+
+srcXFlux = (psi[1:, :] - psi[:-1, :]) / (x[1:, :] - x[:-1, :])
+srcYFlux = (psi[:, 1:] - psi[:, :-1]) / (y[:, 1:] - y[:, :-1])
+srcData = (POINTER(c_double) * 2)(srcXFlux.ctypes.data_as(POINTER(c_double)), srcYFlux.ctypes.data_as(POINTER(c_double)))
+dstData = numpy.zeros((n,), numpy.float64) # to be filled in
+sg.SgFlowInterp2D_apply(byref(this), srcData, dstData.ctypes.data_as(POINTER(c_double)))
+sg.SgFlowInterp2D_debug(byref(this))
+sg.SgFlowInterp2D_del(byref(this))
+
+print('integrated flux: {}'.format(dstData.sum()))
