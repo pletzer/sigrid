@@ -132,8 +132,8 @@ int main(int argc, char** argv) {
     // parse command line arguments
     CmdLineArgParser prsr;
     prsr.set("--dims", "6,2", "Number of nodes in the x and y");
-    prsr.set("--pa", "0.000001,0.00001", "Start position");
-    prsr.set("--pb", "0.999999,0.00001", "End position");
+    prsr.set("--pa", "0.,0.1", "Start position");
+    prsr.set("--pb", "1.,0.1", "End position");
     prsr.set("--help", false, "Help");
     prsr.parse(argc, argv);
 
