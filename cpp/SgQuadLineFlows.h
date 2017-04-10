@@ -10,6 +10,7 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <iostream>
 #include "SgNdims.h"
 #include "SgFindPointInCell.h"
 
@@ -155,6 +156,7 @@ private:
       this->xia = this->indexFinder->getIndices();
       if (end != 1) {
         // not converged
+          std::cerr << "*** xia did not converge\n";
         res = 1;
       }
 
@@ -167,6 +169,7 @@ private:
       this->xib = this->indexFinder->getIndices();
       if (end != 1) {
         // not converged
+        std::cerr << "*** xib did not converge\n";
         res = 2;
       }
 

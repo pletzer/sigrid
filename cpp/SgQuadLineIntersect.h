@@ -165,15 +165,16 @@ struct SgQuadLineIntersect_type {
         if (ier > 0) {
             // singular system, likely because the two edges are parallel 
             // not adding any point, even if the edges are degenerate
+            // NEED TO SORT THIS OUT!
             return 0;
         }
         double* xis;
         this->slvr->getSolution(&xis);
-        // make sure the parametric coordinates are within the (0+, 1-) range
+        // make sure the parametric coordinates are within the (0, 1) range
         // no need to include the end points since they are already taken into 
         // account when looking for nodes inside cell
-        if (xis[0] > this->tol && xis[0] < 1.0 - this->tol && 
-            xis[1] > this->tol && xis[1] < 1.0 - this->tol) {
+        if (xis[0] >= -this->tol && xis[0] < 1.0 + this->tol &&
+            xis[1] >= -this->tol && xis[1] < 1.0 + this->tol) {
             // the two edges intersect
             this->intersectionLambdas.push_back(xis[1]);
             return 1;

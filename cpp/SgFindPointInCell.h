@@ -9,6 +9,7 @@
 #include <cstdio> // size_t
 #include <cmath>
 #include <limits>
+#include <iostream>
 #include "SgLinearSolve.h"
  
 struct SgFindPointInCell_type {

@@ -218,9 +218,14 @@ struct SgFlowInterp2D_type {
                 int numPoints = 0;
                 intersector.collectIntersectPoints(&numPoints, &points);
 
-                if (numPoints == 2) {
+                if (numPoints >= 2) {
+                    // must have at least 2 points
+                    
+                    // find the weight entries for this dstIndx
                     std::map<size_t, std::vector<std::pair<size_t, std::vector<double> > > >::iterator it;
                     it = this->weights.find(dstIndx);
+                    
+                    // add an entry if not present
                     if (it == this->weights.end()) {
                         std::vector< std::pair<size_t, std::vector<double> > > v;
                         std::pair<size_t, std::vector<std::pair<size_t, std::vector<double> > > > p(dstIndx, v);
@@ -229,15 +234,22 @@ struct SgFlowInterp2D_type {
                         it = this->weights.find(dstIndx);
                     }
 
+                    // initialize the weights
+                    std::vector<double> w(4, 0.);
+                    
                     weightCalc.setQuadPoints(srcQuadCoords);
-                    weightCalc.setLinePoints(points);
-                    weightCalc.computeProjections();
 
-                    std::vector<double> w(4);
-                    w[0] = weightCalc.getProjection(EDGE_LO_0);
-                    w[1] = weightCalc.getProjection(EDGE_HI_0);
-                    w[2] = weightCalc.getProjection(EDGE_LO_1);
-                    w[3] = weightCalc.getProjection(EDGE_HI_1);
+                    // iterate over the segments
+                    for (int i = 0; i < numPoints - 1; ++i) {
+                        weightCalc.setLinePoints(&points[i*NDIMS_2D_PHYS]);
+                        weightCalc.computeProjections();
+                        
+                        w[0] += weightCalc.getProjection(EDGE_LO_0);
+                        w[1] += weightCalc.getProjection(EDGE_HI_0);
+                        w[2] += weightCalc.getProjection(EDGE_LO_1);
+                        w[3] += weightCalc.getProjection(EDGE_HI_1);
+                    }
+                    // done
 
                     std::pair<size_t, std::vector<double> > p(srcIndx, w);
                     it->second.push_back(p);
