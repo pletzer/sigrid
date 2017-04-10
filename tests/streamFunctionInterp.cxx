@@ -131,13 +131,19 @@ int main(int argc, char** argv) {
 
     // parse command line arguments
     CmdLineArgParser prsr;
-    prsr.set("--ni", 3, "Number of nodes in the x direction");
-    prsr.set("--nj", 3, "Number of nodes in the y direction");
+    prsr.set("--dims", "6,2", "Number of nodes in the x and y");
     prsr.set("--pa", "0.000001,0.00001", "Start position");
     prsr.set("--pb", "0.999999,0.00001", "End position");
+    prsr.set("--help", false, "Help");
     prsr.parse(argc, argv);
 
-    int srcNodeDims[] = {prsr.get<int>("--ni"), prsr.get<int>("--nj")};
+    if (prsr.get<bool>("--help")) {
+        prsr.help();
+        return 0;
+    }
+
+    std::vector<int> dims = prsr.get<std::vector<int> >("--dims");
+    int srcNodeDims[] = {dims[0], dims[1]};
     std::vector<double> pa = prsr.get<std::vector<double> >("--pa");
     std::vector<double> pb = prsr.get<std::vector<double> >("--pb");
 
