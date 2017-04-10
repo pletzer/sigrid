@@ -66,7 +66,7 @@ y = coords[1]
 psi = eval(args.psi)
 
 # integrated flux
-srcXFlux = -(psi[1:, :] - psi[:-1, :])
+srcXFlux = +(psi[1:, :] - psi[:-1, :])
 srcYFlux = +(psi[:, 1:] - psi[:, :-1])
 srcData = (POINTER(c_double) * 2)(srcXFlux.ctypes.data_as(POINTER(c_double)), srcYFlux.ctypes.data_as(POINTER(c_double)))
 dstData = numpy.zeros((n,), numpy.float64) # to be filled in
@@ -80,7 +80,7 @@ psia = eval(args.psi)
 t = 1.0
 x, y = eval(args.xline), eval(args.yline)
 psib = eval(args.psi)
-exact = psia - psib
+exact = psib - psia
 approx = dstData.sum()
 print('integrated flux: {} exact: {} error = {}'.format(approx, exact, approx - exact))
 
