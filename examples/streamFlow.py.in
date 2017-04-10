@@ -38,6 +38,8 @@ coords = sgutils.createRectilinearGrid(dims, xmin, xmax)
 n = args.n
 t = numpy.linspace(0., 1., n + 1)
 dstX, dstY = eval(args.xline), eval(args.yline)
+print dstX
+print dstY
 
 # project online 
 sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
@@ -72,7 +74,15 @@ sg.SgFlowInterp2D_apply(byref(this), srcData, dstData.ctypes.data_as(POINTER(c_d
 sg.SgFlowInterp2D_debug(byref(this))
 sg.SgFlowInterp2D_del(byref(this))
 
-print('integrated flux: {}'.format(dstData.sum()))
+t = 0.0
+x, y = eval(args.xline), eval(args.yline)
+psia = eval(args.psi)
+t = 1.0
+x, y = eval(args.xline), eval(args.yline)
+psib = eval(args.psi)
+exact = psia - psib
+approx = dstData.sum()
+print('integrated flux: {} exact: {} error = {}'.format(approx, exact, approx - exact))
 
 sgutils.saveStreamlinesVtk('streamFlow.vtk', coords, psi)
 sgutils.saveLineVtk('streamLine.vtk', (dstX, dstY), dstData)
