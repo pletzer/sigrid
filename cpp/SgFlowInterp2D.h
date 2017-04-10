@@ -200,11 +200,11 @@ struct SgFlowInterp2D_type {
             // iterate over the src quads
             for (size_t srcIndx = 0; srcIndx < this->srcNumCells; ++srcIndx) {
 
-                // get the src quad's vertices
-                this->getSrcQuadCoord(srcIndx, offset2D, srcQuadCoords);
-
                 // reset the number of intersection points to zero
                 intersector.reset();
+
+                // get the src quad's vertices
+                this->getSrcQuadCoord(srcIndx, offset2D, srcQuadCoords);
 
                 // set the quad's vertices in counterclock ordering
                 intersector.setQuadPoints(srcQuadCoords);

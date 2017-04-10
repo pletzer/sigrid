@@ -260,10 +260,6 @@ struct SgQuadLineIntersect_type {
           this->intersectionLambdas.push_back(1.0);
         }
 
-        npts = this->intersectionLambdas.size();
-        *numPoints = npts;
-        *points = NULL;
-
         // sort the points by lambda
         std::sort(this->intersectionLambdas.begin(), this->intersectionLambdas.end());
 
@@ -271,10 +267,12 @@ struct SgQuadLineIntersect_type {
         this->intersectionPoints.resize(NDIMS_2D_PHYS * npts);
         for (size_t i = 0; i < npts; ++i) {
           double lambda = this->intersectionLambdas[i];
-          this->intersectionPoints[i*NDIMS_2D_PHYS + 0] = lineCoordA[0] + lambda * (lineCoordB[0] - lineCoordA[0]);
-          this->intersectionPoints[i*NDIMS_2D_PHYS + 1] = lineCoordA[1] + lambda * (lineCoordB[1] - lineCoordA[1]);
+          this->intersectionPoints[i*NDIMS_2D_PHYS + 0] = lineCoordA[0] + lambda*(lineCoordB[0] - lineCoordA[0]);
+          this->intersectionPoints[i*NDIMS_2D_PHYS + 1] = lineCoordA[1] + lambda*(lineCoordB[1] - lineCoordA[1]);
         }
 
+        *numPoints = npts;
+        *points = NULL;
         if (npts > 0) {
           *points = &this->intersectionPoints.front();
         }
