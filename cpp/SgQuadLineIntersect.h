@@ -52,7 +52,7 @@ struct SgQuadLineIntersect_type {
      SgQuadLineIntersect_type() {
 
         // tolerance for floating point comparisons
-        this->tol = 1.e-12;
+        this->tol = 1.e-10;
 
         this->slvr = new SgLinearSolve_type(2, 2);
 
@@ -219,7 +219,7 @@ struct SgQuadLineIntersect_type {
         for (size_t k = 0; k < 2; ++k) { // 2 nodes
           size_t i = NDIMS_2D_PHYS*k + j;
           // perturb lineCoords to avoid hitting quad nodes
-          //this->lineCoords[i] += (double(i) - 1.5)*12.8645237120137646*this->tol;
+          this->lineCoords[i] += (double(i) - 1.5)*1.8645237120137646*this->tol;
           this->lineMin[j] = std::min(this->lineCoords[i], this->lineMin[j]);
           this->lineMax[j] = std::max(this->lineCoords[i], this->lineMax[j]);
         }
