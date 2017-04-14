@@ -12,19 +12,19 @@ import sgutils
 # parse input arguments
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('--dims', dest='dims', default='3,5',
+parser.add_argument('--dims', dest='dims', default='21,11',
                     help='Number of nodes in x and y')
-parser.add_argument('--xmin', dest='xmin', default='0.0,0.0',
+parser.add_argument('--xmin', dest='xmin', default='-1.0,-1.0',
                     help='Min domain corner')
 parser.add_argument('--xmax', dest='xmax', default='1.0,1.0',
                     help='Max domain corner')
-parser.add_argument('--n', dest='n', type=int, default=10,
+parser.add_argument('--n', dest='n', type=int, default=2,
                     help='Number of line segments')
-parser.add_argument('--xline', dest='xline', default='xmin[0] + (xmax[0] - xmin[0])*t',
+parser.add_argument('--xline', dest='xline', default='-0.5+0.2*cos(pi*t)',
                     help='X coordinate parametric representation of line as a function of t, 0 <= t <= 1')
-parser.add_argument('--yline', dest='yline', default='xmin[1] + (xmax[1] - xmin[1])*t',
+parser.add_argument('--yline', dest='yline', default='0.4+0.2*sin(pi*t)',
                     help='Y coordinate parametric representation of line as a function of t, 0 <= t <= 1')
-parser.add_argument('--psi', dest='psi', default='0.5*(x**2 + cos(2*pi*y)/pi)',
+parser.add_argument('--psi', dest='psi', default='0.5*(y**2 + cos(2*pi*x)/pi)',
                     help='Stream function of x and y')
 args = parser.parse_args()
 
