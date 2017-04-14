@@ -255,9 +255,7 @@ struct SgQuadLineIntersect_type {
         }
 
         // add the ending line point if inside the quad
-        size_t npts = this->intersectionLambdas.size();
-        if (npts < 2 && 
-            this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
+        if (this->isPointInQuad(&this->lineCoords[1*NDIMS_2D_PHYS], this->quadCoords)) {
           this->intersectionLambdas.push_back(1.0);
         }
 
@@ -265,6 +263,8 @@ struct SgQuadLineIntersect_type {
         std::sort(this->intersectionLambdas.begin(), this->intersectionLambdas.end());
 
         // set the intersection points
+
+        size_t npts = this->intersectionLambdas.size();
         this->intersectionPoints.resize(NDIMS_2D_PHYS * npts);
         for (size_t i = 0; i < npts; ++i) {
           double lambda = this->intersectionLambdas[i];
