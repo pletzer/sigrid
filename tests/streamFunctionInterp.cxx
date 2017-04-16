@@ -30,7 +30,7 @@ void createLineGrid(const int dims[], const double xmins[], const double xmaxs[]
 double psi(const std::vector<double>& pos) {
     double x = pos[0];
     double y = pos[1];
-    return 0.5*(y*y + cos(2.*M_PI*x)/M_PI);
+    return y*y + cos(2.*M_PI*x)/(4.*M_PI);
 }
 
 void saveStreamlinesVtk(const char* filename,
@@ -131,9 +131,9 @@ int main(int argc, char** argv) {
 
     // parse command line arguments
     CmdLineArgParser prsr;
-    prsr.set("--dims", "21,11", "Number of nodes in the x and y");
-    prsr.set("--pa", "0.,0.1", "Start position");
-    prsr.set("--pb", "1.,0.1", "End position");
+    prsr.set("--dims", "41,21", "Number of nodes in the x and y");
+    prsr.set("--pa", "0.5,0.", "Start position");
+    prsr.set("--pb", "1.5,0.", "End position");
     prsr.set("--help", false, "Help");
     prsr.parse(argc, argv);
 
@@ -159,8 +159,8 @@ int main(int argc, char** argv) {
 
 
     // create src grid
-    const double srcXmins[] = {-1.0, -1.0};
-    const double srcXmaxs[] = {1.0, 1.0};
+    const double srcXmins[] = {0.0, -0.5};
+    const double srcXmaxs[] = {2.0, 0.5};
     int srcNumPoints = srcNodeDims[0] * srcNodeDims[1];
     double* srcCoords[] = {new double[srcNumPoints], new double[srcNumPoints]};
     createRectangularGrid(srcNodeDims, srcXmins, srcXmaxs, srcCoords);
