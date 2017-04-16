@@ -218,8 +218,10 @@ struct SgQuadLineIntersect_type {
         this->lineMax[j] = -std::numeric_limits<double>::infinity();
         for (size_t k = 0; k < 2; ++k) { // 2 nodes
           size_t i = NDIMS_2D_PHYS*k + j;
+
           // perturb lineCoords to avoid hitting quad nodes
-          this->lineCoords[i] += (double(i) - 1.5)*1.8645237120137646*this->tol;
+          //this->lineCoords[i] += (double(i) - 1.5)*1.8645237120137646*this->tol;
+
           this->lineMin[j] = std::min(this->lineCoords[i], this->lineMin[j]);
           this->lineMax[j] = std::max(this->lineCoords[i], this->lineMax[j]);
         }
@@ -276,6 +278,14 @@ struct SgQuadLineIntersect_type {
         *points = NULL;
         if (npts > 0) {
           *points = &this->intersectionPoints.front();
+        }
+
+        if (npts >= 2) {
+          // update the line coordinates to start at the last lambda value to prevent multiple 
+          // source cells to claim this segment
+          double lambdaMax = this->intersectionLambdas[npts - 1];
+          this->lineCoords[0] = lineCoordA[0] + lambdaMax*(lineCoordB[0] - lineCoordA[0]);
+          this->lineCoords[1] = lineCoordA[1] + lambdaMax*(lineCoordB[1] - lineCoordA[1]);
         }
     }
 

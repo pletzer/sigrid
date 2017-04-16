@@ -15,6 +15,7 @@
 #include <cstdio> // size_t
 #include <cmath>
 #include <iostream>
+#include <limits>
  
 struct SgFlowInterp2D_type {
 
@@ -68,6 +69,8 @@ struct SgFlowInterp2D_type {
      */
     void setDstGrid(const int dims[], const double** coords) {
 
+        const double eps = 100 * std::numeric_limits<double>::epsilon();
+
         size_t dstNumPoints = 1;
         this->dstNumCells = 1;
         for (size_t j = 0; j < NDIMS_1D_TOPO; ++j) {
@@ -80,6 +83,10 @@ struct SgFlowInterp2D_type {
         for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
             for (size_t i = 0; i < dstNumPoints; ++i) {
                 this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i];
+                // apply small perturbation
+                //double pertAngle = 2.0 * M_PI * double(i)/double(dstNumPoints - 1);
+                //double pertAmpl = eps * (k + 1);
+                //this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i] + pertAmpl*cos(pertAngle);
             }
         }
     }
