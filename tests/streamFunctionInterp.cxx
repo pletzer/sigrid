@@ -134,6 +134,7 @@ int main(int argc, char** argv) {
     prsr.set("--dims", "41,21", "Number of nodes in the x and y");
     prsr.set("--pa", "0.5,0.", "Start position");
     prsr.set("--pb", "1.5,0.", "End position");
+    prsr.set("--expected", 0.0, "Expected value");
     prsr.set("--help", false, "Help");
     prsr.parse(argc, argv);
 
@@ -237,6 +238,11 @@ int main(int argc, char** argv) {
     std::cout << "Flux: " << dstData[0] << 
                  " exact: " << exactFlux <<
                  " error: " << dstData[0] - exactFlux << '\n';
+
+    if (std::fabs(prsr.get<double>("--expected") - dstData[0]) > 1.e-5) {
+        // error
+        return 1;
+    }
 
     // cleanup
     for (size_t j = 0; j < 2; ++j) {

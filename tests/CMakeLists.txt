@@ -136,3 +136,10 @@ add_test(testCreateRectangular_1
          ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/tests/testCreateRectangular.py
          --nj 11 --ni 21)
 
+add_test(streamFunctionInterp_1
+         ${CMAKE_BINARY_DIR}/tests/streamFunctionInterp --dims "41,21" --pa "0.5,0." --pb "1.5,0." --expected 0.0)
+add_test(streamFunctionInterp_2
+         ${CMAKE_BINARY_DIR}/tests/streamFunctionInterp --dims "21,11" --pa "1.1,0.0" --pb "1.0,0.0" --expected 0.0151979)
+add_test(streamFunctionInterp_3
+         ${CMAKE_BINARY_DIR}/tests/streamFunctionInterp --dims "21,11" --pb "1.1,0.0" --pa "1.0,0.0" --expected -0.0151979)
+

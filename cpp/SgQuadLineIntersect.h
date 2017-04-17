@@ -52,7 +52,8 @@ struct SgQuadLineIntersect_type {
      SgQuadLineIntersect_type() {
 
         // tolerance for floating point comparisons
-        this->tol = 1.e-10;
+        //this->tol = 1.e-10;
+        this->tol = 100 * std::numeric_limits<double>::epsilon();
 
         this->slvr = new SgLinearSolve_type(2, 2);
 
@@ -170,9 +171,7 @@ struct SgQuadLineIntersect_type {
         }
         double* xis;
         this->slvr->getSolution(&xis);
-        // make sure the parametric coordinates are within the (0, 1) range
-        // no need to include the end points since they are already taken into 
-        // account when looking for nodes inside cell
+        // make sure the parametric coordinates are within the (0-, 1+) range
         if (xis[0] >= -this->tol && xis[0] < 1.0 + this->tol &&
             xis[1] >= -this->tol && xis[1] < 1.0 + this->tol) {
             // the two edges intersect
