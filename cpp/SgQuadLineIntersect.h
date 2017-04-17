@@ -279,13 +279,13 @@ struct SgQuadLineIntersect_type {
           *points = &this->intersectionPoints.front();
         }
 
-        if (npts >= 2) {
-          // update the line coordinates to start at the last lambda value to prevent multiple 
-          // source cells to claim this segment
-          double lambdaMax = this->intersectionLambdas[npts - 1];
-          this->lineCoords[0] = lineCoordA[0] + lambdaMax*(lineCoordB[0] - lineCoordA[0]);
-          this->lineCoords[1] = lineCoordA[1] + lambdaMax*(lineCoordB[1] - lineCoordA[1]);
-        }
+        //if (npts >= 2) {
+        //  // update the line coordinates to start at the last lambda value to prevent multiple 
+        //  // source cells to claim this segment
+        //  double lambdaMax = this->intersectionLambdas[npts - 1];
+        //  this->lineCoords[0] = lineCoordA[0] + lambdaMax*(lineCoordB[0] - lineCoordA[0]);
+        //  this->lineCoords[1] = lineCoordA[1] + lambdaMax*(lineCoordB[1] - lineCoordA[1]);
+        //}
     }
 
 };

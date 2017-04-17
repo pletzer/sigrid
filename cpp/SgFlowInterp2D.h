@@ -69,7 +69,7 @@ struct SgFlowInterp2D_type {
      */
     void setDstGrid(const int dims[], const double** coords) {
 
-        const double eps = 100 * std::numeric_limits<double>::epsilon();
+        const double eps = 10 * std::numeric_limits<double>::epsilon();
 
         size_t dstNumPoints = 1;
         this->dstNumCells = 1;
@@ -82,11 +82,11 @@ struct SgFlowInterp2D_type {
         this->dstGrdCoords.resize(NDIMS_2D_PHYS * dstNumPoints);
         for (size_t k = 0; k < NDIMS_2D_PHYS; ++k) {
             for (size_t i = 0; i < dstNumPoints; ++i) {
-                this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i];
+                //this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i];
                 // apply small perturbation
-                //double pertAngle = 2.0 * M_PI * double(i)/double(dstNumPoints - 1);
-                //double pertAmpl = eps * (k + 1);
-                //this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i] + pertAmpl*cos(pertAngle);
+                double pertAngle = 1.99 * M_PI * double(i)/double(dstNumPoints - 1);
+                double pertAmpl = eps * (k + 1);
+                this->dstGrdCoords[i*NDIMS_2D_PHYS + k] = coords[k][i] + pertAmpl*cos(pertAngle);
             }
         }
     }
