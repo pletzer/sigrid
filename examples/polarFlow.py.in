@@ -11,28 +11,23 @@ import sgutils
 
 # parse input arguments
 
-parser = argparse.ArgumentParser(description='Generate divergence-free flow.')
+parser = argparse.ArgumentParser(description='Generate polar flow.')
 parser.add_argument('--dims', dest='dims', default='21,11',
-                    help='Number of nodes in x and y')
-parser.add_argument('--xmin', dest='xmin', default='0.0,-0.5',
+                    help='Number of nodes in rho and theta')
+parser.add_argument('--radius', dest='radius', default=1.0, type=float,
                     help='Min domain corner')
-parser.add_argument('--xmax', dest='xmax', default='2.0,0.5',
-                    help='Max domain corner')
 parser.add_argument('--n', dest='n', type=int, default=1,
                     help='Number of line segments')
-parser.add_argument('--xline', dest='xline', default='0.55 + 2.6*cos(pi*(t - 1.)/2.)',
+parser.add_argument('--xline', dest='xline', default='0.5*radius*cos(2*pi*t)',
                     help='X coordinate parametric representation of line as a function of t, 0 <= t <= 1')
-parser.add_argument('--yline', dest='yline', default=' 0.65 + 0.7*sin(pi*(t - 1.)/2.)',
+parser.add_argument('--yline', dest='yline', default='0.5*radius*sin(2*pi*t)',
                     help='Y coordinate parametric representation of line as a function of t, 0 <= t <= 1')
-parser.add_argument('--psi', dest='psi', default='y**2 + cos(2*pi*x)/(4.*pi)',
-                    help='Stream function of x and y')
 args = parser.parse_args()
 
 # create structured grid and field
 dims = numpy.array(eval(args.dims), numpy.int32)
-xmin = numpy.array(eval(args.xmin), numpy.float64)
-xmax = numpy.array(eval(args.xmax), numpy.float64)
-coords = sgutils.createRectilinearGrid(dims, xmin, xmax)
+radius = args.radius
+coords = sgutils.createPolarGrid(dims, radius)
 
 # create line
 n = args.n
@@ -65,26 +60,18 @@ assert(ier == 0)
 
 x = coords[0]
 y = coords[1]
-psi = eval(args.psi)
 
 # integrated flux
-srcXFlux = +(psi[1:, :] - psi[:-1, :])
-srcYFlux = +(psi[:, 1:] - psi[:, :-1])
+srcXFlux = numpy.zeros((dims[0] - 1, dims[1]), numpy.float64) # no flux across rho lines
+srcYFlux = (1./(dims[1] - 1)) * numpy.ones((dims[0], dims[1] - 1), numpy.float64)   # constant flux across 
 srcData = (POINTER(c_double) * 2)(srcXFlux.ctypes.data_as(POINTER(c_double)), srcYFlux.ctypes.data_as(POINTER(c_double)))
 dstData = numpy.zeros((n,), numpy.float64) # to be filled in
 sg.SgFlowInterp2D_apply(byref(this), srcData, dstData.ctypes.data_as(POINTER(c_double)))
 sg.SgFlowInterp2D_debug(byref(this))
 sg.SgFlowInterp2D_del(byref(this))
 
-t = 0.0
-x, y = eval(args.xline), eval(args.yline)
-psia = eval(args.psi)
-t = 1.0
-x, y = eval(args.xline), eval(args.yline)
-psib = eval(args.psi)
-exact = psib - psia
 approx = dstData.sum()
-print('integrated flux: {} exact: {} error = {}'.format(approx, exact, approx - exact))
+print('integrated flux: {}'.format(approx))
 
-sgutils.saveStreamlinesVtk('streamFlow.vtk', coords, psi)
-sgutils.saveLineVtk('streamLine.vtk', (dstX, dstY), dstData)
+sgutils.saveFlowVtk('polarFlow.vtk', coords, srcXFlux, srcYFlux)
+sgutils.saveLineVtk('polarLine.vtk', (dstX, dstY), dstData)
