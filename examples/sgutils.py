@@ -68,12 +68,20 @@ def saveFlowVtk(filename, coords, flux0, flux1):
     f.write("SCALARS velocity float 3\n")
     f.write("LOOKUP_TABLE default\n")
 
-    vx = flux1/(coords[1][:, 1:] - coords[1][:, :-1])
-    vy = flux0/(coords[0][1:, :] - coords[0][:-1, :])
+    # fluxes at xell centres
+    flux0Avg = 0.5*(flux0[:, :-1] + flux0[:, 1:])
+    flux1Avg = 0.5*(flux1[:-1, :] + flux1[1:, :])
 
-    # average the velocity field to cell centres
-    vxAvg = 0.5*(vx[:-1, :] + vx[1:, :])
-    vyAvg = 0.5*(vy[:, :-1] + vy[:, 1:])
+    # cell widths
+    length0 = coords[0][1:, :] - coords[0][:-1, :]
+    length1 = coords[1][:, 1:] - coords[1][:, :-1]
+
+    # avg cell lengths
+    length0Avg = 0.5*(length0[:, -1:] - length0[:, 1:])
+    length1Avg = 0.5*(length1[:-1, :] - length1[1:, :])
+
+    vxAvg = flux1Avg/length1Avg
+    vyAvg = flux0Avg/length0Avg
 
     for i in range(dims[0] - 1):
         for j in range(dims[1] - 1):
