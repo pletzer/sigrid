@@ -11,8 +11,10 @@ def createRectilinearGrid(dims, xmin, xmax):
 def createPolarGrid(dims, radius):
     x0 = numpy.linspace(0.0, radius, dims[0])     # rho
     x1 = numpy.linspace(0.0, 2*numpy.pi, dims[1]) # theta
-    xx0 = numpy.outer(x0, numpy.ones((dims[1],), numpy.float64))
-    xx1 = numpy.outer(numpy.ones((dims[0],), numpy.float64), x1)
+    rho = numpy.outer(x0, numpy.ones((dims[1],), numpy.float64))
+    the = numpy.outer(numpy.ones((dims[0],), numpy.float64), x1)
+    xx0 = rho*numpy.cos(the)
+    xx1 = rho*numpy.sin(the)
     return (xx0, xx1)
 
 def saveLineVtk(filename, coords, data):
