@@ -68,24 +68,57 @@ def saveFlowVtk(filename, coords, flux0, flux1):
     f.write("SCALARS velocity float 3\n")
     f.write("LOOKUP_TABLE default\n")
 
-    # fluxes at xell centres
+    # fluxes at cell centres
+    # flux0 is the flux integrated along the 1st coordinate
+    # flux1 is the flux integrated along the 2nd coordinate
     flux0Avg = 0.5*(flux0[:, :-1] + flux0[:, 1:])
     flux1Avg = 0.5*(flux1[:-1, :] + flux1[1:, :])
 
-    # cell widths
-    length0 = coords[0][1:, :] - coords[0][:-1, :]
-    length1 = coords[1][:, 1:] - coords[1][:, :-1]
+    xx, yy = coords[0], coords[1]
 
-    # avg cell lengths
-    length0Avg = 0.5*(length0[:, -1:] - length0[:, 1:])
-    length1Avg = 0.5*(length1[:-1, :] - length1[1:, :])
+    # compute the mid face positions
+    #
+    # 0Lo is the (i,j), (i+1,j) face
+    # 0Hi is the (i,j+1), (i+1,j+1) face
+    # 1Lo is the (i,j), (i,j+1) face
+    # 1Hi is the (i+1,j), (i+1,j+1) face
+    xx0Lo = 0.5*(xx[:-1, :-1] + xx[1:, :-1])
+    yy0Lo = 0.5*(yy[:-1, :-1] + yy[1:, :-1])
 
-    vxAvg = flux1Avg/length1Avg
-    vyAvg = flux0Avg/length0Avg
+    xx0Hi = 0.5*(xx[:-1, 1:] + xx[1:, 1:])
+    yy0Hi = 0.5*(yy[:-1, 1:] + yy[1:, 1:])
+
+    xx1Lo = 0.5*(xx[:-1, :-1] + xx[:-1, 1:])
+    yy1Lo = 0.5*(yy[:-1, :-1] + yy[:-1, 1:])
+
+    xx1Hi = 0.5*(xx[1:, :-1] + xx[1:, 1:])
+    yy1Hi = 0.5*(yy[1:, :-1] + yy[1:, 1:])
+
+    # cell widths at the mid cell positions
+    dx0 = xx1Hi - xx1Lo
+    dy0 = yy1Hi - yy1Lo
+    dx1 = xx0Hi - xx0Lo
+    dy1 = yy0Hi - yy0Lo
+    length0 = numpy.sqrt(dx0*dx0 + dy0*dy0)
+    length1 = numpy.sqrt(dx1*dx1 + dy1*dy1)
+
+    # flux densities
+    ff0 = flux0Avg/length0
+    ff1 = flux1Avg/length1
+
+    # unit vectors perpendicular to each face
+    u0x = + dy0/length0
+    u0y = - dx0/length0
+    u1x = + dy1/length1
+    u1y = - dx1/length1
+
+    # the velocity in the x, y directions
+    vx = ff0*u0x + ff1*u1x
+    vy = ff0*u0y + ff1*u1y
 
     for i in range(dims[0] - 1):
         for j in range(dims[1] - 1):
-            f.write("{} {} 0.0\n".format(vxAvg[i, j], vyAvg[i, j]))
+            f.write("{} {} 0.0\n".format(vx[i, j], vy[i, j]))
 
     f.close();
 
