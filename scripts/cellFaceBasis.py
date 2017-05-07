@@ -34,6 +34,10 @@ class FaceBasis:
         dydxi = (y2Avg[1:, :] - y2Avg[:-1, :]) / dXi
         dydeta = (y1Avg[:, 1:] - y1Avg[:, :-1]) / dEta
 
+        # make xi and eta cell centred
+        xi = 0.25*(xi[:-1, :-1] + xi[:-1, 1:] + xi[1:, 1:] + xi[1:, :-1])
+        eta = 0.25*(eta[:-1, :-1] + eta[:-1, 1:] + eta[1:, 1:] + eta[1:, :-1])
+
         # Jacobian
         jac = dxdxi * dydeta - dydxi * dxdeta
 
