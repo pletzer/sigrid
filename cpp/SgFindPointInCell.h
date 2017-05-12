@@ -307,7 +307,7 @@ getSrcIndicesAndWeights(const std::vector<double>& dInds) const {
         size_t flatIndx = 0;
         double wght = 1;
 
-        // itereate over the dimensions
+        // iterate over the dimensions
         for (size_t i = 0; i < ndims; ++i) {
 
             int loCornerIndx = (int) floor(dInds[i]);

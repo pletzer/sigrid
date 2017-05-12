@@ -60,35 +60,50 @@ tolpos = c_double(1.e-12)
 
 # initial guess for the index position
 dInds = numpy.array([int(dims[0]/1.89), int(dims[1]/2.32)])
-targetPoints = numpy.array([0., 0.])
+targetPoint = numpy.array([0., 0.])
 
+sg.SgFindPointInCell_new.restype = c_int
+sg.SgFindPointInCell_new.argtypes = [POINTER(c_void_p), c_int, c_double]
 ier = sg.SgFindPointInCell_new(byref(this), nitermax, tolpos)
 assert(ier == 0)
 
 # set the grid coordinates
 srcCoords = (POINTER(c_double) * 2)(coords[0].ctypes.data_as(POINTER(c_double)),
                                     coords[1].ctypes.data_as(POINTER(c_double)))
-ier = sg.SgFindPointInCell_setGrid(byref(this), 2, dims.ctypes.data_as(POINTER(c_int)), srcCoords)
+sg.SgFindPointInCell_setGrid.restype = c_int
+sg.SgFindPointInCell_setGrid.argtypes = [POINTER(c_void_p), c_int, POINTER(c_int), POINTER(c_int), POINTER(POINTER(c_double))]
+periodicity = (c_int*2)(0, 0)
+ier = sg.SgFindPointInCell_setGrid(byref(this), 2, dims.ctypes.data_as(POINTER(c_int)), periodicity, srcCoords)
+assert(ier == 0)
 
 # set the vector field in Cartesian coordinates
 xx, yy = coords[0], coords[1]
 rr2 = xx**2 + yy**2
-vxx = xx/(2. * math.pi * rr2)
-vyy = yy/(2. * math.pi * rr2)
+vxx = xx/(2. * math.pi * rr2 + 1.e-6) # singular
+vyy = yy/(2. * math.pi * rr2 + 1.e-6)
 
 for i in range(numSegs):
 
 	targetPoint[:] = dstXMid[i], dstYMid[i]
-	ier = sg.SgFlowInterp2D_reset(byref(this), 
-		                          dInds.ctypes.data_as(POINTER(c_double)), 
-		                          targetPoint.ctypes.data_as(POINTER(c_double)))
+	ier = sg.SgFindPointInCell_reset(byref(this), 
+		                             dInds.ctypes.data_as(POINTER(c_double)), 
+		                             targetPoint.ctypes.data_as(POINTER(c_double)))
 
 	# find the index position corresponding to the target
 	end = 0
 	while end == 0:
-		end = sg.SgFlowInterp2D_next(byref(this))
+		end = sg.SgFindPointInCell_next(byref(this))
+	if end != 1:
+		if end == -1:
+			print('*** Hit max number of iterations for i = {}'.format(i))
+		elif end == -2:
+			print('*** Hit a fixed point? i = {}'.format(i))
+		elif end == -3:
+			print('*** Ending up outside of domain for i = {}'.format(i))
+		else:
+			print('*** Unknown error for i = {}'.format(end))
 	assert(end == 1)
-	ier = sg.SgFlowInterp2D_getIndices(byref(this), 
+	ier = sg.SgFindPointInCell_getIndices(byref(this), 
 		                               dInds.ctypes.data_as(POINTER(c_double)))
 	assert(ier == 0)
 
