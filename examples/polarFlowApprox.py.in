@@ -99,6 +99,12 @@ for i in range(numSegs):
 		ier = sg.SgFindPointInCell_getError(byref(this), byref(error))
 		assert(ier == 0)
 		print('Search error: {}'.format(error.value))
+		# get history
+		niters = c_int()
+		errors = POINTER(c_double)()
+		ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
+		for j in range(niters.value):
+			print('iter: {} error: {}'.format(j, errors[j]))
 		if end == -1:
 			print('*** Hit max number of iterations for i = {}'.format(i))
 		elif end == -2:

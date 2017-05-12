@@ -451,6 +451,9 @@ int SgFindPointInCell_next(SgFindPointInCell_type** self);
 
 int SgFindPointInCell_getIndices(SgFindPointInCell_type** self,
                                  double dIndices[]);
+
+int SgFindPointInCell_getErrorHistory(SgFindPointInCell_type** self,
+                                      int* niter, double** errors);
  
 #ifdef __cplusplus
 }
