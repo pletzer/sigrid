@@ -8,8 +8,8 @@ def createRectilinearGrid(dims, xmin, xmax):
 	xx1 = numpy.outer(numpy.ones((dims[0],), numpy.float64), x1)
 	return (xx0, xx1)
 
-def createPolarGrid(dims, radius):
-    x0 = numpy.linspace(0.0, radius, dims[0])     # rho
+def createPolarGrid(dims, radius, eps = 0.0):
+    x0 = numpy.linspace(eps, radius, dims[0])     # rho
     x1 = numpy.linspace(0.0, 2*numpy.pi, dims[1]) # theta
     rho = numpy.outer(x0, numpy.ones((dims[1],), numpy.float64))
     the = numpy.outer(numpy.ones((dims[0],), numpy.float64), x1)

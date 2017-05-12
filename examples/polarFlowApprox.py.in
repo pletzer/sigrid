@@ -28,7 +28,7 @@ args = parser.parse_args()
 # create structured grid and field
 dims = numpy.array(eval(args.dims), numpy.int32)
 radius = args.radius
-coords = sgutils.createPolarGrid(dims, radius)
+coords = sgutils.createPolarGrid(dims, radius, eps = 0.01)
 
 # create line
 n = args.n
@@ -79,8 +79,8 @@ assert(ier == 0)
 # set the vector field in Cartesian coordinates
 xx, yy = coords[0], coords[1]
 rr2 = xx**2 + yy**2
-vxx = xx/(2. * math.pi * rr2 + 1.e-6) # singular
-vyy = yy/(2. * math.pi * rr2 + 1.e-6)
+vxx = xx/(2. * math.pi * rr2) # singular
+vyy = yy/(2. * math.pi * rr2)
 
 for i in range(numSegs):
 
@@ -94,6 +94,11 @@ for i in range(numSegs):
 	while end == 0:
 		end = sg.SgFindPointInCell_next(byref(this))
 	if end != 1:
+		# error
+		error = c_double()
+		ier = sg.SgFindPointInCell_getError(byref(this), byref(error))
+		assert(ier == 0)
+		print('Search error: {}'.format(error.value))
 		if end == -1:
 			print('*** Hit max number of iterations for i = {}'.format(i))
 		elif end == -2:
