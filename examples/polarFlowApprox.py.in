@@ -42,7 +42,7 @@ print('positions: {}'.format([(dstX[i], dstY[i]) for i in range(len(dstX))]))
 # create mid point values and deltas
 numSegs = len(dstX) - 1
 dstXMid = numpy.array([0.5*(dstX[i+1] + dstX[i]) for i in range(numSegs)])
-dstYMid = numpy.array([0.5*(dstY[i+1] + dstY[i]) for i in range(numSegs])
+dstYMid = numpy.array([0.5*(dstY[i+1] + dstY[i]) for i in range(numSegs)])
 dstXDif = numpy.array([dstX[i+1] - dstX[i] for i in range(numSegs)])
 dstXDif = numpy.array([dstY[i+1] - dstY[i] for i in range(numSegs)])
 
@@ -56,7 +56,7 @@ sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
 this = c_void_p()
 
 nitermax = 100
-tolpos = 1.e-12
+tolpos = c_double(1.e-12)
 
 # initial guess for the index position
 dInds = numpy.array([int(dims[0]/1.89), int(dims[1]/2.32)])
