@@ -211,7 +211,7 @@ void reset(const double dIndices[], const double targetPoint[]) {
 int next() {
 
     size_t ndims = this->dims.size();
-    const double eps = 10*std::numeric_limits<double>::epsilon();
+    const double eps = 100*std::numeric_limits<double>::epsilon();
 
     // check if inside domain
     // THIS SHOULD BE MOVED TO THE reset METHOD!!!!!
