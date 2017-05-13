@@ -13,7 +13,7 @@ import sgutils
 # parse input arguments
 
 parser = argparse.ArgumentParser(description='Generate polar flow.')
-parser.add_argument('--dims', dest='dims', default='21,11',
+parser.add_argument('--dims', dest='dims', default='11,21',
                     help='Number of nodes in rho and theta')
 parser.add_argument('--radius', dest='radius', default=1.0, type=float,
                     help='Min domain corner')
@@ -59,7 +59,7 @@ nitermax = 10
 tolpos = c_double(1.e-4)
 
 # initial guess for the index position
-dInds = numpy.array([dims[0] - 1, int(dims[1]/2.32)], numpy.float64)
+dInds = numpy.array([(dims[0] - 1)/2.0, dims[1]/2.1], numpy.float64)
 targetPoint = numpy.array([0., 0.])
 
 sg.SgFindPointInCell_new.restype = c_int
@@ -94,8 +94,8 @@ for i in range(numSegs):
     while end == 0:
         end = sg.SgFindPointInCell_next(byref(this))
 
-        #ier = sg.SgFindPointInCell_getIndices(byref(this), dInds.ctypes.data_as(POINTER(c_double)))
-        #print('+++ after update dInds = {}'.format(dInds))
+        ier = sg.SgFindPointInCell_getIndices(byref(this), dInds.ctypes.data_as(POINTER(c_double)))
+        print('+++ after update dInds = {}'.format(dInds))
 
     if end != 1:
         # error
@@ -122,13 +122,13 @@ for i in range(numSegs):
                                           dInds.ctypes.data_as(POINTER(c_double)))
     assert(ier == 0)
 
-    ij00 = numpy.array([math.floor(dInds[0]), math.floor(dInds[1])], numpy.int32)
+    ij00 = (math.floor(dInds[0]), math.floor(dInds[1]))
     ij10 = (ij00[0] + 1, ij00[1] + 0)
     ij11 = (ij00[0] + 1, ij00[1] + 1)
     ij01 = (ij00[0] + 0, ij00[1] + 1)
 
     # compute the weights
-    xi = dInds - ij00
+    xi = dInds - numpy.array(ij00, numpy.float64)
     w00 = (1. - xi[0])*(1. - xi[1])
     w10 = xi[0]*(1. - xi[1])
     w11 = xi[0]*xi[1]
