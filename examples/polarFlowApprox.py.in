@@ -44,7 +44,7 @@ numSegs = len(dstX) - 1
 dstXMid = numpy.array([0.5*(dstX[i+1] + dstX[i]) for i in range(numSegs)])
 dstYMid = numpy.array([0.5*(dstY[i+1] + dstY[i]) for i in range(numSegs)])
 dstXDif = numpy.array([dstX[i+1] - dstX[i] for i in range(numSegs)])
-dstXDif = numpy.array([dstY[i+1] - dstY[i] for i in range(numSegs)])
+dstYDif = numpy.array([dstY[i+1] - dstY[i] for i in range(numSegs)])
 
 # 
 # interpolate the grid to the dstXMid,dstYMid points
@@ -55,11 +55,11 @@ fluxes = numpy.zeros((numSegs,), numpy.float64)
 sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
 this = c_void_p()
 
-nitermax = 100
-tolpos = c_double(1.e-12)
+nitermax = 10
+tolpos = c_double(1.e-4)
 
 # initial guess for the index position
-dInds = numpy.array([int(dims[0]/1.89), int(dims[1]/2.32)])
+dInds = numpy.array([dims[0] - 1, int(dims[1]/2.32)], numpy.float64)
 targetPoint = numpy.array([0., 0.])
 
 sg.SgFindPointInCell_new.restype = c_int
@@ -72,7 +72,7 @@ srcCoords = (POINTER(c_double) * 2)(coords[0].ctypes.data_as(POINTER(c_double)),
                                     coords[1].ctypes.data_as(POINTER(c_double)))
 sg.SgFindPointInCell_setGrid.restype = c_int
 sg.SgFindPointInCell_setGrid.argtypes = [POINTER(c_void_p), c_int, POINTER(c_int), POINTER(c_int), POINTER(POINTER(c_double))]
-periodicity = (c_int*2)(0, 0)
+periodicity = (c_int*2)(0, 1)
 ier = sg.SgFindPointInCell_setGrid(byref(this), 2, dims.ctypes.data_as(POINTER(c_int)), periodicity, srcCoords)
 assert(ier == 0)
 
@@ -84,59 +84,64 @@ vyy = yy/(2. * math.pi * rr2)
 
 for i in range(numSegs):
 
-	targetPoint[:] = dstXMid[i], dstYMid[i]
-	ier = sg.SgFindPointInCell_reset(byref(this), 
-		                             dInds.ctypes.data_as(POINTER(c_double)), 
-		                             targetPoint.ctypes.data_as(POINTER(c_double)))
+    targetPoint[:] = dstXMid[i], dstYMid[i]
+    ier = sg.SgFindPointInCell_reset(byref(this), 
+                                     dInds.ctypes.data_as(POINTER(c_double)), 
+                                     targetPoint.ctypes.data_as(POINTER(c_double)))
 
-	# find the index position corresponding to the target
-	end = 0
-	while end == 0:
-		end = sg.SgFindPointInCell_next(byref(this))
-	if end != 1:
-		# error
-		error = c_double()
-		ier = sg.SgFindPointInCell_getError(byref(this), byref(error))
-		assert(ier == 0)
-		print('Search error: {}'.format(error.value))
-		# get history
-		niters = c_int()
-		errors = POINTER(c_double)()
-		ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
-		for j in range(niters.value):
-			print('iter: {} error: {}'.format(j, errors[j]))
-		if end == -1:
-			print('*** Hit max number of iterations for i = {}'.format(i))
-		elif end == -2:
-			print('*** Hit a fixed point? i = {}'.format(i))
-		elif end == -3:
-			print('*** Ending up outside of domain for i = {}'.format(i))
-		else:
-			print('*** Unknown error for i = {}'.format(end))
-	assert(end == 1)
-	ier = sg.SgFindPointInCell_getIndices(byref(this), 
-		                               dInds.ctypes.data_as(POINTER(c_double)))
-	assert(ier == 0)
+    # find the index position corresponding to the target
+    end = 0
+    while end == 0:
+        end = sg.SgFindPointInCell_next(byref(this))
 
-	ij00 = numpy.array([math.floor(dInds[0]), math.floor(dInds[1])])
-	ij10 = (ij00[0] + 1, ij00 + 0)
-	ij11 = (ij00[0] + 1, ij00 + 1)
-	ij01 = (ij00[0] + 0, ij00 + 1)
+        #ier = sg.SgFindPointInCell_getIndices(byref(this), dInds.ctypes.data_as(POINTER(c_double)))
+        #print('+++ after update dInds = {}'.format(dInds))
 
-	# compute the weights
-	xi = dInds - ij00
-	w00 = (1. - xi[0])*(1. - xi[1])
-	w10 = xi[0]*(1. - xi[1])
-	w11 = xi[0]*xi[1]
-	w01 = (1. - xi[0])*xi[1]
+    if end != 1:
+        # error
+        error = c_double()
+        ier = sg.SgFindPointInCell_getError(byref(this), byref(error))
+        assert(ier == 0)
+        print('Search error: {}'.format(error.value))
+        # get history
+        niters = c_int()
+        errors = POINTER(c_double)()
+        ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
+        for j in range(niters.value):
+            print('iter: {} error: {}'.format(j, errors[j]))
+        if end == -1:
+            print('*** Hit max number of iterations for i = {}'.format(i))
+        elif end == -2:
+            print('*** Hit a fixed point? i = {}'.format(i))
+        elif end == -3:
+            print('*** Ending up outside of domain for i = {}'.format(i))
+        else:
+            print('*** Unknown error for i = {}'.format(end))
+    assert(end == 1)
+    ier = sg.SgFindPointInCell_getIndices(byref(this), 
+                                          dInds.ctypes.data_as(POINTER(c_double)))
+    assert(ier == 0)
 
-	# interpolate
-	vx = w00*vxx[ij00] + w10*vxx[ij10] + w11*vxx[ij11] + w01*vxx[ij01]
-	vy = w00*vyy[ij00] + w10*vyy[ij10] + w11*vyy[ij11] + w01*vyy[ij01]
-	dx = dstXDif[i]
-	dy = dstYDif[i]
+    ij00 = numpy.array([math.floor(dInds[0]), math.floor(dInds[1])], numpy.int32)
+    ij10 = (ij00[0] + 1, ij00[1] + 0)
+    ij11 = (ij00[0] + 1, ij00[1] + 1)
+    ij01 = (ij00[0] + 0, ij00[1] + 1)
 
-	fluxes[i] = vx*dy - vy*dx
+    # compute the weights
+    xi = dInds - ij00
+    w00 = (1. - xi[0])*(1. - xi[1])
+    w10 = xi[0]*(1. - xi[1])
+    w11 = xi[0]*xi[1]
+    w01 = (1. - xi[0])*xi[1]
+
+    # interpolate
+    vx = w00*vxx[ij00] + w10*vxx[ij10] + w11*vxx[ij11] + w01*vxx[ij01]
+    vy = w00*vyy[ij00] + w10*vyy[ij10] + w11*vyy[ij11] + w01*vyy[ij01]
+    dx = dstXDif[i]
+    dy = dstYDif[i]
+
+    print('vx = {} vy = {} dx = {} dy = {}'.format(vx, vy, dx, dy))
+    fluxes[i] = vx*dy - vy*dx
 
 ier = sg.SgFindPointInCell_del(byref(this))
 
