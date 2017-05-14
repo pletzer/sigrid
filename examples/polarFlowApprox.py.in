@@ -56,25 +56,23 @@ def findIndicesForPosition(dims, coords, targetPoint, nitermax, tolpos):
             # success
             break
 
-        """
-        if end != 1:
-            if end == -1:
-                print('*** Hit max number of iterations')
-            elif end == -2:
-                print('*** Hit a fixed point?')
-            elif end == -3:
-                print('*** Ending up outside of domain')
-            else:
-                print('*** Unknown error')
+    if end != 1:
+        if end == -1:
+            print('*** Hit max number of iterations for dIndsInit = {}'.format(dIndsInit))
+        elif end == -2:
+            print('*** Hit a fixed point? dIndsInit = {}'.format(dIndsInit))
+        elif end == -3:
+            print('*** Ending up outside of domain')
+        else:
+            print('*** Unknown error')
 
-            # debug
-            niters = c_int()
-            errors = POINTER(c_double)()
-            ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
-            for j in range(niters.value):
-                print('iter {} error {}'.format(j, errors[j]))
+        # debug
+        niters = c_int()
+        errors = POINTER(c_double)()
+        ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
+        for j in range(niters.value):
+            print('iter {} error {}'.format(j, errors[j]))
 
-        """
 
     ier = sg.SgFindPointInCell_getIndices(byref(this), dInds.ctypes.data_as(POINTER(c_double)))
     assert(ier == 0)
@@ -173,7 +171,7 @@ for i in range(numSegs):
     vyExact = y/(2. * pi * r2)
     vError = numpy.sqrt( (vx - vxExact)**2 + (vy - vyExact)**2 )
 
-    print('vx = {} vy = {} dx = {} dy = {} vError = {}'.format(vx, vy, dx, dy, vError))
+    print('x = {:.3f} y = {:.3f} vx = {:.3f} vy = {:.3f} vError = {:.3f}'.format(x, y, vx, vy, vError))
     fluxes[i] = vx*dy - vy*dx
     fluxesExact[i] = vxExact*dy - vyExact*dx
 
