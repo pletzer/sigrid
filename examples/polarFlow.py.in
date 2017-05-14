@@ -12,15 +12,15 @@ import sgutils
 # parse input arguments
 
 parser = argparse.ArgumentParser(description='Generate polar flow.')
-parser.add_argument('--dims', dest='dims', default='21,11',
+parser.add_argument('--dims', dest='dims', default='11,21',
                     help='Number of nodes in rho and theta')
 parser.add_argument('--radius', dest='radius', default=1.0, type=float,
                     help='Min domain corner')
 parser.add_argument('--n', dest='n', type=int, default=4,
                     help='Number of line segments')
-parser.add_argument('--xline', dest='xline', default='0.5*radius*cos(2*pi*t)',
+parser.add_argument('--xline', dest='xline', default='0.1 + 0.6*cos(2*pi*t)',
                     help='X coordinate parametric representation of line as a function of t, 0 <= t <= 1')
-parser.add_argument('--yline', dest='yline', default='0.5*radius*sin(2*pi*t)',
+parser.add_argument('--yline', dest='yline', default='-0.3 + 0.4*sin(2*pi*t)',
                     help='Y coordinate parametric representation of line as a function of t, 0 <= t <= 1')
 args = parser.parse_args()
 
