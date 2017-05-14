@@ -10,7 +10,84 @@ import argparse
 from numpy import pi, sin, cos, tan, exp, log
 import sgutils
 
+#
+# find index position
+#
+def findIndicesForPosition(dims, coords, targetPoint, nitermax, tolpos):
+
+    sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
+    this = c_void_p()
+    tolpos_c = c_double(tolpos)
+
+    ier = sg.SgFindPointInCell_new(byref(this), nitermax, tolpos_c)
+    assert(ier == 0)
+
+    # set the grid coordinates
+    srcCoords = (POINTER(c_double) * 2)(coords[0].ctypes.data_as(POINTER(c_double)),
+                                        coords[1].ctypes.data_as(POINTER(c_double)))
+    periodicity = (c_int*2)(0, 1)
+    ier = sg.SgFindPointInCell_setGrid(byref(this), 2, dims.ctypes.data_as(POINTER(c_int)), periodicity, srcCoords)
+    assert(ier == 0)
+
+    # try different initial guesses
+    for dIndsInit in [((dims[0] - 1)/2., (dims[1] - 1)/2.), # centre
+                      ((dims[0] - 1)/2., 0.              ), # edge
+                      (dims[0] - 1.    , (dims[1] - 1)/2.),
+                      ((dims[0] - 1)/2., dims[1] - 1.    ),
+                      (0.              , (dims[1] - 1)/2.),
+                      (0.              , 0.              ), # corner
+                      (dims[0] - 1.0   , 0.              ),
+                      (dims[0] - 1.0   , dims[1] - 1.0   ),
+                      (0.              , dims[1] - 1.0   ),]:
+
+        dInds = numpy.array(dIndsInit, numpy.float64)
+
+        ier = sg.SgFindPointInCell_reset(byref(this), 
+                                         dInds.ctypes.data_as(POINTER(c_double)), 
+                                         targetPoint.ctypes.data_as(POINTER(c_double)))
+
+
+        # Newton iterations
+        end = 0
+        while end == 0:
+            end = sg.SgFindPointInCell_next(byref(this))
+
+        if end == 1:
+            # success
+            break
+
+        """
+        if end != 1:
+            if end == -1:
+                print('*** Hit max number of iterations')
+            elif end == -2:
+                print('*** Hit a fixed point?')
+            elif end == -3:
+                print('*** Ending up outside of domain')
+            else:
+                print('*** Unknown error')
+
+            # debug
+            niters = c_int()
+            errors = POINTER(c_double)()
+            ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
+            for j in range(niters.value):
+                print('iter {} error {}'.format(j, errors[j]))
+
+        """
+
+    ier = sg.SgFindPointInCell_getIndices(byref(this), dInds.ctypes.data_as(POINTER(c_double)))
+    assert(ier == 0)
+
+    # clean up
+    ier = sg.SgFindPointInCell_del(byref(this))
+    assert(ier == 0)
+
+    return dInds
+
+#
 # parse input arguments
+#
 
 parser = argparse.ArgumentParser(description='Generate polar flow.')
 parser.add_argument('--dims', dest='dims', default='11,21',
@@ -51,30 +128,12 @@ dstYDif = numpy.array([dstY[i+1] - dstY[i] for i in range(numSegs)])
 #
 fluxes = numpy.zeros((numSegs,), numpy.float64)
 
-# project online 
-sg = CDLL("@CMAKE_BINARY_DIR@/cpp/libsigrid@CMAKE_SHARED_LIBRARY_SUFFIX@")
-this = c_void_p()
+# project on line 
 
-nitermax = 10
-tolpos = c_double(1.e-4)
-
-# initial guess for the index position
-dInds = numpy.array([(dims[0] - 1)/2.0, dims[1]/2.1], numpy.float64)
+nitermax = 20
+tolpos = 1.e-6
 targetPoint = numpy.array([0., 0.])
 
-sg.SgFindPointInCell_new.restype = c_int
-sg.SgFindPointInCell_new.argtypes = [POINTER(c_void_p), c_int, c_double]
-ier = sg.SgFindPointInCell_new(byref(this), nitermax, tolpos)
-assert(ier == 0)
-
-# set the grid coordinates
-srcCoords = (POINTER(c_double) * 2)(coords[0].ctypes.data_as(POINTER(c_double)),
-                                    coords[1].ctypes.data_as(POINTER(c_double)))
-sg.SgFindPointInCell_setGrid.restype = c_int
-sg.SgFindPointInCell_setGrid.argtypes = [POINTER(c_void_p), c_int, POINTER(c_int), POINTER(c_int), POINTER(POINTER(c_double))]
-periodicity = (c_int*2)(0, 1)
-ier = sg.SgFindPointInCell_setGrid(byref(this), 2, dims.ctypes.data_as(POINTER(c_int)), periodicity, srcCoords)
-assert(ier == 0)
 
 # set the vector field in Cartesian coordinates
 xx, yy = coords[0], coords[1]
@@ -85,42 +144,9 @@ vyy = yy/(2. * math.pi * rr2)
 for i in range(numSegs):
 
     targetPoint[:] = dstXMid[i], dstYMid[i]
-    ier = sg.SgFindPointInCell_reset(byref(this), 
-                                     dInds.ctypes.data_as(POINTER(c_double)), 
-                                     targetPoint.ctypes.data_as(POINTER(c_double)))
 
     # find the index position corresponding to the target
-    end = 0
-    while end == 0:
-        end = sg.SgFindPointInCell_next(byref(this))
-
-        ier = sg.SgFindPointInCell_getIndices(byref(this), dInds.ctypes.data_as(POINTER(c_double)))
-        print('+++ after update dInds = {}'.format(dInds))
-
-    if end != 1:
-        # error
-        error = c_double()
-        ier = sg.SgFindPointInCell_getError(byref(this), byref(error))
-        assert(ier == 0)
-        print('Search error: {}'.format(error.value))
-        # get history
-        niters = c_int()
-        errors = POINTER(c_double)()
-        ier = sg.SgFindPointInCell_getErrorHistory(byref(this), byref(niters), byref(errors))
-        for j in range(niters.value):
-            print('iter: {} error: {}'.format(j, errors[j]))
-        if end == -1:
-            print('*** Hit max number of iterations for i = {}'.format(i))
-        elif end == -2:
-            print('*** Hit a fixed point? i = {}'.format(i))
-        elif end == -3:
-            print('*** Ending up outside of domain for i = {}'.format(i))
-        else:
-            print('*** Unknown error for i = {}'.format(end))
-    assert(end == 1)
-    ier = sg.SgFindPointInCell_getIndices(byref(this), 
-                                          dInds.ctypes.data_as(POINTER(c_double)))
-    assert(ier == 0)
+    dInds = findIndicesForPosition(dims, coords, targetPoint, nitermax, tolpos)
 
     ij00 = (math.floor(dInds[0]), math.floor(dInds[1]))
     ij10 = (ij00[0] + 1, ij00[1] + 0)
@@ -142,8 +168,6 @@ for i in range(numSegs):
 
     print('vx = {} vy = {} dx = {} dy = {}'.format(vx, vy, dx, dy))
     fluxes[i] = vx*dy - vy*dx
-
-ier = sg.SgFindPointInCell_del(byref(this))
 
 approx = fluxes.sum()
 print('integrated flux: {}'.format(approx))
