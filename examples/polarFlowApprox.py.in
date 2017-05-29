@@ -103,7 +103,7 @@ args = parser.parse_args()
 # create structured grid and field
 dims = numpy.array(eval(args.dims), numpy.int32)
 radius = args.radius
-coords = sgutils.createPolarGrid(dims, radius, eps = 0.01)
+coords = sgutils.createPolarGrid(dims, radius, eps = 0.05)
 
 # create line
 n = args.n

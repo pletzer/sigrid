@@ -54,8 +54,8 @@ SgTripolarGrid_type(const int dims[], int capLatIndex) {
  */
 void getGrid(int dims[], double*** coords) {
 
-  dims[0] = this->dims[0];
-  dims[1] = this->dims[1];
+  dims[1] = this->dims[0];
+  dims[0] = this->dims[1];
   *coords = this->coords;
 
   int i,j;

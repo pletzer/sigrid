@@ -37,7 +37,7 @@ void saveGrid(const std::string& filename, const int dims[], double** coords) {
 
 int main(int argc, char** argv) {
 
-    const int dims[] = {101, 201};
+    const int dims[] = {11, 21};
     int capLatIndex = int(0.65 * dims[0]);
     SgTripolarGrid_type tri(dims, capLatIndex);
     int outdims[2];
