@@ -18,6 +18,7 @@ set(LIB_FILES
   SgNodeInterp2D.cpp
   SgFindOverlappingCells2D.cpp
   SgOctreePoints.cpp
+  SgTripolarGrid.cpp
 )
 
 set(HEADER_FILES
@@ -38,6 +39,7 @@ set(HEADER_FILES
   SgFindOverlappingCells2D.h
   SgSideIterator.h
   SgOctreePoints.h
+  SgTripolarGrid.h
 )
 
 add_library(sigrid SHARED ${LIB_FILES})
