@@ -58,8 +58,7 @@ void getGrid(int dims[], double*** coords) {
   dims[0] = this->dims[1];
   *coords = this->coords;
 
-  int i,j;
-  double L, P, Lc, Pc, Pc0, Lc0, latPerim;
+  double Lc, Pc, Pc0, Lc0, latPerim;
   double L0 = 0.;
   double di = 2*M_PI / (dims[0]-1);
   double dj = M_PI / (dims[1]-1);
@@ -67,15 +66,13 @@ void getGrid(int dims[], double*** coords) {
   Pc0 = -0.5*M_PI;
   Lc0 = -M_PI;
 
-  for (j=0; j < this->capLatIndex; ++j) {
-    for (i=0; i<dims[0]; ++i) {
-      P = Pc0 + j*dj;
-      L = Lc0 + i*di;
-      this->lons[i+j*dims[0]] = L;
-      this->lats[i+j*dims[0]] = P;
+  for (int j = 0; j < this->capLatIndex; ++j) {
+    for (int i = 0; i < dims[0]; ++i) {
+      this->lons[i + j*dims[0]] = Lc0 + i*di;
+      this->lats[i + j*dims[0]] = Pc0 + j*dj;
 
-      this->lons[i+j*dims[0]] *= 180./M_PI;
-      this->lats[i+j*dims[0]] *= 180./M_PI;
+      this->lons[i + j*dims[0]] *= 180./M_PI;
+      this->lats[i + j*dims[0]] *= 180./M_PI;
     }
   }
 
@@ -84,8 +81,8 @@ void getGrid(int dims[], double*** coords) {
   dj = (0.5*M_PI) / (dims[1] - this->capLatIndex-1);
   Pc0 = -(M_PI/2.);
   Lc0 = (M_PI/2.);
-  for (j = this->capLatIndex; j<dims[1]; ++j) {
-    for (i=0; i<dims[0]/2; ++i) {
+  for (int j = this->capLatIndex; j < dims[1]; ++j) {
+    for (int i = 0; i < dims[0]/2; ++i) {
       Pc = Pc0 + i*di;
       Lc = Lc0 - (j - this->capLatIndex)*dj;
       this->lons[i+j*dims[0]] = L0 - atan2(sin(Lc), tan(Pc));
@@ -99,9 +96,9 @@ void getGrid(int dims[], double*** coords) {
 
   Pc0 = -(M_PI/2.);
   Lc0 = -(M_PI/2.);
-  for (j = this->capLatIndex; j<dims[1]; ++j) {
-    for (i=dims[0]/2; i<dims[0]; ++i) {
-      Pc = Pc0 + (dims[0]-i-1)*di;
+  for (int j = this->capLatIndex; j < dims[1]; ++j) {
+    for (int i = dims[0]/2; i < dims[0]; ++i) {
+      Pc = Pc0 + (dims[0] - i - 1)*di;
       Lc = Lc0 + (1-1.e-10)*(j - this->capLatIndex)*dj;
       this->lons[i+j*dims[0]] = L0 - atan2(sin(Lc), tan(Pc));
       this->lats[i+j*dims[0]] = 0.5*M_PI  - 2.*atan(tan(latPerim/2.)*
@@ -111,7 +108,6 @@ void getGrid(int dims[], double*** coords) {
       this->lats[i+j*dims[0]] *= 180./M_PI;
     }
   }
-
 }
 
 
