@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     assert(ier == 0);
 
     // periodic in theta
-    const int periodicity[] = {0, 1};
+    const int periodicity[] = {1, 0};
     ier = SgFindPointInCell_setGrid(&picf, ndims, dims, periodicity,
                                     (const double**) &coords[0]);
     assert(ier == 0);
