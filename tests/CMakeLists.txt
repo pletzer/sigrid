@@ -98,7 +98,7 @@ add_test(testFindPointInCell1D
 add_test(testFindPointInCell1D_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCell1D_CXX)
 add_test(testFindPointInCellPolar_1 
 	     ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolar_CXX 
-	     -t 1.e-10 -m 100 -p "0, 0.707107" -i "3,10" -nr 21 -nt 65)
+	     -t 1.e-10 -m 100 -p "1.e-6, 0.707107" -i "3,10" -nr 21 -nt 65)
 add_test(testFindPointInCellPolarXY_CXX ${CMAKE_BINARY_DIR}/tests/testFindPointInCellPolarXY_CXX)
 add_test(testOctreePoints_CXX ${CMAKE_BINARY_DIR}/tests/testOctreePoints_CXX)
 add_test(testLinearSolve_CXX ${CMAKE_BINARY_DIR}/tests/testLinearSolve_CXX)

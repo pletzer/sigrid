@@ -90,29 +90,35 @@ int main(int argc, char** argv) {
     size_t icount = 0;
     double error = std::numeric_limits<double>::max();
 
-    printf("iter    old_position             new_position               error\n");
+    printf("iter    old_position             new_position              indices                    error\n");
     while (end == 0) {
 
         printf("%lu   ", icount);
 
         ier = SgFindPointInCell_getPosition(&picf, oldPos);
         assert(ier == 0);
-
         for (size_t i = 0; i < ndims; ++i) {
             printf("%10.4f ", oldPos[i]);
         }
         printf("    ");
 
-
+        // next iterate
         end = SgFindPointInCell_next(&picf);
 
         ier = SgFindPointInCell_getPosition(&picf, pos);
         assert(ier == 0);
-
         for (size_t i = 0; i < ndims; ++i) {
             printf("%10.5f ", pos[i]);
         }
         printf("    ");
+
+        ier = SgFindPointInCell_getIndices(&picf, &dIndices[0]);
+        assert(ier == 0);
+        for (size_t i = 0; i < ndims; ++i) {
+            printf("%10.5f ", dIndices[i]);
+        }
+        printf("    ");
+
 
         ier = SgFindPointInCell_getError(&picf, &error);
         assert(ier == 0);
