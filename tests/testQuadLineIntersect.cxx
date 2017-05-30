@@ -175,7 +175,7 @@ bool testLineOnEdge() {
 
     std::cout << "testLineOnEdge: num intersection points = " << numPoints << '\n';
 
-    if (numPoints != 2) {
+    if (numPoints < 2) {
         // not well defined
         return false;
     }
@@ -249,17 +249,16 @@ bool testAcrossQuad() {
 
     std::cout << "testAcrossQuad: num intersection points = " << numPoints << '\n';
 
-    if (numPoints != 1) { // or should it be 2?
-        // error
-        return false;
-    }
-
     for (int i = 0; i < numPoints; ++i) {
         std::cout << "point " << i << ": ";
         for (size_t j = 0; j < 2; ++j) {
             std::cout << points[2*i + j] << ", ";
         }
         std::cout << '\n';
+    }
+    if (numPoints < 2) {
+        // error
+        return false;
     }
     // OK
     return true;
