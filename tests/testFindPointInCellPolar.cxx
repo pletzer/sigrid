@@ -40,6 +40,12 @@ int main(int argc, char** argv) {
     prsr.set("-t", 1.e-10, "Tolerance in physical space");
     prsr.parse(argc, argv);
 
+    if (prsr.get<bool>("-h") || prsr.get<bool>("--help")) {
+        prsr.help();\
+        return 1;
+    }
+
+
     int nitermax = prsr.get<int>("-m");
     double tolpos = prsr.get<double>("-t");
     int nt = prsr.get<int>("-nt");
